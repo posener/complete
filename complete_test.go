@@ -9,7 +9,9 @@ import (
 func TestCompleter_Complete(t *testing.T) {
 	t.Parallel()
 
-	os.Setenv(envDebug, "1")
+	if testing.Verbose() {
+		os.Setenv(envDebug, "1")
+	}
 
 	c := Completer{
 		Command: Command{
@@ -30,9 +32,9 @@ func TestCompleter_Complete(t *testing.T) {
 			Flags: map[string]FlagOptions{
 				"-h":       FlagNoFollow,
 				"-global1": FlagUnknownFollow,
+				"-o":       FlagFileFilter("./gocomplete/*.go"),
 			},
 		},
-		log: t.Logf,
 	}
 
 	allGlobals := []string{}
@@ -53,7 +55,7 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		{
 			args: "-",
-			want: []string{"-h", "-global1"},
+			want: []string{"-h", "-global1", "-o"},
 		},
 		{
 			args: "-h ",
@@ -77,11 +79,11 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		{
 			args: "sub1 ",
-			want: []string{"-flag1", "-flag2", "-h", "-global1"},
+			want: []string{"-flag1", "-flag2", "-h", "-global1", "-o"},
 		},
 		{
 			args: "sub2 ",
-			want: []string{"-flag2", "-flag3", "-h", "-global1"},
+			want: []string{"-flag2", "-flag3", "-h", "-global1", "-o"},
 		},
 		{
 			args: "sub1 -fl",
@@ -97,7 +99,7 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		{
 			args: "sub1 -flag2 ",
-			want: []string{"-flag1", "-flag2", "-h", "-global1"},
+			want: []string{"-flag1", "-flag2", "-h", "-global1", "-o"},
 		},
 		{
 			args: "-no-such-flag",
@@ -114,6 +116,18 @@ func TestCompleter_Complete(t *testing.T) {
 		{
 			args: "no-such-command ",
 			want: allGlobals,
+		},
+		{
+			args: "-o ",
+			want: []string{"./gocomplete/complete.go"},
+		},
+		{
+			args: "-o goco",
+			want: []string{"./gocomplete/complete.go"},
+		},
+		{
+			args: "-o ./goco",
+			want: []string{"./gocomplete/complete.go"},
 		},
 	}
 

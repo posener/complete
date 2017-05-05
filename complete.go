@@ -13,23 +13,19 @@ const (
 
 type Completer struct {
 	Command
-	log func(format string, args ...interface{})
 }
 
 func New(c Command) *Completer {
-	return &Completer{
-		Command: c,
-		log:     logger(),
-	}
+	return &Completer{Command: c}
 }
 
 func (c *Completer) Complete() {
 	args := getLine()
-	c.log("Completing args: %s", args)
+	logger("Completing args: %s", args)
 
 	options := c.complete(args)
 
-	c.log("Completion: %s", options)
+	logger("Completion: %s", options)
 	output(options)
 }
 
@@ -38,13 +34,10 @@ func (c *Completer) complete(args []string) []string {
 	return c.chooseRelevant(last(args), all)
 }
 
-func (c *Completer) chooseRelevant(last string, list []string) (opts []string) {
-	if last == "" {
-		return list
-	}
+func (c *Completer) chooseRelevant(last string, list []Option) (options []string) {
 	for _, sub := range list {
-		if strings.HasPrefix(sub, last) {
-			opts = append(opts, sub)
+		if sub.Matches(last) {
+			options = append(options, sub.String())
 		}
 	}
 	return

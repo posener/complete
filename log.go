@@ -7,8 +7,9 @@ import (
 	"os"
 )
 
+var logger = getLogger()
 
-func logger() func(format string, args ...interface{}) {
+func getLogger() func(format string, args ...interface{}) {
 	var logfile io.Writer = ioutil.Discard
 	if os.Getenv(envDebug) != "" {
 		logfile = os.Stderr
