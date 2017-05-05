@@ -1,8 +1,12 @@
 package complete
 
+type Commands map[string]Command
+
+type Flags map[string]FlagOptions
+
 type Command struct {
-	Sub   map[string]Command
-	Flags map[string]FlagOptions
+	Sub   Commands
+	Flags Flags
 }
 
 // options returns all available complete options for the given command
