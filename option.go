@@ -29,11 +29,11 @@ func (a ArgFileName) String() string {
 func (a ArgFileName) Matches(prefix string) bool {
 	full, err := filepath.Abs(string(a))
 	if err != nil {
-		logger("failed getting abs path of %s: %s", a, err)
+		Log("failed getting abs path of %s: %s", a, err)
 	}
 	prefixFull, err := filepath.Abs(prefix)
 	if err != nil {
-		logger("failed getting abs path of %s: %s", prefix, err)
+		Log("failed getting abs path of %s: %s", prefix, err)
 	}
 
 	// if the file has the prefix as prefix,

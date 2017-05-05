@@ -19,7 +19,7 @@ func (c *Command) options(args []string) (options []Option, only bool) {
 
 	// if prev has something that needs to follow it,
 	// it is the most relevant completion
-	if predicate, ok := c.Flags[last(args)]; ok && predicate.Expects {
+	if predicate, ok := c.Flags[last(args)]; ok && !predicate.ExpectsNothing {
 		return predicate.predict(), true
 	}
 
@@ -40,7 +40,7 @@ func (c *Command) options(args []string) (options []Option, only bool) {
 	}
 
 	// add additional expected argument of the command
-	if c.Args.Expects {
+	if !c.Args.ExpectsNothing {
 		options = append(options, c.Args.predict()...)
 	}
 

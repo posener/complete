@@ -7,10 +7,10 @@ import (
 
 // Predicate determines what terms can follow a command or a flag
 type Predicate struct {
-	// Expects determine if the predicate expects something after.
+	// ExpectsNothing determine if the predicate expects something after.
 	// flags/commands that do not expect any specific argument should
 	// leave it on false
-	Expects bool
+	ExpectsNothing bool
 	// Predictor is function that returns list of arguments that can
 	// come after the flag/command
 	Predictor func() []Option
@@ -20,8 +20,8 @@ type Predicate struct {
 // returns the union of their predication
 func (p Predicate) Or(other Predicate) Predicate {
 	return Predicate{
-		Expects:   p.Expects && other.Expects,
-		Predictor: func() []Option { return append(p.predict(), other.predict()...) },
+		ExpectsNothing: p.ExpectsNothing && other.ExpectsNothing,
+		Predictor:      func() []Option { return append(p.predict(), other.predict()...) },
 	}
 }
 
@@ -33,23 +33,30 @@ func (p Predicate) predict() []Option {
 }
 
 var (
-	PredictNothing  = Predicate{Expects: false}
-	PredictAnything = Predicate{Expects: true}
+	PredictNothing  = Predicate{ExpectsNothing: true}
+	PredictAnything = Predicate{}
 )
 
-func PredictFiles(pattern string) Predicate {
+func PredictSet(options []string) Predicate {
 	return Predicate{
-		Expects:   true,
-		Predictor: glob(pattern),
+		Predictor: func() []Option {
+			ret := make([]Option, len(options))
+			for i := range options {
+				ret[i] = Arg(options[i])
+			}
+			return ret
+		},
 	}
+}
+
+func PredictFiles(pattern string) Predicate {
+	return Predicate{Predictor: glob(pattern)}
 }
 
 func PredictDirs(path string) Predicate {
-	return Predicate{
-		Expects:   true,
-		Predictor: dirs(path),
-	}
+	return Predicate{Predictor: dirs(path)}
 }
+
 func dirs(path string) func() []Option {
 	return func() (options []Option) {
 		dirs := []string{}
@@ -70,7 +77,7 @@ func glob(pattern string) func() []Option {
 	return func() []Option {
 		files, err := filepath.Glob(pattern)
 		if err != nil {
-			logger("failed glob operation with pattern '%s': %s", pattern, err)
+			Log("failed glob operation with pattern '%s': %s", pattern, err)
 		}
 		if !filepath.IsAbs(pattern) {
 			filesToRel(files)

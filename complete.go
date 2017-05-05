@@ -21,11 +21,11 @@ func New(c Command) *Completer {
 
 func (c *Completer) Complete() {
 	args := getLine()
-	logger("Completing args: %s", args)
+	Log("Completing args: %s", args)
 
 	options := c.complete(args)
 
-	logger("Completion: %s", options)
+	Log("Completion: %s", options)
 	output(options)
 }
 
