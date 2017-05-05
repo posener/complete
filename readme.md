@@ -1,5 +1,7 @@
 # complete
 
+[![Build Status](https://travis-ci.org/posener/complete.svg?branch=master)](https://travis-ci.org/posener/complete)
+
 WIP
 
 a tool for bash writing bash completion in go.
