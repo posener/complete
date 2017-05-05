@@ -25,7 +25,7 @@ func TestCompleter_Complete(t *testing.T) {
 				"sub2": {
 					Flags: map[string]Predicate{
 						"-flag2": PredictNothing,
-						"-flag3": PredictNothing,
+						"-flag3": PredictSet("opt1", "opt2", "opt12"),
 					},
 					Args: PredictDirs("./tests/").Or(PredictFiles("./tests/*.md")),
 				},
@@ -159,6 +159,18 @@ func TestCompleter_Complete(t *testing.T) {
 		{
 			args: "-o ./complete.go ",
 			want: allGlobals,
+		},
+		{
+			args: "-o sub2 -flag3 ",
+			want: []string{"opt1", "opt2", "opt12"},
+		},
+		{
+			args: "-o sub2 -flag3 opt1",
+			want: []string{"opt1", "opt12"},
+		},
+		{
+			args: "-o sub2 -flag3 opt",
+			want: []string{"opt1", "opt2", "opt12"},
 		},
 	}
 

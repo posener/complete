@@ -37,7 +37,7 @@ var (
 	PredictAnything = Predicate{}
 )
 
-func PredictSet(options []string) Predicate {
+func PredictSet(options ...string) Predicate {
 	return Predicate{
 		Predictor: func() []Option {
 			ret := make([]Option, len(options))

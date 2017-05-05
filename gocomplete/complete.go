@@ -58,7 +58,7 @@ func main() {
 			"-benchtime": complete.PredictAnything,
 			"-count":     complete.PredictAnything,
 			"-cover":     complete.PredictNothing,
-			"-covermode": complete.PredictSet([]string{"set", "count", "atomic"}),
+			"-covermode": complete.PredictSet("set", "count", "atomic"),
 			"-coverpkg":  complete.PredictDirs("./"),
 			"-cpu":       complete.PredictAnything,
 			"-run":       predictTest("test"),
