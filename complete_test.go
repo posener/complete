@@ -27,12 +27,13 @@ func TestCompleter_Complete(t *testing.T) {
 						"-flag2": PredictNothing,
 						"-flag3": PredictNothing,
 					},
+					Args: PredictDirs("./tests/").Or(PredictFiles("./tests/*.md")),
 				},
 			},
 			Flags: map[string]Predicate{
 				"-h":       PredictNothing,
 				"-global1": PredictAnything,
-				"-o":       PredictFiles("./gocomplete/*.go"),
+				"-o":       PredictFiles("./tests/*.txt"),
 			},
 		},
 	}
@@ -44,6 +45,8 @@ func TestCompleter_Complete(t *testing.T) {
 	for flag := range c.Flags {
 		allGlobals = append(allGlobals, flag)
 	}
+
+	testTXTFiles := []string{"./tests/a.txt", "./tests/b.txt", "./tests/c.txt"}
 
 	tests := []struct {
 		args string
@@ -83,7 +86,19 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		{
 			args: "sub2 ",
-			want: []string{"-flag2", "-flag3", "-h", "-global1", "-o"},
+			want: []string{"./tests", "-flag2", "-flag3", "-h", "-global1", "-o"},
+		},
+		{
+			args: "sub2 tests",
+			want: []string{"./tests", "./tests/readme.md", "./tests/dir"},
+		},
+		{
+			args: "sub2 tests/re",
+			want: []string{"./tests/readme.md"},
+		},
+		{
+			args: "sub2 -flag2 ",
+			want: []string{"./tests", "-flag2", "-flag3", "-h", "-global1", "-o"},
 		},
 		{
 			args: "sub1 -fl",
@@ -119,15 +134,31 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		{
 			args: "-o ",
-			want: []string{"./gocomplete/complete.go"},
+			want: []string{},
 		},
 		{
-			args: "-o goco",
-			want: []string{"./gocomplete/complete.go"},
+			args: "-o ./tes",
+			want: []string{},
 		},
 		{
-			args: "-o ./goco",
-			want: []string{"./gocomplete/complete.go"},
+			args: "-o tests/",
+			want: testTXTFiles,
+		},
+		{
+			args: "-o tests",
+			want: testTXTFiles,
+		},
+		{
+			args: "-o ./compl",
+			want: []string{},
+		},
+		{
+			args: "-o ./complete.go",
+			want: []string{},
+		},
+		{
+			args: "-o ./complete.go ",
+			want: allGlobals,
 		},
 	}
 

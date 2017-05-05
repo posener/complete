@@ -10,6 +10,7 @@ var (
 			"-o": complete.PredictFiles("*"),
 			"-i": complete.PredictNothing,
 		},
+		Args: complete.PredictFiles("**.go").Or(complete.PredictDirs("./")),
 	}
 
 	test = complete.Command{

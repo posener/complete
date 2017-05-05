@@ -7,6 +7,7 @@ type Flags map[string]Predicate
 type Command struct {
 	Sub   Commands
 	Flags Flags
+	Args  Predicate
 }
 
 // options returns all available complete options for the given command
@@ -36,6 +37,11 @@ func (c *Command) options(args []string) (options []Option, only bool) {
 	// add global available complete options
 	for flag := range c.Flags {
 		options = append(options, Arg(flag))
+	}
+
+	// add additional expected argument of the command
+	if c.Args.Expects {
+		options = append(options, c.Args.predict()...)
 	}
 
 	return

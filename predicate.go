@@ -16,11 +16,20 @@ type Predicate struct {
 	Predictor func() []Option
 }
 
-func (f *Predicate) predict() []Option {
-	if f.Predictor == nil {
+// Or unions two predicate struct, so that the result predicate
+// returns the union of their predication
+func (p Predicate) Or(other Predicate) Predicate {
+	return Predicate{
+		Expects:   p.Expects && other.Expects,
+		Predictor: func() []Option { return append(p.predict(), other.predict()...) },
+	}
+}
+
+func (p Predicate) predict() []Option {
+	if p.Predictor == nil {
 		return nil
 	}
-	return f.Predictor()
+	return p.Predictor()
 }
 
 var (
@@ -35,6 +44,28 @@ func PredictFiles(pattern string) Predicate {
 	}
 }
 
+func PredictDirs(path string) Predicate {
+	return Predicate{
+		Expects:   true,
+		Predictor: dirs(path),
+	}
+}
+func dirs(path string) func() []Option {
+	return func() (options []Option) {
+		dirs := []string{}
+		filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+			if info.IsDir() {
+				dirs = append(dirs, path)
+			}
+			return nil
+		})
+		if !filepath.IsAbs(path) {
+			filesToRel(dirs)
+		}
+		return filesToOptions(dirs)
+	}
+}
+
 func glob(pattern string) func() []Option {
 	return func() []Option {
 		files, err := filepath.Glob(pattern)
@@ -44,11 +75,7 @@ func glob(pattern string) func() []Option {
 		if !filepath.IsAbs(pattern) {
 			filesToRel(files)
 		}
-		options := make([]Option, len(files))
-		for i, f := range files {
-			options[i] = ArgFileName(f)
-		}
-		return options
+		return filesToOptions(files)
 	}
 }
 func filesToRel(files []string) {
@@ -68,4 +95,12 @@ func filesToRel(files []string) {
 		files[i] = "./" + rel
 	}
 	return
+}
+
+func filesToOptions(files []string) []Option {
+	options := make([]Option, len(files))
+	for i, f := range files {
+		options[i] = ArgFileName(f)
+	}
+	return options
 }

@@ -35,5 +35,8 @@ func (a ArgFileName) Matches(prefix string) bool {
 	if err != nil {
 		logger("failed getting abs path of %s: %s", prefix, err)
 	}
-	return strings.HasPrefix(full, prefixFull)
+
+	// if the file has the prefix as prefix,
+	// but we don't want to show too many files, so, if it is in a deeper directory - omit it.
+	return strings.HasPrefix(full, prefixFull) && (full == prefixFull || !strings.Contains(full[len(prefixFull)+1:], "/"))
 }
