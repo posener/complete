@@ -7,15 +7,15 @@ import (
 var (
 	build = complete.Command{
 		Flags: complete.Flags{
-			"-o": complete.FlagUnknownFollow,
-			"-i": complete.FlagNoFollow,
+			"-o": complete.PredictFiles("*"),
+			"-i": complete.PredictNothing,
 		},
 	}
 
 	test = complete.Command{
 		Flags: complete.Flags{
-			"-run":   complete.FlagUnknownFollow,
-			"-count": complete.FlagUnknownFollow,
+			"-run":   complete.PredictAnything,
+			"-count": complete.PredictAnything,
 		},
 	}
 
@@ -25,7 +25,7 @@ var (
 			"test":  test,
 		},
 		Flags: complete.Flags{
-			"-h": complete.FlagNoFollow,
+			"-h": complete.PredictNothing,
 		},
 	}
 )

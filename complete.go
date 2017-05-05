@@ -34,10 +34,10 @@ func (c *Completer) complete(args []string) []string {
 	return c.chooseRelevant(last(args), all)
 }
 
-func (c *Completer) chooseRelevant(last string, list []Option) (options []string) {
-	for _, sub := range list {
-		if sub.Matches(last) {
-			options = append(options, sub.String())
+func (c *Completer) chooseRelevant(last string, options []Option) (relevant []string) {
+	for _, option := range options {
+		if option.Matches(last) {
+			relevant = append(relevant, option.String())
 		}
 	}
 	return

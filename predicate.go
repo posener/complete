@@ -5,27 +5,33 @@ import (
 	"path/filepath"
 )
 
-type FlagOptions struct {
-	HasFollow      bool
-	FollowsOptions func() []Option
+// Predicate determines what terms can follow a command or a flag
+type Predicate struct {
+	// Expects determine if the predicate expects something after.
+	// flags/commands that do not expect any specific argument should
+	// leave it on false
+	Expects bool
+	// Predictor is function that returns list of arguments that can
+	// come after the flag/command
+	Predictor func() []Option
 }
 
-func (f *FlagOptions) follows() []Option {
-	if f.FollowsOptions == nil {
+func (f *Predicate) predict() []Option {
+	if f.Predictor == nil {
 		return nil
 	}
-	return f.FollowsOptions()
+	return f.Predictor()
 }
 
 var (
-	FlagNoFollow      = FlagOptions{}
-	FlagUnknownFollow = FlagOptions{HasFollow: true}
+	PredictNothing  = Predicate{Expects: false}
+	PredictAnything = Predicate{Expects: true}
 )
 
-func FlagFileFilter(pattern string) FlagOptions {
-	return FlagOptions{
-		HasFollow:      true,
-		FollowsOptions: glob(pattern),
+func PredictFiles(pattern string) Predicate {
+	return Predicate{
+		Expects:   true,
+		Predictor: glob(pattern),
 	}
 }
 

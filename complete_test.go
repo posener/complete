@@ -17,22 +17,22 @@ func TestCompleter_Complete(t *testing.T) {
 		Command: Command{
 			Sub: map[string]Command{
 				"sub1": {
-					Flags: map[string]FlagOptions{
-						"-flag1": FlagUnknownFollow,
-						"-flag2": FlagNoFollow,
+					Flags: map[string]Predicate{
+						"-flag1": PredictAnything,
+						"-flag2": PredictNothing,
 					},
 				},
 				"sub2": {
-					Flags: map[string]FlagOptions{
-						"-flag2": FlagNoFollow,
-						"-flag3": FlagNoFollow,
+					Flags: map[string]Predicate{
+						"-flag2": PredictNothing,
+						"-flag3": PredictNothing,
 					},
 				},
 			},
-			Flags: map[string]FlagOptions{
-				"-h":       FlagNoFollow,
-				"-global1": FlagUnknownFollow,
-				"-o":       FlagFileFilter("./gocomplete/*.go"),
+			Flags: map[string]Predicate{
+				"-h":       PredictNothing,
+				"-global1": PredictAnything,
+				"-o":       PredictFiles("./gocomplete/*.go"),
 			},
 		},
 	}

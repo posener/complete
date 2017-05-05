@@ -2,7 +2,7 @@ package complete
 
 type Commands map[string]Command
 
-type Flags map[string]FlagOptions
+type Flags map[string]Predicate
 
 type Command struct {
 	Sub   Commands
@@ -18,8 +18,8 @@ func (c *Command) options(args []string) (options []Option, only bool) {
 
 	// if prev has something that needs to follow it,
 	// it is the most relevant completion
-	if options, ok := c.Flags[last(args)]; ok && options.HasFollow {
-		return options.follows(), true
+	if predicate, ok := c.Flags[last(args)]; ok && predicate.Expects {
+		return predicate.predict(), true
 	}
 
 	sub, options, only := c.searchSub(args)
