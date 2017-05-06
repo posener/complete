@@ -25,6 +25,5 @@ func (root) Uninstall(cmd string, bin string) error {
 }
 
 func getBashCompletionDLink(cmd string) string {
-	return "/etc/bash_completion.d/"+cmd
+	return "/etc/bash_completion.d/" + cmd
 }
-

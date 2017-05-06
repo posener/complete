@@ -9,30 +9,37 @@ import (
 func TestCompleter_Complete(t *testing.T) {
 	t.Parallel()
 
+	// Set debug environment variable so logs will be printed
 	if testing.Verbose() {
 		os.Setenv(envDebug, "1")
+	}
+
+	// Change to tests directory for testing completion of files and directories
+	err := os.Chdir("./tests")
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	c := Command{
 		Sub: map[string]Command{
 			"sub1": {
-				Flags: map[string]*Predicate{
+				Flags: map[string]Predicate{
 					"-flag1": PredictAnything,
 					"-flag2": PredictNothing,
 				},
 			},
 			"sub2": {
-				Flags: map[string]*Predicate{
+				Flags: map[string]Predicate{
 					"-flag2": PredictNothing,
 					"-flag3": PredictSet("opt1", "opt2", "opt12"),
 				},
-				Args: PredictDirs("./tests/").Or(PredictFiles("./tests/*.md")),
+				Args: Predicate(PredictDirs).Or(PredictFiles("*.md")),
 			},
 		},
-		Flags: map[string]*Predicate{
+		Flags: map[string]Predicate{
 			"-h":       PredictNothing,
 			"-global1": PredictAnything,
-			"-o":       PredictFiles("./tests/*.txt"),
+			"-o":       PredictFiles("*.txt"),
 		},
 	}
 
@@ -44,7 +51,7 @@ func TestCompleter_Complete(t *testing.T) {
 		allGlobals = append(allGlobals, flag)
 	}
 
-	testTXTFiles := []string{"./tests/a.txt", "./tests/b.txt", "./tests/c.txt"}
+	testTXTFiles := []string{"./a.txt", "./b.txt", "./c.txt"}
 
 	tests := []struct {
 		args string
@@ -84,19 +91,19 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		{
 			args: "sub2 ",
-			want: []string{"./tests", "-flag2", "-flag3", "-h", "-global1", "-o"},
+			want: []string{"./", "./dir", "./readme.md", "-flag2", "-flag3", "-h", "-global1", "-o"},
 		},
 		{
-			args: "sub2 tests",
-			want: []string{"./tests", "./tests/readme.md", "./tests/dir"},
+			args: "sub2 ./",
+			want: []string{"./", "./readme.md", "./dir"},
 		},
 		{
-			args: "sub2 tests/re",
-			want: []string{"./tests/readme.md"},
+			args: "sub2 re",
+			want: []string{"./readme.md"},
 		},
 		{
 			args: "sub2 -flag2 ",
-			want: []string{"./tests", "-flag2", "-flag3", "-h", "-global1", "-o"},
+			want: []string{"./", "./dir", "./readme.md", "-flag2", "-flag3", "-h", "-global1", "-o"},
 		},
 		{
 			args: "sub1 -fl",
@@ -132,30 +139,30 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		{
 			args: "-o ",
-			want: []string{},
-		},
-		{
-			args: "-o ./tes",
-			want: []string{},
-		},
-		{
-			args: "-o tests/",
 			want: testTXTFiles,
 		},
 		{
-			args: "-o tests",
+			args: "-o ./no-su",
+			want: []string{},
+		},
+		{
+			args: "-o ./",
 			want: testTXTFiles,
 		},
 		{
-			args: "-o ./compl",
+			args: "-o ",
+			want: testTXTFiles,
+		},
+		{
+			args: "-o ./read",
 			want: []string{},
 		},
 		{
-			args: "-o ./complete.go",
+			args: "-o ./readme.md",
 			want: []string{},
 		},
 		{
-			args: "-o ./complete.go ",
+			args: "-o ./readme.md ",
 			want: allGlobals,
 		},
 		{
