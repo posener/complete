@@ -27,9 +27,9 @@ func (p Predicate) predict(last string) []Matcher {
 }
 
 // PredictNothing does not expect anything after.
-var PredictNothing Predicate = nil
+var PredictNothing Predicate
 
-// PredictNothing expects something, but nothing particular, such as a number
+// PredictAnything expects something, but nothing particular, such as a number
 // or arbitrary name.
 func PredictAnything(last string) []Matcher { return nil }
 

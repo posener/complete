@@ -20,6 +20,7 @@ func (a MatchPrefix) String() string {
 	return string(a)
 }
 
+// Match returns true if a has the prefix as prefix
 func (a MatchPrefix) Match(prefix string) bool {
 	return strings.HasPrefix(string(a), prefix)
 }
@@ -32,6 +33,7 @@ func (a MatchFileName) String() string {
 	return string(a)
 }
 
+// Match returns true if prefix's abs path prefixes a's abs path
 func (a MatchFileName) Match(prefix string) bool {
 	full, err := filepath.Abs(string(a))
 	if err != nil {

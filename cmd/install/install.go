@@ -10,6 +10,10 @@ type installer interface {
 	Uninstall(cmd, bin string) error
 }
 
+// Install complete command given:
+// cmd: is the command name
+// asRoot: if true the completion will be installed in /etc/bash_complete.d
+// otherwise the complete command will be added to the ~/.bashrc file.
 func Install(cmd string, asRoot bool) error {
 	bin, err := getBinaryPath()
 	if err != nil {
@@ -18,6 +22,10 @@ func Install(cmd string, asRoot bool) error {
 	return getInstaller(asRoot).Install(cmd, bin)
 }
 
+// Uninstall complete command given:
+// cmd: is the command name
+// asRoot: if true the completion will be removed from /etc/bash_complete.d
+// otherwise the complete command will be removed from the ~/.bashrc file.
 func Uninstall(cmd string, asRoot bool) error {
 	bin, err := getBinaryPath()
 	if err != nil {
