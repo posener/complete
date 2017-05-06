@@ -1,7 +1,6 @@
 package complete
 
 import (
-	"os"
 	"sort"
 	"strings"
 	"testing"
@@ -9,12 +8,7 @@ import (
 
 func TestPredicate(t *testing.T) {
 	t.Parallel()
-
-	// Change to tests directory for testing completion of files and directories
-	err := os.Chdir("./tests")
-	if err != nil {
-		t.Fatal(err)
-	}
+	initTests()
 
 	tests := []struct {
 		name string

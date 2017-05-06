@@ -4,6 +4,7 @@ import "testing"
 
 func TestMatch(t *testing.T) {
 	t.Parallel()
+	initTests()
 
 	tests := []struct {
 		m      Matcher
