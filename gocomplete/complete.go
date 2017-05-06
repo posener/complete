@@ -8,8 +8,8 @@ var (
 	predictEllipsis = complete.PredictSet("./...")
 
 	goFilesOrPackages = complete.PredictFiles("**.go").
-		Or(complete.PredictDirs("./")).
-		Or(predictEllipsis)
+				Or(complete.PredictDirs("./")).
+				Or(predictEllipsis)
 )
 
 func main() {
