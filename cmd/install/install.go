@@ -37,9 +37,8 @@ func Uninstall(cmd string, asRoot bool) error {
 func getInstaller(asRoot bool) installer {
 	if asRoot {
 		return root{}
-	} else {
-		return home{}
 	}
+	return home{}
 }
 
 func getBinaryPath() (string, error) {
