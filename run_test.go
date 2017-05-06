@@ -177,7 +177,7 @@ func TestCompleter_Complete(t *testing.T) {
 
 			tt.args = "cmd " + tt.args
 			os.Setenv(envComplete, tt.args)
-			args := getLine()
+			args, _ := getLine()
 
 			got := complete(c, args)
 

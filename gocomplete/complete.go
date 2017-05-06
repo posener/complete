@@ -164,6 +164,7 @@ func main() {
 	}
 
 	gogo := complete.Command{
+		Name: "go",
 		Sub: complete.Commands{
 			"build":    build,
 			"install":  build, // install and build have the same flags

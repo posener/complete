@@ -5,6 +5,7 @@ type Commands map[string]Command
 type Flags map[string]Predicate
 
 type Command struct {
+	Name  string
 	Sub   Commands
 	Flags Flags
 	Args  Predicate

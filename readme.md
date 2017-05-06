@@ -5,20 +5,25 @@
 
 WIP
 
-a tool for bash writing bash completion in go.
+A tool for bash writing bash completion in go.
 
-## example: `go` command bash completion
+Writing bash completion scripts is a hard work. This package provides an easy way
+to create bash completion scripts for any command, and also an easy way to install/uninstall
+the completion of the command.
 
-Install in you home directory:
+## go command bash completion
+
+In [gocomplete](./gocomplete) there is an example for bash completion for the `go` command line.
+
+### Install
 
 ```
-go build -o ~/.bash_completion/go ./gocomplete
-echo "complete -C ~/.bash_completion/go go" >> ~/.bashrc
+go get github.com/posener/complete/gocomplete
+gocomplete -install
 ```
 
-Or, install in the root directory:
+### Uninstall
 
 ```
-sudo go build -o /etc/bash_completion.d/go ./gocomplete
+gocomplete -uninstall
 ```
-

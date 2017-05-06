@@ -14,7 +14,11 @@ const (
 // Run get a command, get the typed arguments from environment
 // variable, and print out the complete options
 func Run(c Command) {
-	args := getLine()
+	args, ok := getLine()
+	if !ok {
+		runCommandLine(c.Name)
+		return
+	}
 	Log("Completing args: %s", args)
 
 	options := complete(c, args)
@@ -38,12 +42,12 @@ func complete(c Command, args []string) (matching []string) {
 	return
 }
 
-func getLine() []string {
+func getLine() ([]string, bool) {
 	line := os.Getenv(envComplete)
 	if line == "" {
-		panic("should be run as a complete script")
+		return nil, false
 	}
-	return strings.Split(line, " ")
+	return strings.Split(line, " "), true
 }
 
 func last(args []string) (last string) {
