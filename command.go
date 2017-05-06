@@ -2,13 +2,13 @@ package complete
 
 type Commands map[string]Command
 
-type Flags map[string]Predicate
+type Flags map[string]*Predicate
 
 type Command struct {
 	Name  string
 	Sub   Commands
 	Flags Flags
-	Args  Predicate
+	Args  *Predicate
 }
 
 // options returns all available complete options for the given command
@@ -20,7 +20,7 @@ func (c *Command) options(args []string) (options []Option, only bool) {
 
 	// if prev has something that needs to follow it,
 	// it is the most relevant completion
-	if predicate, ok := c.Flags[last(args)]; ok && !predicate.ExpectsNothing {
+	if predicate, ok := c.Flags[last(args)]; ok && predicate != nil {
 		return predicate.predict(), true
 	}
 
@@ -41,9 +41,7 @@ func (c *Command) options(args []string) (options []Option, only bool) {
 	}
 
 	// add additional expected argument of the command
-	if !c.Args.ExpectsNothing {
-		options = append(options, c.Args.predict()...)
-	}
+	options = append(options, c.Args.predict()...)
 
 	return
 }

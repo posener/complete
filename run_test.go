@@ -16,20 +16,20 @@ func TestCompleter_Complete(t *testing.T) {
 	c := Command{
 		Sub: map[string]Command{
 			"sub1": {
-				Flags: map[string]Predicate{
+				Flags: map[string]*Predicate{
 					"-flag1": PredictAnything,
 					"-flag2": PredictNothing,
 				},
 			},
 			"sub2": {
-				Flags: map[string]Predicate{
+				Flags: map[string]*Predicate{
 					"-flag2": PredictNothing,
 					"-flag3": PredictSet("opt1", "opt2", "opt12"),
 				},
 				Args: PredictDirs("./tests/").Or(PredictFiles("./tests/*.md")),
 			},
 		},
-		Flags: map[string]Predicate{
+		Flags: map[string]*Predicate{
 			"-h":       PredictNothing,
 			"-global1": PredictAnything,
 			"-o":       PredictFiles("./tests/*.txt"),

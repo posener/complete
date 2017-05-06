@@ -7,10 +7,6 @@ import (
 
 // Predicate determines what terms can follow a command or a flag
 type Predicate struct {
-	// ExpectsNothing determine if the predicate expects something after.
-	// flags/commands that do not expect any specific argument should
-	// leave it on false
-	ExpectsNothing bool
 	// Predictor is function that returns list of arguments that can
 	// come after the flag/command
 	Predictor func() []Option
@@ -18,27 +14,29 @@ type Predicate struct {
 
 // Or unions two predicate struct, so that the result predicate
 // returns the union of their predication
-func (p Predicate) Or(other Predicate) Predicate {
-	return Predicate{
-		ExpectsNothing: p.ExpectsNothing && other.ExpectsNothing,
-		Predictor:      func() []Option { return append(p.predict(), other.predict()...) },
+func (p *Predicate) Or(other *Predicate) *Predicate {
+	if p == nil || other == nil {
+		return nil
+	}
+	return &Predicate{
+		Predictor: func() []Option { return append(p.predict(), other.predict()...) },
 	}
 }
 
-func (p Predicate) predict() []Option {
-	if p.Predictor == nil {
+func (p *Predicate) predict() []Option {
+	if p == nil || p.Predictor == nil {
 		return nil
 	}
 	return p.Predictor()
 }
 
 var (
-	PredictNothing  = Predicate{ExpectsNothing: true}
-	PredictAnything = Predicate{}
+	PredictNothing  *Predicate = nil
+	PredictAnything            = &Predicate{}
 )
 
-func PredictSet(options ...string) Predicate {
-	return Predicate{
+func PredictSet(options ...string) *Predicate {
+	return &Predicate{
 		Predictor: func() []Option {
 			ret := make([]Option, len(options))
 			for i := range options {
@@ -49,12 +47,12 @@ func PredictSet(options ...string) Predicate {
 	}
 }
 
-func PredictFiles(pattern string) Predicate {
-	return Predicate{Predictor: glob(pattern)}
+func PredictFiles(pattern string) *Predicate {
+	return &Predicate{Predictor: glob(pattern)}
 }
 
-func PredictDirs(path string) Predicate {
-	return Predicate{Predictor: dirs(path)}
+func PredictDirs(path string) *Predicate {
+	return &Predicate{Predictor: dirs(path)}
 }
 
 func dirs(path string) func() []Option {

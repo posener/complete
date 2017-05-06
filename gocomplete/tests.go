@@ -11,8 +11,8 @@ import (
 	"github.com/posener/complete"
 )
 
-func predictTest(testType string) complete.Predicate {
-	return complete.Predicate{
+func predictTest(testType string) *complete.Predicate {
+	return &complete.Predicate{
 		Predictor: func() []complete.Option {
 			tests := testNames(testType)
 			options := make([]complete.Option, len(tests))

@@ -4,13 +4,13 @@ import (
 	"github.com/posener/complete"
 )
 
-var predictEllipsis = complete.Predicate{
-	Predictor: func() []complete.Option { return []complete.Option{complete.Arg("./...")} },
-}
+var (
+	predictEllipsis = complete.PredictSet("./...")
 
-var goFilesOrPackages = complete.PredictFiles("**.go").
-	Or(complete.PredictDirs("./")).
-	Or(predictEllipsis)
+	goFilesOrPackages = complete.PredictFiles("**.go").
+		Or(complete.PredictDirs("./")).
+		Or(predictEllipsis)
+)
 
 func main() {
 	build := complete.Command{
