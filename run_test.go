@@ -12,6 +12,10 @@ func TestCompleter_Complete(t *testing.T) {
 	if testing.Verbose() {
 		os.Setenv(envDebug, "1")
 	}
+	err := os.Chdir("./tests")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	c := Command{
 		Sub: map[string]Command{
@@ -26,13 +30,13 @@ func TestCompleter_Complete(t *testing.T) {
 					"-flag2": PredictNothing,
 					"-flag3": PredictSet("opt1", "opt2", "opt12"),
 				},
-				Args: PredictDirs("./tests/").Or(PredictFiles("./tests/*.md")),
+				Args: PredictDirs.Or(PredictFiles("*.md")),
 			},
 		},
 		Flags: map[string]*Predicate{
 			"-h":       PredictNothing,
 			"-global1": PredictAnything,
-			"-o":       PredictFiles("./tests/*.txt"),
+			"-o":       PredictFiles("*.txt"),
 		},
 	}
 
@@ -44,7 +48,7 @@ func TestCompleter_Complete(t *testing.T) {
 		allGlobals = append(allGlobals, flag)
 	}
 
-	testTXTFiles := []string{"./tests/a.txt", "./tests/b.txt", "./tests/c.txt"}
+	testTXTFiles := []string{"./a.txt", "./b.txt", "./c.txt"}
 
 	tests := []struct {
 		args string
@@ -84,19 +88,19 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		{
 			args: "sub2 ",
-			want: []string{"./tests", "-flag2", "-flag3", "-h", "-global1", "-o"},
+			want: []string{"./", "./dir", "./readme.md", "-flag2", "-flag3", "-h", "-global1", "-o"},
 		},
 		{
-			args: "sub2 tests",
-			want: []string{"./tests", "./tests/readme.md", "./tests/dir"},
+			args: "sub2 ./",
+			want: []string{"./", "./readme.md", "./dir"},
 		},
 		{
-			args: "sub2 tests/re",
-			want: []string{"./tests/readme.md"},
+			args: "sub2 re",
+			want: []string{"./readme.md"},
 		},
 		{
 			args: "sub2 -flag2 ",
-			want: []string{"./tests", "-flag2", "-flag3", "-h", "-global1", "-o"},
+			want: []string{"./", "./dir", "./readme.md", "-flag2", "-flag3", "-h", "-global1", "-o"},
 		},
 		{
 			args: "sub1 -fl",
@@ -132,30 +136,30 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		{
 			args: "-o ",
-			want: []string{},
-		},
-		{
-			args: "-o ./tes",
-			want: []string{},
-		},
-		{
-			args: "-o tests/",
 			want: testTXTFiles,
 		},
 		{
-			args: "-o tests",
+			args: "-o ./no-su",
+			want: []string{},
+		},
+		{
+			args: "-o ./",
 			want: testTXTFiles,
 		},
 		{
-			args: "-o ./compl",
+			args: "-o ",
+			want: testTXTFiles,
+		},
+		{
+			args: "-o ./read",
 			want: []string{},
 		},
 		{
-			args: "-o ./complete.go",
+			args: "-o ./readme.md",
 			want: []string{},
 		},
 		{
-			args: "-o ./complete.go ",
+			args: "-o ./readme.md ",
 			want: allGlobals,
 		},
 		{

@@ -9,7 +9,7 @@ import (
 type Predicate struct {
 	// Predictor is function that returns list of arguments that can
 	// come after the flag/command
-	Predictor func() []Option
+	Predictor func(last string) []Option
 }
 
 // Or unions two predicate struct, so that the result predicate
@@ -19,25 +19,26 @@ func (p *Predicate) Or(other *Predicate) *Predicate {
 		return nil
 	}
 	return &Predicate{
-		Predictor: func() []Option { return append(p.predict(), other.predict()...) },
+		Predictor: func(last string) []Option { return append(p.predict(last), other.predict(last)...) },
 	}
 }
 
-func (p *Predicate) predict() []Option {
+func (p *Predicate) predict(last string) []Option {
 	if p == nil || p.Predictor == nil {
 		return nil
 	}
-	return p.Predictor()
+	return p.Predictor(last)
 }
 
 var (
 	PredictNothing  *Predicate = nil
 	PredictAnything            = &Predicate{}
+	PredictDirs                = &Predicate{Predictor: dirs}
 )
 
 func PredictSet(options ...string) *Predicate {
 	return &Predicate{
-		Predictor: func() []Option {
+		Predictor: func(last string) []Option {
 			ret := make([]Option, len(options))
 			for i := range options {
 				ret[i] = Arg(options[i])
@@ -51,29 +52,29 @@ func PredictFiles(pattern string) *Predicate {
 	return &Predicate{Predictor: glob(pattern)}
 }
 
-func PredictDirs(path string) *Predicate {
-	return &Predicate{Predictor: dirs(path)}
+func dirs(last string) (options []Option) {
+	dir := dirFromLast(last)
+	return dirsAt(dir)
 }
 
-func dirs(path string) func() []Option {
-	return func() (options []Option) {
-		dirs := []string{}
-		filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
-			if info.IsDir() {
-				dirs = append(dirs, path)
-			}
-			return nil
-		})
-		if !filepath.IsAbs(path) {
-			filesToRel(dirs)
+func dirsAt(path string) []Option {
+	dirs := []string{}
+	filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			dirs = append(dirs, path)
 		}
-		return filesToOptions(dirs)
+		return nil
+	})
+	if !filepath.IsAbs(path) {
+		filesToRel(dirs)
 	}
+	return filesToOptions(dirs)
 }
 
-func glob(pattern string) func() []Option {
-	return func() []Option {
-		files, err := filepath.Glob(pattern)
+func glob(pattern string) func(last string) []Option {
+	return func(last string) []Option {
+		dir := dirFromLast(last)
+		files, err := filepath.Glob(filepath.Join(dir, pattern))
 		if err != nil {
 			Log("failed glob operation with pattern '%s': %s", pattern, err)
 		}
@@ -83,6 +84,7 @@ func glob(pattern string) func() []Option {
 		return filesToOptions(files)
 	}
 }
+
 func filesToRel(files []string) {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -97,6 +99,9 @@ func filesToRel(files []string) {
 		if err != nil {
 			continue
 		}
+		if rel == "." {
+			rel = ""
+		}
 		files[i] = "./" + rel
 	}
 	return
@@ -108,4 +113,16 @@ func filesToOptions(files []string) []Option {
 		options[i] = ArgFileName(f)
 	}
 	return options
+}
+
+// dirFromLast gives the directory of the current written
+// last argument if it represents a file name being written.
+// in case that it is not, we fall back to the current directory.
+func dirFromLast(last string) string {
+	dir := filepath.Dir(last)
+	_, err := os.Stat(dir)
+	if err != nil {
+		return "./"
+	}
+	return dir
 }

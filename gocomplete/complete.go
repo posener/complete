@@ -8,7 +8,7 @@ var (
 	predictEllipsis = complete.PredictSet("./...")
 
 	goFilesOrPackages = complete.PredictFiles("**.go").
-				Or(complete.PredictDirs("./")).
+				Or(complete.PredictDirs).
 				Or(predictEllipsis)
 )
 
@@ -34,7 +34,7 @@ func main() {
 			"-installsuffix": complete.PredictAnything,
 			"-ldflags":       complete.PredictAnything,
 			"-linkshared":    complete.PredictNothing,
-			"-pkgdir":        complete.PredictDirs("./"),
+			"-pkgdir":        complete.PredictDirs,
 			"-tags":          complete.PredictAnything,
 			"-toolexec":      complete.PredictAnything,
 		},
@@ -45,7 +45,7 @@ func main() {
 		Flags: complete.Flags{
 			"-exec": complete.PredictAnything,
 		},
-		Args: complete.PredictFiles("**.go"),
+		Args: complete.PredictFiles("*.go"),
 	}
 
 	test := complete.Command{
@@ -59,23 +59,23 @@ func main() {
 			"-count":     complete.PredictAnything,
 			"-cover":     complete.PredictNothing,
 			"-covermode": complete.PredictSet("set", "count", "atomic"),
-			"-coverpkg":  complete.PredictDirs("./"),
+			"-coverpkg":  complete.PredictDirs,
 			"-cpu":       complete.PredictAnything,
 			"-run":       predictTest("test"),
 			"-short":     complete.PredictNothing,
 			"-timeout":   complete.PredictAnything,
 
 			"-benchmem":             complete.PredictNothing,
-			"-blockprofile":         complete.PredictFiles("**.out"),
+			"-blockprofile":         complete.PredictFiles("*.out"),
 			"-blockprofilerate":     complete.PredictAnything,
-			"-coverprofile":         complete.PredictFiles("**.out"),
-			"-cpuprofile":           complete.PredictFiles("**.out"),
-			"-memprofile":           complete.PredictFiles("**.out"),
+			"-coverprofile":         complete.PredictFiles("*.out"),
+			"-cpuprofile":           complete.PredictFiles("*.out"),
+			"-memprofile":           complete.PredictFiles("*.out"),
 			"-memprofilerate":       complete.PredictAnything,
-			"-mutexprofile":         complete.PredictFiles("**.out"),
+			"-mutexprofile":         complete.PredictFiles("*.out"),
 			"-mutexprofilefraction": complete.PredictAnything,
-			"-outputdir":            complete.PredictDirs("./"),
-			"-trace":                complete.PredictFiles("**.out"),
+			"-outputdir":            complete.PredictDirs,
+			"-trace":                complete.PredictFiles("*.out"),
 		},
 		Args: goFilesOrPackages,
 	}
@@ -115,7 +115,7 @@ func main() {
 			"-n": complete.PredictNothing,
 			"-x": complete.PredictNothing,
 		},
-		Args: complete.PredictDirs("./"),
+		Args: complete.PredictDirs,
 	}
 
 	list := complete.Command{
@@ -124,7 +124,7 @@ func main() {
 			"-f":    complete.PredictAnything,
 			"-json": complete.PredictNothing,
 		},
-		Args: complete.PredictDirs("./"),
+		Args: complete.PredictDirs,
 	}
 
 	tool := complete.Command{
@@ -141,7 +141,7 @@ func main() {
 			"-n": complete.PredictNothing,
 			"-x": complete.PredictNothing,
 		},
-		Args: complete.PredictDirs("./"),
+		Args: complete.PredictDirs,
 	}
 
 	env := complete.Command{
@@ -152,7 +152,7 @@ func main() {
 	version := complete.Command{}
 
 	fix := complete.Command{
-		Args: complete.PredictDirs("./"),
+		Args: complete.PredictDirs,
 	}
 
 	// commands that also accepts the build flags

@@ -13,7 +13,7 @@ import (
 
 func predictTest(testType string) *complete.Predicate {
 	return &complete.Predicate{
-		Predictor: func() []complete.Option {
+		Predictor: func(last string) []complete.Option {
 			tests := testNames(testType)
 			options := make([]complete.Option, len(tests))
 			for i := range tests {
