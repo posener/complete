@@ -1,19 +1,40 @@
 package complete
 
+// Command represents a command line
+// It holds the data that enables auto completion of a given typed command line
+// Command can also be a sub command.
+type Command struct {
+	// Name is the name of command,
+	// IMPORTANT: For root command - it must be the same name as the program
+	//            that the auto complete completes. So if the auto complete
+	//            completes the 'go' command, Name must be equal to "go".
+	// It is optional for sub commands.
+	Name string
+
+	// Sub is map of sub commands of the current command
+	// The key refer to the sub command name, and the value is it's
+	// Command descriptive struct.
+	Sub Commands
+
+	// Flags is a map of flags that the command accepts.
+	// The key is the flag name, and the value is it's prediction options.
+	Flags Flags
+
+	// Args are extra arguments that the command accepts, those who are
+	// given without any flag before.
+	Args Predicate
+}
+
+// Commands is the type of Sub member, it maps a command name to a command struct
 type Commands map[string]Command
 
+// Flags is the type Flags of the Flags member, it maps a flag name to the flag
+// prediction options.
 type Flags map[string]Predicate
-
-type Command struct {
-	Name  string
-	Sub   Commands
-	Flags Flags
-	Args  Predicate
-}
 
 // options returns all available complete options for the given command
 // args are all except the last command line arguments relevant to the command
-func (c *Command) options(args []string) (options []Option, only bool) {
+func (c *Command) options(args []string) (options []Matcher, only bool) {
 
 	// remove the first argument, which is the command name
 	args = args[1:]
@@ -37,7 +58,7 @@ func (c *Command) options(args []string) (options []Option, only bool) {
 
 	// add global available complete options
 	for flag := range c.Flags {
-		options = append(options, Arg(flag))
+		options = append(options, MatchPrefix(flag))
 	}
 
 	// add additional expected argument of the command
@@ -46,7 +67,9 @@ func (c *Command) options(args []string) (options []Option, only bool) {
 	return
 }
 
-func (c *Command) searchSub(args []string) (sub string, all []Option, only bool) {
+// searchSub searches recursively within sub commands if the sub command appear
+// in the on of the arguments.
+func (c *Command) searchSub(args []string) (sub string, all []Matcher, only bool) {
 	for i, arg := range args {
 		if cmd, ok := c.Sub[arg]; ok {
 			sub = arg
@@ -57,10 +80,11 @@ func (c *Command) searchSub(args []string) (sub string, all []Option, only bool)
 	return "", nil, false
 }
 
-func (c *Command) subCommands() []Option {
-	subs := make([]Option, 0, len(c.Sub))
+// suvCommands returns a list of matchers according to the sub command names
+func (c *Command) subCommands() []Matcher {
+	subs := make([]Matcher, 0, len(c.Sub))
 	for sub := range c.Sub {
-		subs = append(subs, Arg(sub))
+		subs = append(subs, MatchPrefix(sub))
 	}
 	return subs
 }

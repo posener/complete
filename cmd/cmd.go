@@ -1,4 +1,5 @@
-package complete
+// Package cmd used for command line options for the complete tool
+package cmd
 
 import (
 	"errors"
@@ -7,10 +8,13 @@ import (
 	"os"
 	"strings"
 
-	"github.com/posener/complete/install"
+	"github.com/posener/complete/cmd/install"
 )
 
-func runCommandLine(cmd string) {
+// Run is used when running complete in command line mode.
+// this is used when the complete is not completing words, but to
+// install it or uninstall it.
+func Run(cmd string) {
 	c := parseFlags(cmd)
 	err := c.validate()
 	if err != nil {
@@ -34,6 +38,7 @@ func runCommandLine(cmd string) {
 	fmt.Println("Done!")
 }
 
+// prompt use for approval
 func prompt(action, cmd string) bool {
 	fmt.Printf("%s bash completion for %s? ", action, cmd)
 	var answer string
@@ -47,6 +52,7 @@ func prompt(action, cmd string) bool {
 	}
 }
 
+// config for command line
 type config struct {
 	install   bool
 	uninstall bool
@@ -54,6 +60,7 @@ type config struct {
 	yes       bool
 }
 
+// create a config from command line arguments
 func parseFlags(cmd string) config {
 	var c config
 	flag.BoolVar(&c.install, "install", false,
@@ -69,6 +76,7 @@ func parseFlags(cmd string) config {
 	return c
 }
 
+// validate the config
 func (c config) validate() error {
 	if c.install && c.uninstall {
 		return errors.New("Install and uninstall are exclusive")
@@ -79,6 +87,7 @@ func (c config) validate() error {
 	return nil
 }
 
+// action name according to the config values.
 func (c config) action() string {
 	if c.install {
 		return "Install"

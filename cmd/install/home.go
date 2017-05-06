@@ -97,7 +97,6 @@ func isInFile(name string, lookFor string) bool {
 		}
 		prefix = prefix[:0]
 	}
-	return false
 }
 
 func uninstallToTemp(bashRCFileName, completeCmd string) (string, error) {
