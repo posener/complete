@@ -8,6 +8,7 @@ before_install:
   - go get -u -t ./...
 
 script:
+  - ls -la
   - ./go.test.sh
 
 after_success:
