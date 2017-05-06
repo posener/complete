@@ -5,28 +5,34 @@ import (
 	"strings"
 )
 
-type Option interface {
+// Matcher matches itself to a string
+// it is used for comparing a given argument to the last typed
+// word, and see if it is a possible auto complete option.
+type Matcher interface {
 	String() string
-	Matches(prefix string) bool
+	Match(prefix string) bool
 }
 
-type Arg string
+// MatchPrefix is a simple Matcher, if the word is it's prefix, there is a match
+type MatchPrefix string
 
-func (a Arg) String() string {
+func (a MatchPrefix) String() string {
 	return string(a)
 }
 
-func (a Arg) Matches(prefix string) bool {
+func (a MatchPrefix) Match(prefix string) bool {
 	return strings.HasPrefix(string(a), prefix)
 }
 
-type ArgFileName string
+// MatchFileName is a file name Matcher, if the last word can prefix the
+// MatchFileName path, there is a possible match
+type MatchFileName string
 
-func (a ArgFileName) String() string {
+func (a MatchFileName) String() string {
 	return string(a)
 }
 
-func (a ArgFileName) Matches(prefix string) bool {
+func (a MatchFileName) Match(prefix string) bool {
 	full, err := filepath.Abs(string(a))
 	if err != nil {
 		Log("failed getting abs path of %s: %s", a, err)

@@ -12,11 +12,11 @@ import (
 )
 
 func predictTest(testType string) complete.Predicate {
-	return func(last string) []complete.Option {
+	return func(last string) []complete.Matcher {
 		tests := testNames(testType)
-		options := make([]complete.Option, len(tests))
+		options := make([]complete.Matcher, len(tests))
 		for i := range tests {
-			options[i] = complete.Arg(tests[i])
+			options[i] = complete.MatchPrefix(tests[i])
 		}
 		return options
 	}

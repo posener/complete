@@ -1,9 +1,16 @@
+// Package complete provides a tool for bash writing bash completion in go.
+//
+// Writing bash completion scripts is a hard work. This package provides an easy way
+// to create bash completion scripts for any command, and also an easy way to install/uninstall
+// the completion of the command.
 package complete
 
 import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/posener/complete/cmd"
 )
 
 const (
@@ -16,7 +23,7 @@ const (
 func Run(c Command) {
 	args, ok := getLine()
 	if !ok {
-		runCommandLine(c.Name)
+		cmd.Run(c.Name)
 		return
 	}
 	Log("Completing args: %s", args)
@@ -35,7 +42,7 @@ func complete(c Command, args []string) (matching []string) {
 	// choose only matching options
 	l := last(args)
 	for _, option := range options {
-		if option.Matches(l) {
+		if option.Match(l) {
 			matching = append(matching, option.String())
 		}
 	}

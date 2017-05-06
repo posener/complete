@@ -1,3 +1,4 @@
+// Package main is complete tool for the go command line
 package main
 
 import (
@@ -7,7 +8,7 @@ import (
 var (
 	predictEllipsis = complete.PredictSet("./...")
 
-	goFilesOrPackages = complete.PredictFiles("**.go").
+	goFilesOrPackages = complete.PredictFiles("*.go").
 				Or(complete.PredictDirs).
 				Or(predictEllipsis)
 )
@@ -15,7 +16,7 @@ var (
 func main() {
 	build := complete.Command{
 		Flags: complete.Flags{
-			"-o": complete.PredictFiles("**"),
+			"-o": complete.PredictFiles("*"),
 			"-i": complete.PredictNothing,
 
 			"-a":             complete.PredictNothing,
