@@ -11,33 +11,28 @@ const (
 	envDebug    = "COMP_DEBUG"
 )
 
-type Completer struct {
-	Command
-}
-
-func New(c Command) *Completer {
-	return &Completer{Command: c}
-}
-
-func (c *Completer) Complete() {
+// Run get a command, get the typed arguments from environment
+// variable, and print out the complete options
+func Run(c Command) {
 	args := getLine()
 	Log("Completing args: %s", args)
 
-	options := c.complete(args)
+	options := complete(c, args)
 
 	Log("Completion: %s", options)
 	output(options)
 }
 
-func (c *Completer) complete(args []string) []string {
-	all, _ := c.options(args[:len(args)-1])
-	return c.chooseRelevant(last(args), all)
-}
+// complete get a command an command line arguments and returns
+// matching completion options
+func complete(c Command, args []string) (matching []string) {
+	options, _ := c.options(args[:len(args)-1])
 
-func (c *Completer) chooseRelevant(last string, options []Option) (relevant []string) {
+	// choose only matching options
+	l := last(args)
 	for _, option := range options {
-		if option.Matches(last) {
-			relevant = append(relevant, option.String())
+		if option.Matches(l) {
+			matching = append(matching, option.String())
 		}
 	}
 	return

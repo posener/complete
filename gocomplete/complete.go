@@ -186,5 +186,5 @@ func main() {
 		},
 	}
 
-	complete.New(gogo).Complete()
+	complete.Run(gogo)
 }

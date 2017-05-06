@@ -13,28 +13,26 @@ func TestCompleter_Complete(t *testing.T) {
 		os.Setenv(envDebug, "1")
 	}
 
-	c := Completer{
-		Command: Command{
-			Sub: map[string]Command{
-				"sub1": {
-					Flags: map[string]Predicate{
-						"-flag1": PredictAnything,
-						"-flag2": PredictNothing,
-					},
-				},
-				"sub2": {
-					Flags: map[string]Predicate{
-						"-flag2": PredictNothing,
-						"-flag3": PredictSet("opt1", "opt2", "opt12"),
-					},
-					Args: PredictDirs("./tests/").Or(PredictFiles("./tests/*.md")),
+	c := Command{
+		Sub: map[string]Command{
+			"sub1": {
+				Flags: map[string]Predicate{
+					"-flag1": PredictAnything,
+					"-flag2": PredictNothing,
 				},
 			},
-			Flags: map[string]Predicate{
-				"-h":       PredictNothing,
-				"-global1": PredictAnything,
-				"-o":       PredictFiles("./tests/*.txt"),
+			"sub2": {
+				Flags: map[string]Predicate{
+					"-flag2": PredictNothing,
+					"-flag3": PredictSet("opt1", "opt2", "opt12"),
+				},
+				Args: PredictDirs("./tests/").Or(PredictFiles("./tests/*.md")),
 			},
+		},
+		Flags: map[string]Predicate{
+			"-h":       PredictNothing,
+			"-global1": PredictAnything,
+			"-o":       PredictFiles("./tests/*.txt"),
 		},
 	}
 
@@ -181,7 +179,7 @@ func TestCompleter_Complete(t *testing.T) {
 			os.Setenv(envComplete, tt.args)
 			args := getLine()
 
-			got := c.complete(args)
+			got := complete(c, args)
 
 			sort.Strings(tt.want)
 			sort.Strings(got)
