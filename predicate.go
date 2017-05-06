@@ -13,8 +13,11 @@ type Predicate func(last string) []Matcher
 // Or unions two predicate functions, so that the result predicate
 // returns the union of their predication
 func (p Predicate) Or(other Predicate) Predicate {
-	if p == nil || other == nil {
-		return nil
+	if p == nil {
+		return other
+	}
+	if other == nil {
+		return p
 	}
 	return func(last string) []Matcher { return append(p.predict(last), other.predict(last)...) }
 }
