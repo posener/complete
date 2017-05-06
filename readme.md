@@ -17,10 +17,13 @@ In [gocomplete](./gocomplete) there is an example for bash completion for the `g
 
 ### Install
 
+1. Type in your shell:
 ```
 go get github.com/posener/complete/gocomplete
 gocomplete -install
 ```
+
+2. Restart your shell
 
 ### Uninstall
 
