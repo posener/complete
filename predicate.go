@@ -6,53 +6,41 @@ import (
 )
 
 // Predicate determines what terms can follow a command or a flag
-type Predicate struct {
-	// Predictor is function that returns list of arguments that can
-	// come after the flag/command
-	Predictor func(last string) []Option
-}
+type Predicate func(last string) []Option
 
 // Or unions two predicate struct, so that the result predicate
 // returns the union of their predication
-func (p *Predicate) Or(other *Predicate) *Predicate {
+func (p Predicate) Or(other Predicate) Predicate {
 	if p == nil || other == nil {
 		return nil
 	}
-	return &Predicate{
-		Predictor: func(last string) []Option { return append(p.predict(last), other.predict(last)...) },
-	}
+	return func(last string) []Option { return append(p.predict(last), other.predict(last)...) }
 }
 
-func (p *Predicate) predict(last string) []Option {
-	if p == nil || p.Predictor == nil {
+func (p Predicate) predict(last string) []Option {
+	if p == nil {
 		return nil
 	}
-	return p.Predictor(last)
+	return p(last)
 }
 
 var (
-	PredictNothing  *Predicate = nil
-	PredictAnything            = &Predicate{}
-	PredictDirs                = &Predicate{Predictor: dirs}
+	PredictNothing Predicate = nil
 )
 
-func PredictSet(options ...string) *Predicate {
-	return &Predicate{
-		Predictor: func(last string) []Option {
-			ret := make([]Option, len(options))
-			for i := range options {
-				ret[i] = Arg(options[i])
-			}
-			return ret
-		},
+func PredictAnything(last string) []Option { return nil }
+
+func PredictSet(options ...string) Predicate {
+	return func(last string) []Option {
+		ret := make([]Option, len(options))
+		for i := range options {
+			ret[i] = Arg(options[i])
+		}
+		return ret
 	}
 }
 
-func PredictFiles(pattern string) *Predicate {
-	return &Predicate{Predictor: glob(pattern)}
-}
-
-func dirs(last string) (options []Option) {
+func PredictDirs(last string) (options []Option) {
 	dir := dirFromLast(last)
 	return dirsAt(dir)
 }
@@ -71,7 +59,7 @@ func dirsAt(path string) []Option {
 	return filesToOptions(dirs)
 }
 
-func glob(pattern string) func(last string) []Option {
+func PredictFiles(pattern string) Predicate {
 	return func(last string) []Option {
 		dir := dirFromLast(last)
 		files, err := filepath.Glob(filepath.Join(dir, pattern))

@@ -9,9 +9,12 @@ import (
 func TestCompleter_Complete(t *testing.T) {
 	t.Parallel()
 
+	// Set debug environment variable so logs will be printed
 	if testing.Verbose() {
 		os.Setenv(envDebug, "1")
 	}
+
+	// Change to tests directory for testing completion of files and directories
 	err := os.Chdir("./tests")
 	if err != nil {
 		t.Fatal(err)
@@ -20,20 +23,20 @@ func TestCompleter_Complete(t *testing.T) {
 	c := Command{
 		Sub: map[string]Command{
 			"sub1": {
-				Flags: map[string]*Predicate{
+				Flags: map[string]Predicate{
 					"-flag1": PredictAnything,
 					"-flag2": PredictNothing,
 				},
 			},
 			"sub2": {
-				Flags: map[string]*Predicate{
+				Flags: map[string]Predicate{
 					"-flag2": PredictNothing,
 					"-flag3": PredictSet("opt1", "opt2", "opt12"),
 				},
-				Args: PredictDirs.Or(PredictFiles("*.md")),
+				Args: Predicate(PredictDirs).Or(PredictFiles("*.md")),
 			},
 		},
-		Flags: map[string]*Predicate{
+		Flags: map[string]Predicate{
 			"-h":       PredictNothing,
 			"-global1": PredictAnything,
 			"-o":       PredictFiles("*.txt"),

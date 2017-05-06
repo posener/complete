@@ -2,13 +2,13 @@ package complete
 
 type Commands map[string]Command
 
-type Flags map[string]*Predicate
+type Flags map[string]Predicate
 
 type Command struct {
 	Name  string
 	Sub   Commands
 	Flags Flags
-	Args  *Predicate
+	Args  Predicate
 }
 
 // options returns all available complete options for the given command
