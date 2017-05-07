@@ -1,10 +1,19 @@
-package complete
+package match
 
-import "testing"
+import (
+	"os"
+	"testing"
+)
 
 func TestMatch(t *testing.T) {
 	t.Parallel()
-	initTests()
+
+	// Change to tests directory for testing completion of
+	// files and directories
+	err := os.Chdir("../tests")
+	if err != nil {
+		panic(err)
+	}
 
 	tests := []struct {
 		m      Matcher
@@ -12,82 +21,82 @@ func TestMatch(t *testing.T) {
 		want   bool
 	}{
 		{
-			m:      MatchPrefix("abcd"),
+			m:      Prefix("abcd"),
 			prefix: "",
 			want:   true,
 		},
 		{
-			m:      MatchPrefix("abcd"),
+			m:      Prefix("abcd"),
 			prefix: "ab",
 			want:   true,
 		},
 		{
-			m:      MatchPrefix("abcd"),
+			m:      Prefix("abcd"),
 			prefix: "ac",
 			want:   false,
 		},
 		{
-			m:      MatchPrefix(""),
+			m:      Prefix(""),
 			prefix: "ac",
 			want:   false,
 		},
 		{
-			m:      MatchPrefix(""),
+			m:      Prefix(""),
 			prefix: "",
 			want:   true,
 		},
 		{
-			m:      MatchFileName("file.txt"),
+			m:      File("file.txt"),
 			prefix: "",
 			want:   true,
 		},
 		{
-			m:      MatchFileName("./file.txt"),
+			m:      File("./file.txt"),
 			prefix: "",
 			want:   true,
 		},
 		{
-			m:      MatchFileName("./file.txt"),
+			m:      File("./file.txt"),
 			prefix: "f",
 			want:   true,
 		},
 		{
-			m:      MatchFileName("./file.txt"),
+			m:      File("./file.txt"),
 			prefix: "file.",
 			want:   true,
 		},
 		{
-			m:      MatchFileName("./file.txt"),
+			m:      File("./file.txt"),
 			prefix: "./f",
 			want:   true,
 		},
 		{
-			m:      MatchFileName("./file.txt"),
+			m:      File("./file.txt"),
 			prefix: "other.txt",
 			want:   false,
 		},
 		{
-			m:      MatchFileName("./file.txt"),
+			m:      File("./file.txt"),
 			prefix: "/file.txt",
 			want:   false,
 		},
 		{
-			m:      MatchFileName("/file.txt"),
+			m:      File("/file.txt"),
 			prefix: "file.txt",
 			want:   false,
 		},
 		{
-			m:      MatchFileName("/file.txt"),
+			m:      File("/file.txt"),
 			prefix: "./file.txt",
 			want:   false,
 		},
 		{
-			m:      MatchFileName("/file.txt"),
+			m:      File("/file.txt"),
 			prefix: "/file.txt",
 			want:   true,
 		},
 		{
-			m:      MatchFileName("/file.txt"),
+			m:      File("/file.txt"),
 			prefix: "/fil",
 			want:   true,
 		},

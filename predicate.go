@@ -3,12 +3,14 @@ package complete
 import (
 	"os"
 	"path/filepath"
+
+	"github.com/posener/complete/match"
 )
 
 // Predicate determines what terms can follow a command or a flag
 // It is used for auto completion, given last - the last word in the already
 // in the command line, what words can complete it.
-type Predicate func(last string) []Matcher
+type Predicate func(last string) []match.Matcher
 
 // Or unions two predicate functions, so that the result predicate
 // returns the union of their predication
@@ -19,10 +21,10 @@ func (p Predicate) Or(other Predicate) Predicate {
 	if other == nil {
 		return p
 	}
-	return func(last string) []Matcher { return append(p.predict(last), other.predict(last)...) }
+	return func(last string) []match.Matcher { return append(p.predict(last), other.predict(last)...) }
 }
 
-func (p Predicate) predict(last string) []Matcher {
+func (p Predicate) predict(last string) []match.Matcher {
 	if p == nil {
 		return nil
 	}
@@ -34,14 +36,14 @@ var PredictNothing Predicate
 
 // PredictAnything expects something, but nothing particular, such as a number
 // or arbitrary name.
-func PredictAnything(last string) []Matcher { return nil }
+func PredictAnything(last string) []match.Matcher { return nil }
 
 // PredictSet expects specific set of terms, given in the options argument.
 func PredictSet(options ...string) Predicate {
-	return func(last string) []Matcher {
-		ret := make([]Matcher, len(options))
+	return func(last string) []match.Matcher {
+		ret := make([]match.Matcher, len(options))
 		for i := range options {
-			ret[i] = MatchPrefix(options[i])
+			ret[i] = match.Prefix(options[i])
 		}
 		return ret
 	}
@@ -50,7 +52,7 @@ func PredictSet(options ...string) Predicate {
 // PredictDirs will search for directories in the given started to be typed
 // path, if no path was started to be typed, it will complete to directories
 // in the current working directory.
-func PredictDirs(last string) (options []Matcher) {
+func PredictDirs(last string) (options []match.Matcher) {
 	dir := dirFromLast(last)
 	return dirsAt(dir)
 }
@@ -60,7 +62,7 @@ func PredictDirs(last string) (options []Matcher) {
 // match the pattern in the current working directory.
 // To match any file, use "*" as pattern. To match go files use "*.go", and so on.
 func PredictFiles(pattern string) Predicate {
-	return func(last string) []Matcher {
+	return func(last string) []match.Matcher {
 		dir := dirFromLast(last)
 		files, err := filepath.Glob(filepath.Join(dir, pattern))
 		if err != nil {
@@ -73,9 +75,12 @@ func PredictFiles(pattern string) Predicate {
 	}
 }
 
-func dirsAt(path string) []Matcher {
+func dirsAt(path string) []match.Matcher {
 	dirs := []string{}
 	filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return nil
+		}
 		if info.IsDir() {
 			dirs = append(dirs, path)
 		}
@@ -111,10 +116,10 @@ func filesToRel(files []string) {
 	return
 }
 
-func filesToMatchers(files []string) []Matcher {
-	options := make([]Matcher, len(files))
+func filesToMatchers(files []string) []match.Matcher {
+	options := make([]match.Matcher, len(files))
 	for i, f := range files {
-		options[i] = MatchFileName(f)
+		options[i] = match.File(f)
 	}
 	return options
 }
