@@ -4,13 +4,6 @@ package complete
 // It holds the data that enables auto completion of a given typed command line
 // Command can also be a sub command.
 type Command struct {
-	// Name is the name of command,
-	// IMPORTANT: For root command - it must be the same name as the program
-	//            that the auto complete completes. So if the auto complete
-	//            completes the 'go' command, Name must be equal to "go".
-	// It is optional for sub commands.
-	Name string
-
 	// Sub is map of sub commands of the current command
 	// The key refer to the sub command name, and the value is it's
 	// Command descriptive struct.
