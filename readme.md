@@ -19,7 +19,7 @@ In [gocomplete](./gocomplete) there is an example for bash completion for the `g
 
 1. Type in your shell:
 ```
-go get github.com/posener/complete/gocomplete
+go install github.com/posener/complete/gocomplete
 gocomplete -install
 ```
 
