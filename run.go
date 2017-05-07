@@ -20,10 +20,13 @@ const (
 
 // Run get a command, get the typed arguments from environment
 // variable, and print out the complete options
-func Run(c Command) {
+// name is the name of command we want to auto complete.
+// IMPORTANT: it must be the same name - if the auto complete
+// completes the 'go' command, name must be equal to "go".
+func Run(name string, c Command) {
 	args, ok := getLine()
 	if !ok {
-		cmd.Run(c.Name)
+		cmd.Run(name)
 		return
 	}
 	Log("Completing args: %s", args)

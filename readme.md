@@ -54,9 +54,6 @@ func main() {
 	// to complete.
 	run := complete.Command{
 
-		// Name must be exactly as the binary that we want to complete
-		Name: "run",
-
 		// Sub defines a list of sub commands of the program,
 		// this is recursive, since every command is of type command also.
 		Sub: complete.Commands{
@@ -88,6 +85,7 @@ func main() {
 
 	// run the command completion, as part of the main() function.
 	// this triggers the autocompletion when needed.
-	complete.Run(run)
+    // name must be exactly as the binary that we want to complete.
+	complete.Run("run", run)
 }
 ```
