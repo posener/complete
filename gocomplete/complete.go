@@ -1,9 +1,7 @@
 // Package main is complete tool for the go command line
 package main
 
-import (
-	"github.com/posener/complete"
-)
+import "github.com/posener/complete"
 
 var (
 	predictEllipsis = complete.PredictSet("./...")

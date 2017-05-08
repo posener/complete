@@ -1,5 +1,7 @@
 package complete
 
+import "github.com/posener/complete/match"
+
 // Command represents a command line
 // It holds the data that enables auto completion of a given typed command line
 // Command can also be a sub command.
@@ -27,7 +29,7 @@ type Flags map[string]Predicate
 
 // options returns all available complete options for the given command
 // args are all except the last command line arguments relevant to the command
-func (c *Command) options(args []string) (options []Matcher, only bool) {
+func (c *Command) options(args []string) (options []match.Matcher, only bool) {
 
 	// remove the first argument, which is the command name
 	args = args[1:]
@@ -51,7 +53,7 @@ func (c *Command) options(args []string) (options []Matcher, only bool) {
 
 	// add global available complete options
 	for flag := range c.Flags {
-		options = append(options, MatchPrefix(flag))
+		options = append(options, match.Prefix(flag))
 	}
 
 	// add additional expected argument of the command
@@ -62,7 +64,7 @@ func (c *Command) options(args []string) (options []Matcher, only bool) {
 
 // searchSub searches recursively within sub commands if the sub command appear
 // in the on of the arguments.
-func (c *Command) searchSub(args []string) (sub string, all []Matcher, only bool) {
+func (c *Command) searchSub(args []string) (sub string, all []match.Matcher, only bool) {
 	for i, arg := range args {
 		if cmd, ok := c.Sub[arg]; ok {
 			sub = arg
@@ -74,10 +76,10 @@ func (c *Command) searchSub(args []string) (sub string, all []Matcher, only bool
 }
 
 // suvCommands returns a list of matchers according to the sub command names
-func (c *Command) subCommands() []Matcher {
-	subs := make([]Matcher, 0, len(c.Sub))
+func (c *Command) subCommands() []match.Matcher {
+	subs := make([]match.Matcher, 0, len(c.Sub))
 	for sub := range c.Sub {
-		subs = append(subs, MatchPrefix(sub))
+		subs = append(subs, match.Prefix(sub))
 	}
 	return subs
 }

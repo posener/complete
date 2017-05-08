@@ -9,14 +9,15 @@ import (
 	"strings"
 
 	"github.com/posener/complete"
+	"github.com/posener/complete/match"
 )
 
 func predictTest(testType string) complete.Predicate {
-	return func(last string) []complete.Matcher {
+	return func(last string) []match.Matcher {
 		tests := testNames(testType)
-		options := make([]complete.Matcher, len(tests))
+		options := make([]match.Matcher, len(tests))
 		for i := range tests {
-			options[i] = complete.MatchPrefix(tests[i])
+			options[i] = match.Prefix(tests[i])
 		}
 		return options
 	}
