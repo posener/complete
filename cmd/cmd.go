@@ -27,9 +27,9 @@ func Run(cmd string) {
 	}
 	fmt.Println(c.action() + "ing...")
 	if c.install {
-		err = install.Install(cmd, c.root)
+		err = install.Install(cmd)
 	} else {
-		err = install.Uninstall(cmd, c.root)
+		err = install.Uninstall(cmd)
 	}
 	if err != nil {
 		fmt.Printf("%s failed! %s\n", c.action(), err)
@@ -40,7 +40,7 @@ func Run(cmd string) {
 
 // prompt use for approval
 func prompt(action, cmd string) bool {
-	fmt.Printf("%s bash completion for %s? ", action, cmd)
+	fmt.Printf("%s completion for %s? ", action, cmd)
 	var answer string
 	fmt.Scanln(&answer)
 
@@ -56,7 +56,6 @@ func prompt(action, cmd string) bool {
 type config struct {
 	install   bool
 	uninstall bool
-	root      bool
 	yes       bool
 }
 
@@ -64,13 +63,9 @@ type config struct {
 func parseFlags(cmd string) config {
 	var c config
 	flag.BoolVar(&c.install, "install", false,
-		fmt.Sprintf("Install bash completion for %s command", cmd))
+		fmt.Sprintf("Install completion for %s command", cmd))
 	flag.BoolVar(&c.uninstall, "uninstall", false,
-		fmt.Sprintf("Uninstall bash completion for %s command", cmd))
-	flag.BoolVar(&c.root, "root", false,
-		"(Un)Install as root:\n"+
-			"            (Un)Install at /etc/bash_completion.d/ (user should have write permissions to that directory).\n"+
-			"            If not set, a complete command will be added(removed) to ~/.bashrc")
+		fmt.Sprintf("Uninstall completion for %s command", cmd))
 	flag.BoolVar(&c.yes, "y", false, "Don't prompt user for typing 'yes'")
 	flag.Parse()
 	return c

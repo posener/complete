@@ -11,9 +11,9 @@ import (
 	"path/filepath"
 )
 
-type home struct{}
+type bash struct{}
 
-func (home) Install(cmd, bin string) error {
+func (bash) Install(cmd, bin string) error {
 	bashRCFileName, err := bashRCFileName()
 	if err != nil {
 		return err
@@ -32,7 +32,7 @@ func (home) Install(cmd, bin string) error {
 	return err
 }
 
-func (home) Uninstall(cmd, bin string) error {
+func (bash) Uninstall(cmd, bin string) error {
 	bashRC, err := bashRCFileName()
 	if err != nil {
 		return err
@@ -57,6 +57,7 @@ func (home) Uninstall(cmd, bin string) error {
 	}
 
 	return os.Remove(backup)
+
 }
 
 func completeCmd(cmd, bin string) string {
