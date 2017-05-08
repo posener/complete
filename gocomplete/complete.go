@@ -60,7 +60,7 @@ func main() {
 			"-covermode": complete.PredictSet("set", "count", "atomic"),
 			"-coverpkg":  complete.PredictDirs,
 			"-cpu":       complete.PredictAnything,
-			"-run":       predictTest("test"),
+			"-run":       predictTest("Test", "Example"),
 			"-short":     complete.PredictNothing,
 			"-timeout":   complete.PredictAnything,
 
