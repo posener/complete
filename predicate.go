@@ -3,6 +3,7 @@ package complete
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/posener/complete/match"
 )
@@ -53,8 +54,22 @@ func PredictSet(options ...string) Predicate {
 // path, if no path was started to be typed, it will complete to directories
 // in the current working directory.
 func PredictDirs(last string) (options []match.Matcher) {
-	dir := dirFromLast(last)
-	return dirsAt(dir)
+	path := dirFromLast(last)
+	dirs := []string{}
+	filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return nil
+		}
+		if info.IsDir() {
+			dirs = append(dirs, path)
+		}
+		return nil
+	})
+	// if given path is not absolute, return relative paths
+	if !filepath.IsAbs(path) {
+		filesToRel(dirs)
+	}
+	return filesToMatchers(dirs)
 }
 
 // PredictFiles will search for files matching the given pattern in the started to
@@ -73,23 +88,6 @@ func PredictFiles(pattern string) Predicate {
 		}
 		return filesToMatchers(files)
 	}
-}
-
-func dirsAt(path string) []match.Matcher {
-	dirs := []string{}
-	filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return nil
-		}
-		if info.IsDir() {
-			dirs = append(dirs, path)
-		}
-		return nil
-	})
-	if !filepath.IsAbs(path) {
-		filesToRel(dirs)
-	}
-	return filesToMatchers(dirs)
 }
 
 // filesToRel, change list of files to their names in the relative
@@ -111,7 +109,10 @@ func filesToRel(files []string) {
 		if rel == "." {
 			rel = ""
 		}
-		files[i] = "./" + rel
+		if !strings.HasPrefix(rel, ".") {
+			rel = "./" + rel
+		}
+		files[i] = rel
 	}
 	return
 }
