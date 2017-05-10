@@ -85,7 +85,12 @@ func main() {
 
 	// run the command completion, as part of the main() function.
 	// this triggers the autocompletion when needed.
-    // name must be exactly as the binary that we want to complete.
-	complete.Run("run", run)
+	// name must be exactly as the binary that we want to complete.
+	complete.New("run", run).Run()
 }
 ```
+
+## Self completing program
+
+In case that the program that we want to complete is written in go we
+can make it self completing. Here is an [example](./example/self/main.go)

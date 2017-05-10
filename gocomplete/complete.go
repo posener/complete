@@ -185,5 +185,5 @@ func main() {
 		},
 	}
 
-	complete.Run("go", gogo)
+	complete.New("go", gogo).Run()
 }

@@ -11,81 +11,122 @@ import (
 	"github.com/posener/complete/cmd/install"
 )
 
-// Run is used when running complete in command line mode.
-// this is used when the complete is not completing words, but to
-// install it or uninstall it.
-func Run(cmd string) {
-	c := parseFlags(cmd)
-	err := c.validate()
-	if err != nil {
-		os.Stderr.WriteString(err.Error() + "\n")
-		os.Exit(1)
-	}
-	if !c.yes && !prompt(c.action(), cmd) {
-		fmt.Println("Cancelling...")
-		os.Exit(2)
-	}
-	fmt.Println(c.action() + "ing...")
-	if c.install {
-		err = install.Install(cmd)
-	} else {
-		err = install.Uninstall(cmd)
-	}
-	if err != nil {
-		fmt.Printf("%s failed! %s\n", c.action(), err)
-		os.Exit(3)
-	}
-	fmt.Println("Done!")
-}
+// CLI for command line
+type CLI struct {
+	Name string
 
-// prompt use for approval
-func prompt(action, cmd string) bool {
-	fmt.Printf("%s completion for %s? ", action, cmd)
-	var answer string
-	fmt.Scanln(&answer)
-
-	switch strings.ToLower(answer) {
-	case "y", "yes":
-		return true
-	default:
-		return false
-	}
-}
-
-// config for command line
-type config struct {
 	install   bool
 	uninstall bool
 	yes       bool
 }
 
-// create a config from command line arguments
-func parseFlags(cmd string) config {
-	var c config
-	flag.BoolVar(&c.install, "install", false,
-		fmt.Sprintf("Install completion for %s command", cmd))
-	flag.BoolVar(&c.uninstall, "uninstall", false,
-		fmt.Sprintf("Uninstall completion for %s command", cmd))
-	flag.BoolVar(&c.yes, "y", false, "Don't prompt user for typing 'yes'")
+const (
+	defaultInstallName   = "install"
+	defaultUninstallName = "uninstall"
+)
+
+// Run is used when running complete in command line mode.
+// this is used when the complete is not completing words, but to
+// install it or uninstall it.
+func (f *CLI) Run() bool {
+
+	// add flags and parse them in case they were not added and parsed
+	// by the main program
+	f.AddFlags(nil, "", "")
 	flag.Parse()
-	return c
+
+	err := f.validate()
+	if err != nil {
+		os.Stderr.WriteString(err.Error() + "\n")
+		os.Exit(1)
+	}
+
+	switch {
+	case f.install:
+		f.prompt()
+		err = install.Install(f.Name)
+	case f.uninstall:
+		f.prompt()
+		err = install.Uninstall(f.Name)
+	default:
+		// non of the action flags matched,
+		// returning false should make the real program execute
+		return false
+	}
+
+	if err != nil {
+		fmt.Printf("%s failed! %s\n", f.action(), err)
+		os.Exit(3)
+	}
+	fmt.Println("Done!")
+	return true
 }
 
-// validate the config
-func (c config) validate() error {
-	if c.install && c.uninstall {
-		return errors.New("Install and uninstall are exclusive")
+// prompt use for approval
+// exit if approval was not given
+func (f *CLI) prompt() {
+	defer fmt.Println(f.action() + "ing...")
+	if f.yes {
+		return
 	}
-	if !c.install && !c.uninstall {
-		return errors.New("Must specify -install or -uninstall")
+	fmt.Printf("%s completion for %s? ", f.action(), f.Name)
+	var answer string
+	fmt.Scanln(&answer)
+
+	switch strings.ToLower(answer) {
+	case "y", "yes":
+		return
+	default:
+		fmt.Println("Cancelling...")
+		os.Exit(1)
+	}
+}
+
+// AddFlags adds the CLI flags to the flag set.
+// If flags is nil, the default command line flags will be taken.
+// Pass non-empty strings as installName and uninstallName to override the default
+// flag names.
+func (f *CLI) AddFlags(flags *flag.FlagSet, installName, uninstallName string) {
+	if flags == nil {
+		flags = flag.CommandLine
+	}
+
+	if installName == "" {
+		installName = defaultInstallName
+	}
+	if uninstallName == "" {
+		uninstallName = defaultUninstallName
+	}
+
+	if flags.Lookup(installName) == nil {
+		flags.BoolVar(&f.install, installName, false,
+			fmt.Sprintf("Install completion for %s command", f.Name))
+	}
+	if flags.Lookup(uninstallName) == nil {
+		flags.BoolVar(&f.uninstall, uninstallName, false,
+			fmt.Sprintf("Uninstall completion for %s command", f.Name))
+	}
+	if flags.Lookup("y") == nil {
+		flags.BoolVar(&f.yes, "y", false, "Don't prompt user for typing 'yes'")
+	}
+}
+
+// validate the CLI
+func (f *CLI) validate() error {
+	if f.install && f.uninstall {
+		return errors.New("Install and uninstall are mutually exclusive")
 	}
 	return nil
 }
 
-// action name according to the config values.
-func (c config) action() string {
-	if c.install {
+// action name according to the CLI values.
+func (f *CLI) action() string {
+	switch {
+	case f.install:
 		return "Install"
+	case f.uninstall:
+		return "Uninstall"
+	default:
+		return "unknown"
 	}
-	return "Uninstall"
 }
