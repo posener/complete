@@ -23,7 +23,7 @@ func TestCompleter_Complete(t *testing.T) {
 					"-flag2": PredictNothing,
 					"-flag3": PredictSet("opt1", "opt2", "opt12"),
 				},
-				Args: Predicate(PredictDirs).Or(PredictFiles("*.md")),
+				Args: Predicate(PredictDirs("*")).Or(PredictFiles("*.md")),
 			},
 		},
 		Flags: map[string]Predicate{
@@ -41,7 +41,7 @@ func TestCompleter_Complete(t *testing.T) {
 		allGlobals = append(allGlobals, flag)
 	}
 
-	testTXTFiles := []string{"./a.txt", "./b.txt", "./c.txt"}
+	testTXTFiles := []string{"./a.txt", "./b.txt", "./c.txt", "./.dot.txt"}
 
 	tests := []struct {
 		args string
@@ -81,11 +81,11 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		{
 			args: "sub2 ",
-			want: []string{"./", "./dir", "./readme.md", "-flag2", "-flag3", "-h", "-global1", "-o"},
+			want: []string{"./", "./dir/", "./readme.md", "-flag2", "-flag3", "-h", "-global1", "-o"},
 		},
 		{
 			args: "sub2 ./",
-			want: []string{"./", "./readme.md", "./dir"},
+			want: []string{"./", "./readme.md", "./dir/"},
 		},
 		{
 			args: "sub2 re",
@@ -93,7 +93,7 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		{
 			args: "sub2 -flag2 ",
-			want: []string{"./", "./dir", "./readme.md", "-flag2", "-flag3", "-h", "-global1", "-o"},
+			want: []string{"./", "./dir/", "./readme.md", "-flag2", "-flag3", "-h", "-global1", "-o"},
 		},
 		{
 			args: "sub1 -fl",

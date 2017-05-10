@@ -45,6 +45,7 @@ func TestMatch(t *testing.T) {
 				{prefix: "", want: true},
 				{prefix: "f", want: true},
 				{prefix: "./f", want: true},
+				{prefix: "./.", want: false},
 				{prefix: "file.", want: true},
 				{prefix: "./file.", want: true},
 				{prefix: "file.txt", want: true},
@@ -54,6 +55,7 @@ func TestMatch(t *testing.T) {
 				{prefix: "/file.txt", want: false},
 				{prefix: "/fil", want: false},
 				{prefix: "/file.txt2", want: false},
+				{prefix: "/.", want: false},
 			},
 		},
 		{
@@ -62,6 +64,7 @@ func TestMatch(t *testing.T) {
 				{prefix: "", want: true},
 				{prefix: "f", want: true},
 				{prefix: "./f", want: true},
+				{prefix: "./.", want: false},
 				{prefix: "file.", want: true},
 				{prefix: "./file.", want: true},
 				{prefix: "file.txt", want: true},
@@ -71,14 +74,16 @@ func TestMatch(t *testing.T) {
 				{prefix: "/file.txt", want: false},
 				{prefix: "/fil", want: false},
 				{prefix: "/file.txt2", want: false},
+				{prefix: "/.", want: false},
 			},
 		},
 		{
 			m: File("/file.txt"),
 			tests: []matcherTest{
-				{prefix: "", want: false},
+				{prefix: "", want: true},
 				{prefix: "f", want: false},
 				{prefix: "./f", want: false},
+				{prefix: "./.", want: false},
 				{prefix: "file.", want: false},
 				{prefix: "./file.", want: false},
 				{prefix: "file.txt", want: false},
@@ -88,13 +93,23 @@ func TestMatch(t *testing.T) {
 				{prefix: "/file.txt", want: true},
 				{prefix: "/fil", want: true},
 				{prefix: "/file.txt2", want: false},
+				{prefix: "/.", want: false},
+			},
+		},
+		{
+			m: File("./"),
+			tests: []matcherTest{
+				{prefix: "", want: true},
+				{prefix: ".", want: true},
+				{prefix: "./", want: true},
+				{prefix: "./.", want: false},
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		for _, ttt := range tt.tests {
-			name := "matcher:" + tt.m.String() + "/prefix:" + ttt.prefix
+			name := "matcher='" + tt.m.String() + "'&prefix='" + ttt.prefix + "'"
 			t.Run(name, func(t *testing.T) {
 				got := tt.m.Match(ttt.prefix)
 				if got != ttt.want {

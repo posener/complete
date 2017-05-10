@@ -33,11 +33,13 @@ func (c *Command) options(args []string) (options []match.Matcher, only bool) {
 
 	// remove the first argument, which is the command name
 	args = args[1:]
-	last := last(args)
-	// if prev has something that needs to follow it,
+	wordCurrent := last(args)
+	wordCompleted := last(removeLast(args))
+	// if wordCompleted has something that needs to follow it,
 	// it is the most relevant completion
-	if predicate, ok := c.Flags[last]; ok && predicate != nil {
-		return predicate.predict(last), true
+	if predicate, ok := c.Flags[wordCompleted]; ok && predicate != nil {
+		Log("Predicting according to flag %s", wordCurrent)
+		return predicate.predict(wordCurrent), true
 	}
 
 	sub, options, only := c.searchSub(args)
@@ -57,7 +59,7 @@ func (c *Command) options(args []string) (options []match.Matcher, only bool) {
 	}
 
 	// add additional expected argument of the command
-	options = append(options, c.Args.predict(last)...)
+	options = append(options, c.Args.predict(wordCurrent)...)
 
 	return
 }
@@ -65,7 +67,12 @@ func (c *Command) options(args []string) (options []match.Matcher, only bool) {
 // searchSub searches recursively within sub commands if the sub command appear
 // in the on of the arguments.
 func (c *Command) searchSub(args []string) (sub string, all []match.Matcher, only bool) {
-	for i, arg := range args {
+
+	// search for sub command in all arguments except the last one
+	// because that one might not be completed yet
+	searchArgs := removeLast(args)
+
+	for i, arg := range searchArgs {
 		if cmd, ok := c.Sub[arg]; ok {
 			sub = arg
 			all, only = cmd.options(args[i:])
@@ -82,4 +89,11 @@ func (c *Command) subCommands() []match.Matcher {
 		subs = append(subs, match.Prefix(sub))
 	}
 	return subs
+}
+
+func removeLast(a []string) []string {
+	if len(a) > 0 {
+		return a[:len(a)-1]
+	}
+	return a
 }

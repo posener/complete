@@ -1,7 +1,6 @@
 package match
 
 import (
-	"path/filepath"
 	"strings"
 )
 
@@ -15,16 +14,13 @@ func (a File) String() string {
 
 // Match returns true if prefix's abs path prefixes a's abs path
 func (a File) Match(prefix string) bool {
-	full, err := filepath.Abs(string(a))
-	if err != nil {
-		return false
-	}
-	prefixFull, err := filepath.Abs(prefix)
-	if err != nil {
-		return false
+
+	// special case for current directory completion
+	if a == "./" && (prefix == "." || prefix == "") {
+		return true
 	}
 
-	// if the file has the prefix as prefix,
-	// but we don't want to show too many files, so, if it is in a deeper directory - omit it.
-	return strings.HasPrefix(full, prefixFull) && (full == prefixFull || !strings.Contains(full[len(prefixFull)+1:], "/"))
+	cmp := strings.TrimPrefix(string(a), "./")
+	prefix = strings.TrimPrefix(prefix, "./")
+	return strings.HasPrefix(cmp, prefix)
 }

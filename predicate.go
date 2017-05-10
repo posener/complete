@@ -3,7 +3,6 @@ package complete
 import (
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/posener/complete/match"
 )
@@ -53,23 +52,8 @@ func PredictSet(options ...string) Predicate {
 // PredictDirs will search for directories in the given started to be typed
 // path, if no path was started to be typed, it will complete to directories
 // in the current working directory.
-func PredictDirs(last string) (options []match.Matcher) {
-	path := dirFromLast(last)
-	dirs := []string{}
-	filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return nil
-		}
-		if info.IsDir() {
-			dirs = append(dirs, path)
-		}
-		return nil
-	})
-	// if given path is not absolute, return relative paths
-	if !filepath.IsAbs(path) {
-		filesToRel(dirs)
-	}
-	return filesToMatchers(dirs)
+func PredictDirs(pattern string) Predicate {
+	return files(pattern, true, false)
 }
 
 // PredictFiles will search for files matching the given pattern in the started to
@@ -77,17 +61,46 @@ func PredictDirs(last string) (options []match.Matcher) {
 // match the pattern in the current working directory.
 // To match any file, use "*" as pattern. To match go files use "*.go", and so on.
 func PredictFiles(pattern string) Predicate {
+	return files(pattern, false, true)
+}
+
+// PredictFilesOrDirs predict any file or directory that matches the pattern
+func PredictFilesOrDirs(pattern string) Predicate {
+	return files(pattern, true, true)
+}
+
+func files(pattern string, allowDirs, allowFiles bool) Predicate {
 	return func(last string) []match.Matcher {
 		dir := dirFromLast(last)
+		Log("looking for files in %s (last=%s)", dir, last)
 		files, err := filepath.Glob(filepath.Join(dir, pattern))
 		if err != nil {
 			Log("failed glob operation with pattern '%s': %s", pattern, err)
 		}
+		if allowDirs {
+			files = append(files, dir)
+		}
+		files = selectByType(files, allowDirs, allowFiles)
 		if !filepath.IsAbs(pattern) {
 			filesToRel(files)
 		}
 		return filesToMatchers(files)
 	}
+}
+
+func selectByType(names []string, allowDirs bool, allowFiles bool) []string {
+	filtered := make([]string, 0, len(names))
+	for _, name := range names {
+		stat, err := os.Stat(name)
+		if err != nil {
+			continue
+		}
+		if (stat.IsDir() && !allowDirs) || (!stat.IsDir() && !allowFiles) {
+			continue
+		}
+		filtered = append(filtered, name)
+	}
+	return filtered
 }
 
 // filesToRel, change list of files to their names in the relative
@@ -106,11 +119,11 @@ func filesToRel(files []string) {
 		if err != nil {
 			continue
 		}
-		if rel == "." {
-			rel = ""
-		}
-		if !strings.HasPrefix(rel, ".") {
+		if rel != "." {
 			rel = "./" + rel
+		}
+		if info, err := os.Stat(rel); err == nil && info.IsDir() {
+			rel += "/"
 		}
 		files[i] = rel
 	}
@@ -129,6 +142,9 @@ func filesToMatchers(files []string) []match.Matcher {
 // last argument if it represents a file name being written.
 // in case that it is not, we fall back to the current directory.
 func dirFromLast(last string) string {
+	if info, err := os.Stat(last); err == nil && info.IsDir() {
+		return last
+	}
 	dir := filepath.Dir(last)
 	_, err := os.Stat(dir)
 	if err != nil {
