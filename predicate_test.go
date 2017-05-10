@@ -22,6 +22,12 @@ func TestPredicate(t *testing.T) {
 			want: []string{"a", "b", "c"},
 		},
 		{
+			name: "set with does",
+			p:    PredictSet("./..", "./x"),
+			arg:  "./.",
+			want: []string{"./.."},
+		},
+		{
 			name: "set/empty",
 			p:    PredictSet(),
 			want: []string{},
@@ -59,7 +65,7 @@ func TestPredicate(t *testing.T) {
 		{
 			name: "files/txt",
 			p:    PredictFiles("*.txt"),
-			want: []string{"./a.txt", "./b.txt", "./c.txt"},
+			want: []string{"./a.txt", "./b.txt", "./c.txt", "./.dot.txt"},
 		},
 		{
 			name: "files/txt",
@@ -86,23 +92,39 @@ func TestPredicate(t *testing.T) {
 		},
 		{
 			name: "dirs",
-			p:    PredictDirs,
+			p:    PredictDirs("*"),
 			arg:  "./dir/",
-			want: []string{"./dir"},
+			want: []string{"./dir/"},
+		},
+		{
+			name: "dirs and files",
+			p:    PredictFilesOrDirs("*"),
+			arg:  "./dir",
+			want: []string{"./dir/", "./dir/x"},
 		},
 		{
 			name: "dirs",
-			p:    PredictDirs,
-			want: []string{"./", "./dir"},
+			p:    PredictDirs("*"),
+			want: []string{"./", "./dir/"},
+		},
+		{
+			name: "subdir",
+			p:    PredictFiles("*"),
+			arg:  "./dir/",
+			want: []string{"./dir/x"},
 		},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name+"/"+tt.arg, func(t *testing.T) {
+		t.Run(tt.name+"?arg='"+tt.arg+"'", func(t *testing.T) {
+
 			matchers := tt.p.predict(tt.arg)
+
 			matchersString := []string{}
 			for _, m := range matchers {
-				matchersString = append(matchersString, m.String())
+				if m.Match(tt.arg) {
+					matchersString = append(matchersString, m.String())
+				}
 			}
 			sort.Strings(matchersString)
 			sort.Strings(tt.want)
@@ -111,7 +133,7 @@ func TestPredicate(t *testing.T) {
 			want := strings.Join(tt.want, ",")
 
 			if got != want {
-				t.Errorf("failed %s\ngot = %s\nwant: %s", tt.name, got, want)
+				t.Errorf("failed %s\ngot = %s\nwant: %s", t.Name(), got, want)
 			}
 		})
 	}

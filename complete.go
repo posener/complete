@@ -59,11 +59,12 @@ func (c *Complete) Run() bool {
 // complete get a command an command line arguments and returns
 // matching completion options
 func complete(c Command, args []string) (matching []string) {
-	options, _ := c.options(args[:len(args)-1])
+	options, _ := c.options(args)
 
 	// choose only matching options
 	l := last(args)
 	for _, option := range options {
+		Log("option %T, %s -> %t", option, option, option.Match(l))
 		if option.Match(l) {
 			matching = append(matching, option.String())
 		}
@@ -87,6 +88,7 @@ func last(args []string) (last string) {
 }
 
 func output(options []string) {
+	Log("")
 	// stdout of program defines the complete options
 	for _, option := range options {
 		fmt.Println(option)
