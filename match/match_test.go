@@ -15,100 +15,92 @@ func TestMatch(t *testing.T) {
 		panic(err)
 	}
 
-	tests := []struct {
-		m      Matcher
+	type matcherTest struct {
 		prefix string
 		want   bool
+	}
+
+	tests := []struct {
+		m     Matcher
+		tests []matcherTest
 	}{
 		{
-			m:      Prefix("abcd"),
-			prefix: "",
-			want:   true,
+			m: Prefix("abcd"),
+			tests: []matcherTest{
+				{prefix: "", want: true},
+				{prefix: "ab", want: true},
+				{prefix: "ac", want: false},
+			},
 		},
 		{
-			m:      Prefix("abcd"),
-			prefix: "ab",
-			want:   true,
+			m: Prefix(""),
+			tests: []matcherTest{
+				{prefix: "ac", want: false},
+				{prefix: "", want: true},
+			},
 		},
 		{
-			m:      Prefix("abcd"),
-			prefix: "ac",
-			want:   false,
+			m: File("file.txt"),
+			tests: []matcherTest{
+				{prefix: "", want: true},
+				{prefix: "f", want: true},
+				{prefix: "./f", want: true},
+				{prefix: "file.", want: true},
+				{prefix: "./file.", want: true},
+				{prefix: "file.txt", want: true},
+				{prefix: "./file.txt", want: true},
+				{prefix: "other.txt", want: false},
+				{prefix: "/other.txt", want: false},
+				{prefix: "/file.txt", want: false},
+				{prefix: "/fil", want: false},
+				{prefix: "/file.txt2", want: false},
+			},
 		},
 		{
-			m:      Prefix(""),
-			prefix: "ac",
-			want:   false,
+			m: File("./file.txt"),
+			tests: []matcherTest{
+				{prefix: "", want: true},
+				{prefix: "f", want: true},
+				{prefix: "./f", want: true},
+				{prefix: "file.", want: true},
+				{prefix: "./file.", want: true},
+				{prefix: "file.txt", want: true},
+				{prefix: "./file.txt", want: true},
+				{prefix: "other.txt", want: false},
+				{prefix: "/other.txt", want: false},
+				{prefix: "/file.txt", want: false},
+				{prefix: "/fil", want: false},
+				{prefix: "/file.txt2", want: false},
+			},
 		},
 		{
-			m:      Prefix(""),
-			prefix: "",
-			want:   true,
-		},
-		{
-			m:      File("file.txt"),
-			prefix: "",
-			want:   true,
-		},
-		{
-			m:      File("./file.txt"),
-			prefix: "",
-			want:   true,
-		},
-		{
-			m:      File("./file.txt"),
-			prefix: "f",
-			want:   true,
-		},
-		{
-			m:      File("./file.txt"),
-			prefix: "file.",
-			want:   true,
-		},
-		{
-			m:      File("./file.txt"),
-			prefix: "./f",
-			want:   true,
-		},
-		{
-			m:      File("./file.txt"),
-			prefix: "other.txt",
-			want:   false,
-		},
-		{
-			m:      File("./file.txt"),
-			prefix: "/file.txt",
-			want:   false,
-		},
-		{
-			m:      File("/file.txt"),
-			prefix: "file.txt",
-			want:   false,
-		},
-		{
-			m:      File("/file.txt"),
-			prefix: "./file.txt",
-			want:   false,
-		},
-		{
-			m:      File("/file.txt"),
-			prefix: "/file.txt",
-			want:   true,
-		},
-		{
-			m:      File("/file.txt"),
-			prefix: "/fil",
-			want:   true,
+			m: File("/file.txt"),
+			tests: []matcherTest{
+				{prefix: "", want: false},
+				{prefix: "f", want: false},
+				{prefix: "./f", want: false},
+				{prefix: "file.", want: false},
+				{prefix: "./file.", want: false},
+				{prefix: "file.txt", want: false},
+				{prefix: "./file.txt", want: false},
+				{prefix: "other.txt", want: false},
+				{prefix: "/other.txt", want: false},
+				{prefix: "/file.txt", want: true},
+				{prefix: "/fil", want: true},
+				{prefix: "/file.txt2", want: false},
+			},
 		},
 	}
 
 	for _, tt := range tests {
-		name := tt.m.String() + "/" + tt.prefix
-		t.Run(name, func(t *testing.T) {
-			got := tt.m.Match(tt.prefix)
-			if got != tt.want {
-				t.Errorf("Failed %s: got = %t, want: %t", name, got, tt.want)
-			}
-		})
+		for _, ttt := range tt.tests {
+			name := "matcher:" + tt.m.String() + "/prefix:" + ttt.prefix
+			t.Run(name, func(t *testing.T) {
+				got := tt.m.Match(ttt.prefix)
+				if got != ttt.want {
+					t.Errorf("Failed %s: got = %t, want: %t", name, got, ttt.want)
+				}
+			})
+		}
 	}
 }

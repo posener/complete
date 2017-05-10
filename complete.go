@@ -18,23 +18,42 @@ const (
 	envDebug    = "COMP_DEBUG"
 )
 
-// Run get a command, get the typed arguments from environment
-// variable, and print out the complete options
+// Complete structs define completion for a command with CLI options
+type Complete struct {
+	Command Command
+	cmd.CLI
+}
+
+// New creates a new complete command.
 // name is the name of command we want to auto complete.
 // IMPORTANT: it must be the same name - if the auto complete
 // completes the 'go' command, name must be equal to "go".
-func Run(name string, c Command) {
+// command is the struct of the command completion.
+func New(name string, command Command) *Complete {
+	return &Complete{
+		Command: command,
+		CLI:     cmd.CLI{Name: name},
+	}
+}
+
+// Run get a command, get the typed arguments from environment
+// variable, and print out the complete options
+// returns success if the completion ran or if the cli matched
+// any of the given flags, false otherwise
+func (c *Complete) Run() bool {
 	args, ok := getLine()
 	if !ok {
-		cmd.Run(name)
-		return
+		// make sure flags parsed,
+		// in case they were not added in the main program
+		return c.CLI.Run()
 	}
 	Log("Completing args: %s", args)
 
-	options := complete(c, args)
+	options := complete(c.Command, args)
 
 	Log("Completion: %s", options)
 	output(options)
+	return true
 }
 
 // complete get a command an command line arguments and returns
