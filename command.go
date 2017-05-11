@@ -51,7 +51,7 @@ func (c *Command) predict(a Args) (options []string, only bool) {
 		options = append(options, c.subCommands(a.Last)...)
 	}
 
-	// add global available complete Predict
+	// add global available complete options
 	for flag := range c.Flags {
 		if match.Prefix(flag, a.Last) {
 			options = append(options, flag)
