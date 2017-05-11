@@ -6,9 +6,11 @@ import "github.com/posener/complete"
 var (
 	predictEllipsis = complete.PredictSet("./...")
 
-	goFilesOrPackages = complete.PredictFiles("*.go").
-				Or(complete.PredictDirs("*")).
-				Or(predictEllipsis)
+	goFilesOrPackages = complete.PredictOr(
+		complete.PredictFiles("*.go"),
+		complete.PredictDirs("*"),
+		predictEllipsis,
+	)
 )
 
 func main() {

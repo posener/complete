@@ -7,52 +7,66 @@ import (
 	"github.com/posener/complete/match"
 )
 
-// Predicate determines what terms can follow a command or a flag
-// It is used for auto completion, given last - the last word in the already
-// in the command line, what words can complete it.
-type Predicate func(last string) []match.Matcher
-
-// Or unions two predicate functions, so that the result predicate
-// returns the union of their predication
-func (p Predicate) Or(other Predicate) Predicate {
-	if p == nil {
-		return other
-	}
-	if other == nil {
-		return p
-	}
-	return func(last string) []match.Matcher { return append(p.predict(last), other.predict(last)...) }
+// Predictor implements a predict method, in which given
+// command line arguments returns a list of options it predicts.
+type Predictor interface {
+	Predict(Args) []string
 }
 
-func (p Predicate) predict(last string) []match.Matcher {
+// PredictOr unions two predicate functions, so that the result predicate
+// returns the union of their predication
+func PredictOr(predictors ...Predictor) Predictor {
+	return PredictFunc(func(a Args) (prediction []string) {
+		for _, p := range predictors {
+			if p == nil {
+				continue
+			}
+			prediction = append(prediction, p.Predict(a)...)
+		}
+		return
+	})
+}
+
+// PredictFunc determines what terms can follow a command or a flag
+// It is used for auto completion, given last - the last word in the already
+// in the command line, what words can complete it.
+type PredictFunc func(Args) []string
+
+// Predict invokes the predict function and implements the Predictor interface
+func (p PredictFunc) Predict(a Args) []string {
 	if p == nil {
 		return nil
 	}
-	return p(last)
+	return p(a)
 }
 
 // PredictNothing does not expect anything after.
-var PredictNothing Predicate
+var PredictNothing Predictor
 
 // PredictAnything expects something, but nothing particular, such as a number
 // or arbitrary name.
-func PredictAnything(last string) []match.Matcher { return nil }
+var PredictAnything = PredictFunc(func(Args) []string { return nil })
 
 // PredictSet expects specific set of terms, given in the options argument.
-func PredictSet(options ...string) Predicate {
-	return func(last string) []match.Matcher {
-		ret := make([]match.Matcher, len(options))
-		for i := range options {
-			ret[i] = match.Prefix(options[i])
+func PredictSet(options ...string) Predictor {
+	return predictSet(options)
+}
+
+type predictSet []string
+
+func (p predictSet) Predict(a Args) (prediction []string) {
+	for _, m := range p {
+		if match.Prefix(m, a.Last) {
+			prediction = append(prediction, m)
 		}
-		return ret
 	}
+	return
 }
 
 // PredictDirs will search for directories in the given started to be typed
 // path, if no path was started to be typed, it will complete to directories
 // in the current working directory.
-func PredictDirs(pattern string) Predicate {
+func PredictDirs(pattern string) Predictor {
 	return files(pattern, true, false)
 }
 
@@ -60,19 +74,19 @@ func PredictDirs(pattern string) Predicate {
 // be typed path, if no path was started to be typed, it will complete to files that
 // match the pattern in the current working directory.
 // To match any file, use "*" as pattern. To match go files use "*.go", and so on.
-func PredictFiles(pattern string) Predicate {
+func PredictFiles(pattern string) Predictor {
 	return files(pattern, false, true)
 }
 
-// PredictFilesOrDirs predict any file or directory that matches the pattern
-func PredictFilesOrDirs(pattern string) Predicate {
+// PredictFilesOrDirs any file or directory that matches the pattern
+func PredictFilesOrDirs(pattern string) Predictor {
 	return files(pattern, true, true)
 }
 
-func files(pattern string, allowDirs, allowFiles bool) Predicate {
-	return func(last string) []match.Matcher {
-		dir := dirFromLast(last)
-		Log("looking for files in %s (last=%s)", dir, last)
+func files(pattern string, allowDirs, allowFiles bool) PredictFunc {
+	return func(a Args) (prediction []string) {
+		dir := dirFromLast(a.Last)
+		Log("looking for files in %s (last=%s)", dir, a.Last)
 		files, err := filepath.Glob(filepath.Join(dir, pattern))
 		if err != nil {
 			Log("failed glob operation with pattern '%s': %s", pattern, err)
@@ -84,7 +98,13 @@ func files(pattern string, allowDirs, allowFiles bool) Predicate {
 		if !filepath.IsAbs(pattern) {
 			filesToRel(files)
 		}
-		return filesToMatchers(files)
+		// add all matching files to prediction
+		for _, f := range files {
+			if match.File(f, a.Last) {
+				prediction = append(prediction, f)
+			}
+		}
+		return
 	}
 }
 
@@ -128,14 +148,6 @@ func filesToRel(files []string) {
 		files[i] = rel
 	}
 	return
-}
-
-func filesToMatchers(files []string) []match.Matcher {
-	options := make([]match.Matcher, len(files))
-	for i, f := range files {
-		options[i] = match.File(f)
-	}
-	return options
 }
 
 // dirFromLast gives the directory of the current written

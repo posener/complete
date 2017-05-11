@@ -17,15 +17,16 @@ import (
 // and then all the relevant function names.
 // for test names use prefix of 'Test' or 'Example', and for benchmark
 // test names use 'Benchmark'
-func predictTest(funcPrefix ...string) complete.Predicate {
-	return func(last string) []match.Matcher {
+func predictTest(funcPrefix ...string) complete.Predictor {
+	return complete.PredictFunc(func(a complete.Args) (prediction []string) {
 		tests := testNames(funcPrefix)
-		options := make([]match.Matcher, len(tests))
-		for i := range tests {
-			options[i] = match.Prefix(tests[i])
+		for _, t := range tests {
+			if match.Prefix(t, a.Last) {
+				prediction = append(prediction, t)
+			}
 		}
-		return options
-	}
+		return
+	})
 }
 
 // get all test names in current directory

@@ -1,6 +1,7 @@
 package match
 
 import (
+	"fmt"
 	"os"
 	"testing"
 )
@@ -21,11 +22,13 @@ func TestMatch(t *testing.T) {
 	}
 
 	tests := []struct {
-		m     Matcher
+		m     Match
+		long  string
 		tests []matcherTest
 	}{
 		{
-			m: Prefix("abcd"),
+			m:    Prefix,
+			long: "abcd",
 			tests: []matcherTest{
 				{prefix: "", want: true},
 				{prefix: "ab", want: true},
@@ -33,14 +36,16 @@ func TestMatch(t *testing.T) {
 			},
 		},
 		{
-			m: Prefix(""),
+			m:    Prefix,
+			long: "",
 			tests: []matcherTest{
 				{prefix: "ac", want: false},
 				{prefix: "", want: true},
 			},
 		},
 		{
-			m: File("file.txt"),
+			m:    File,
+			long: "file.txt",
 			tests: []matcherTest{
 				{prefix: "", want: true},
 				{prefix: "f", want: true},
@@ -59,7 +64,8 @@ func TestMatch(t *testing.T) {
 			},
 		},
 		{
-			m: File("./file.txt"),
+			m:    File,
+			long: "./file.txt",
 			tests: []matcherTest{
 				{prefix: "", want: true},
 				{prefix: "f", want: true},
@@ -78,7 +84,8 @@ func TestMatch(t *testing.T) {
 			},
 		},
 		{
-			m: File("/file.txt"),
+			m:    File,
+			long: "/file.txt",
 			tests: []matcherTest{
 				{prefix: "", want: true},
 				{prefix: "f", want: false},
@@ -97,7 +104,8 @@ func TestMatch(t *testing.T) {
 			},
 		},
 		{
-			m: File("./"),
+			m:    File,
+			long: "./",
 			tests: []matcherTest{
 				{prefix: "", want: true},
 				{prefix: ".", want: true},
@@ -109,9 +117,9 @@ func TestMatch(t *testing.T) {
 
 	for _, tt := range tests {
 		for _, ttt := range tt.tests {
-			name := "matcher='" + tt.m.String() + "'&prefix='" + ttt.prefix + "'"
+			name := fmt.Sprintf("matcher=%T&long='%s'&prefix='%s'", tt.m, tt.long, ttt.prefix)
 			t.Run(name, func(t *testing.T) {
-				got := tt.m.Match(ttt.prefix)
+				got := tt.m(tt.long, ttt.prefix)
 				if got != ttt.want {
 					t.Errorf("Failed %s: got = %t, want: %t", name, got, ttt.want)
 				}

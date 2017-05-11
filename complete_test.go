@@ -13,20 +13,20 @@ func TestCompleter_Complete(t *testing.T) {
 	c := Command{
 		Sub: map[string]Command{
 			"sub1": {
-				Flags: map[string]Predicate{
+				Flags: map[string]Predictor{
 					"-flag1": PredictAnything,
 					"-flag2": PredictNothing,
 				},
 			},
 			"sub2": {
-				Flags: map[string]Predicate{
+				Flags: map[string]Predictor{
 					"-flag2": PredictNothing,
 					"-flag3": PredictSet("opt1", "opt2", "opt12"),
 				},
-				Args: Predicate(PredictDirs("*")).Or(PredictFiles("*.md")),
+				Args: PredictOr(PredictDirs("*"), PredictFiles("*.md")),
 			},
 		},
-		Flags: map[string]Predicate{
+		Flags: map[string]Predictor{
 			"-h":       PredictNothing,
 			"-global1": PredictAnything,
 			"-o":       PredictFiles("*.txt"),
@@ -174,9 +174,9 @@ func TestCompleter_Complete(t *testing.T) {
 
 			tt.args = "cmd " + tt.args
 			os.Setenv(envComplete, tt.args)
-			args, _ := getLine()
+			line, _ := getLine()
 
-			got := complete(c, args)
+			got := c.Predict(newArgs(line))
 
 			sort.Strings(tt.want)
 			sort.Strings(got)
