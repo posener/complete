@@ -23,7 +23,7 @@ func TestCompleter_Complete(t *testing.T) {
 					"-flag2": PredictNothing,
 					"-flag3": PredictSet("opt1", "opt2", "opt12"),
 				},
-				Args: PredictOr(PredictDirs("*"), PredictFiles("*.md")),
+				Args: PredictFiles("*.md"),
 			},
 		},
 		Flags: map[string]Predictor{
@@ -129,7 +129,7 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		{
 			args: "-o ",
-			want: testTXTFiles,
+			want: append(testTXTFiles, "./", "./dir/"),
 		},
 		{
 			args: "-o ./no-su",
@@ -137,11 +137,7 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		{
 			args: "-o ./",
-			want: testTXTFiles,
-		},
-		{
-			args: "-o ",
-			want: testTXTFiles,
+			want: append(testTXTFiles, "./", "./dir/"),
 		},
 		{
 			args: "-o ./read",
