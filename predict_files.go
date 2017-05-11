@@ -26,41 +26,47 @@ func PredictFiles(pattern string) Predictor {
 
 func files(pattern string, allowFiles bool) PredictFunc {
 	return func(a Args) (prediction []string) {
-		if strings.HasSuffix(a.Last, "/..") {
-			return
-		}
-		dir := dirFromLast(a.Last)
-		rel := !filepath.IsAbs(pattern)
-		Log("looking for files in %s (last=%s)", dir, a.Last)
-		files := listFiles(dir, pattern)
-
-		// get wording directory for relative name
-		workDir, err := os.Getwd()
-		if err != nil {
-			workDir = ""
-		}
-
-		// add dir if match
-		files = append(files, dir)
-
-		// add all matching files to prediction
-		for _, f := range files {
-			if stat, err := os.Stat(f); err != nil || (!stat.IsDir() && !allowFiles) {
-				continue
-			}
-
-			// change file name to relative if necessary
-			if rel && workDir != "" {
-				f = toRel(workDir, f)
-			}
-
-			// test matching of file to the argument
-			if match.File(f, a.Last) {
-				prediction = append(prediction, f)
-			}
-		}
+		prediction = predictFiles(a.Last, pattern, allowFiles)
 		return
 	}
+}
+
+func predictFiles(last string, pattern string, allowFiles bool) (prediction []string) {
+	if strings.HasSuffix(last, "/..") {
+		return
+	}
+
+	dir := dirFromLast(last)
+	rel := !filepath.IsAbs(pattern)
+	files := listFiles(dir, pattern)
+
+	// get wording directory for relative name
+	workDir, err := os.Getwd()
+	if err != nil {
+		workDir = ""
+	}
+
+	// add dir if match
+	files = append(files, dir)
+
+	// add all matching files to prediction
+	for _, f := range files {
+		if stat, err := os.Stat(f); err != nil || (!stat.IsDir() && !allowFiles) {
+			continue
+		}
+
+		// change file name to relative if necessary
+		if rel && workDir != "" {
+			f = toRel(workDir, f)
+		}
+
+		// test matching of file to the argument
+		if match.File(f, last) {
+			prediction = append(prediction, f)
+		}
+	}
+	return
+
 }
 
 func listFiles(dir, pattern string) []string {
