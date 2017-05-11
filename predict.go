@@ -49,19 +49,15 @@ var PredictAnything = PredictFunc(func(Args) []string { return nil })
 
 // PredictSet expects specific set of terms, given in the options argument.
 func PredictSet(options ...string) Predictor {
-	p := predictSet{}
-	for _, o := range options {
-		p = append(p, match.Prefix(o))
-	}
-	return p
+	return predictSet(options)
 }
 
-type predictSet []match.Prefix
+type predictSet []string
 
 func (p predictSet) Predict(a Args) (prediction []string) {
 	for _, m := range p {
-		if m.Match(a.Last) {
-			prediction = append(prediction, m.String())
+		if match.Prefix(m, a.Last) {
+			prediction = append(prediction, m)
 		}
 	}
 	return
@@ -104,8 +100,8 @@ func files(pattern string, allowDirs, allowFiles bool) PredictFunc {
 		}
 		// add all matching files to prediction
 		for _, f := range files {
-			if m := match.File(f); m.Match(a.Last) {
-				prediction = append(prediction, m.String())
+			if match.File(f, a.Last) {
+				prediction = append(prediction, f)
 			}
 		}
 		return

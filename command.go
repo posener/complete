@@ -53,8 +53,8 @@ func (c *Command) predict(a Args) (options []string, only bool) {
 
 	// add global available complete Predict
 	for flag := range c.Flags {
-		if m := match.Prefix(flag); m.Match(a.Last) {
-			options = append(options, m.String())
+		if match.Prefix(flag, a.Last) {
+			options = append(options, flag)
 		}
 	}
 
@@ -82,8 +82,8 @@ func (c *Command) searchSub(a Args) (sub string, all []string, only bool) {
 // subCommands returns a list of matching sub commands
 func (c *Command) subCommands(last string) (prediction []string) {
 	for sub := range c.Sub {
-		if m := match.Prefix(sub); m.Match(last) {
-			prediction = append(prediction, m.String())
+		if match.Prefix(sub, last) {
+			prediction = append(prediction, sub)
 		}
 	}
 	return

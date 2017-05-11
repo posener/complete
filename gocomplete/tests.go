@@ -21,8 +21,8 @@ func predictTest(funcPrefix ...string) complete.Predictor {
 	return complete.PredictFunc(func(a complete.Args) (prediction []string) {
 		tests := testNames(funcPrefix)
 		for _, t := range tests {
-			if m := match.Prefix(t); m.Match(a.Last) {
-				prediction = append(prediction, m.String())
+			if match.Prefix(t, a.Last) {
+				prediction = append(prediction, t)
 			}
 		}
 		return
