@@ -60,30 +60,30 @@ func TestPredicate(t *testing.T) {
 		{
 			name: "files/txt",
 			p:    PredictFiles("*.txt"),
-			want: []string{"./a.txt", "./b.txt", "./c.txt", "./.dot.txt"},
+			want: []string{"./", "./dir/", "./a.txt", "./b.txt", "./c.txt", "./.dot.txt"},
 		},
 		{
 			name: "files/txt",
 			p:    PredictFiles("*.txt"),
 			arg:  "./dir/",
-			want: []string{},
+			want: []string{"./dir/"},
 		},
 		{
 			name: "files/x",
 			p:    PredictFiles("x"),
 			arg:  "./dir/",
-			want: []string{"./dir/x"},
+			want: []string{"./dir/", "./dir/x"},
 		},
 		{
 			name: "files/*",
 			p:    PredictFiles("x*"),
 			arg:  "./dir/",
-			want: []string{"./dir/x"},
+			want: []string{"./dir/", "./dir/x"},
 		},
 		{
 			name: "files/md",
 			p:    PredictFiles("*.md"),
-			want: []string{"./readme.md"},
+			want: []string{"./", "./dir/", "./readme.md"},
 		},
 		{
 			name: "dirs",
@@ -93,7 +93,7 @@ func TestPredicate(t *testing.T) {
 		},
 		{
 			name: "dirs and files",
-			p:    PredictFilesOrDirs("*"),
+			p:    PredictFiles("*"),
 			arg:  "./dir",
 			want: []string{"./dir/", "./dir/x"},
 		},
@@ -106,7 +106,7 @@ func TestPredicate(t *testing.T) {
 			name: "subdir",
 			p:    PredictFiles("*"),
 			arg:  "./dir/",
-			want: []string{"./dir/x"},
+			want: []string{"./dir/", "./dir/x"},
 		},
 	}
 
