@@ -1,25 +1,26 @@
 package complete
 
-type args struct {
-	all           []string
-	completed     []string
-	beingTyped    string
-	lastCompleted string
+// Args describes command line arguments
+type Args struct {
+	All           []string
+	Completed     []string
+	Last          string
+	LastCompleted string
 }
 
-func newArgs(line []string) args {
+func newArgs(line []string) Args {
 	completed := removeLast(line)
-	return args{
-		all:           line[1:],
-		completed:     completed,
-		beingTyped:    last(line),
-		lastCompleted: last(completed),
+	return Args{
+		All:           line[1:],
+		Completed:     completed,
+		Last:          last(line),
+		LastCompleted: last(completed),
 	}
 }
 
-func (a args) from(i int) args {
-	a.all = a.all[i:]
-	a.completed = a.completed[i:]
+func (a Args) from(i int) Args {
+	a.All = a.All[i:]
+	a.Completed = a.Completed[i:]
 	return a
 }
 

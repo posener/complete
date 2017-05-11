@@ -12,7 +12,7 @@ func TestPredicate(t *testing.T) {
 
 	tests := []struct {
 		name string
-		p    Predicate
+		p    Predictor
 		arg  string
 		want []string
 	}{
@@ -38,28 +38,23 @@ func TestPredicate(t *testing.T) {
 			want: []string{},
 		},
 		{
-			name: "nothing",
-			p:    PredictNothing,
-			want: []string{},
-		},
-		{
 			name: "or: word with nil",
-			p:    PredictSet("a").Or(PredictNothing),
+			p:    PredictOr(PredictSet("a"), nil),
 			want: []string{"a"},
 		},
 		{
 			name: "or: nil with word",
-			p:    PredictNothing.Or(PredictSet("a")),
+			p:    PredictOr(nil, PredictSet("a")),
 			want: []string{"a"},
 		},
 		{
 			name: "or: nil with nil",
-			p:    PredictNothing.Or(PredictNothing),
+			p:    PredictOr(PredictNothing, PredictNothing),
 			want: []string{},
 		},
 		{
 			name: "or: word with word with word",
-			p:    PredictSet("a").Or(PredictSet("b")).Or(PredictSet("c")),
+			p:    PredictOr(PredictSet("a"), PredictSet("b"), PredictSet("c")),
 			want: []string{"a", "b", "c"},
 		},
 		{
@@ -118,18 +113,12 @@ func TestPredicate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name+"?arg='"+tt.arg+"'", func(t *testing.T) {
 
-			matchers := tt.p.predict(tt.arg)
+			matches := tt.p.Predict(newArgs(strings.Split(tt.arg, " ")))
 
-			matchersString := []string{}
-			for _, m := range matchers {
-				if m.Match(tt.arg) {
-					matchersString = append(matchersString, m.String())
-				}
-			}
-			sort.Strings(matchersString)
+			sort.Strings(matches)
 			sort.Strings(tt.want)
 
-			got := strings.Join(matchersString, ",")
+			got := strings.Join(matches, ",")
 			want := strings.Join(tt.want, ",")
 
 			if got != want {

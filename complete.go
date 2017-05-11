@@ -51,25 +51,11 @@ func (c *Complete) Run() bool {
 
 	a := newArgs(line)
 
-	options := complete(c.Command, a)
+	options := c.Command.Predict(a)
 
 	Log("Completion: %s", options)
 	output(options)
 	return true
-}
-
-// complete get a command an command line arguments and returns
-// matching completion options
-func complete(c Command, a args) (matching []string) {
-	options, _ := c.predict(a)
-
-	for _, option := range options {
-		Log("option %T, %s -> %t", option, option, option.Match(a.beingTyped))
-		if option.Match(a.beingTyped) {
-			matching = append(matching, option.String())
-		}
-	}
-	return
 }
 
 func getLine() ([]string, bool) {
