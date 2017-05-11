@@ -3,7 +3,7 @@ package complete
 import "github.com/posener/complete/match"
 
 // Command represents a command line
-// It holds the data that enables auto completion of a given typed command line
+// It holds the data that enables auto completion of command line
 // Command can also be a sub command.
 type Command struct {
 	// Sub is map of sub commands of the current command
@@ -12,7 +12,7 @@ type Command struct {
 	Sub Commands
 
 	// Flags is a map of flags that the command accepts.
-	// The key is the flag name, and the value is it's prediction options.
+	// The key is the flag name, and the value is it's prediction predict.
 	Flags Flags
 
 	// Args are extra arguments that the command accepts, those who are
@@ -24,62 +24,52 @@ type Command struct {
 type Commands map[string]Command
 
 // Flags is the type Flags of the Flags member, it maps a flag name to the flag
-// prediction options.
+// prediction predict.
 type Flags map[string]Predicate
 
-// options returns all available complete options for the given command
-// args are all except the last command line arguments relevant to the command
-func (c *Command) options(args []string) (options []match.Matcher, only bool) {
+// predict returns all available complete predict for the given command
+// all are all except the last command line arguments relevant to the command
+func (c *Command) predict(a args) (options []match.Matcher, only bool) {
 
-	// remove the first argument, which is the command name
-	args = args[1:]
-	wordCurrent := last(args)
-	wordCompleted := last(removeLast(args))
 	// if wordCompleted has something that needs to follow it,
 	// it is the most relevant completion
-	if predicate, ok := c.Flags[wordCompleted]; ok && predicate != nil {
-		Log("Predicting according to flag %s", wordCurrent)
-		return predicate.predict(wordCurrent), true
+	if predicate, ok := c.Flags[a.lastCompleted]; ok && predicate != nil {
+		Log("Predicting according to flag %s", a.beingTyped)
+		return predicate.predict(a.beingTyped), true
 	}
 
-	sub, options, only := c.searchSub(args)
+	sub, options, only := c.searchSub(a)
 	if only {
 		return
 	}
 
-	// if no subcommand was entered in any of the args, add the
-	// subcommands as complete options.
+	// if no sub command was found, return a list of the sub commands
 	if sub == "" {
 		options = append(options, c.subCommands()...)
 	}
 
-	// add global available complete options
+	// add global available complete predict
 	for flag := range c.Flags {
 		options = append(options, match.Prefix(flag))
 	}
 
 	// add additional expected argument of the command
-	options = append(options, c.Args.predict(wordCurrent)...)
+	options = append(options, c.Args.predict(a.beingTyped)...)
 
 	return
 }
 
 // searchSub searches recursively within sub commands if the sub command appear
 // in the on of the arguments.
-func (c *Command) searchSub(args []string) (sub string, all []match.Matcher, only bool) {
-
-	// search for sub command in all arguments except the last one
-	// because that one might not be completed yet
-	searchArgs := removeLast(args)
-
-	for i, arg := range searchArgs {
+func (c *Command) searchSub(a args) (sub string, all []match.Matcher, only bool) {
+	for i, arg := range a.completed {
 		if cmd, ok := c.Sub[arg]; ok {
 			sub = arg
-			all, only = cmd.options(args[i:])
+			all, only = cmd.predict(a.from(i))
 			return
 		}
 	}
-	return "", nil, false
+	return
 }
 
 // suvCommands returns a list of matchers according to the sub command names
@@ -89,11 +79,4 @@ func (c *Command) subCommands() []match.Matcher {
 		subs = append(subs, match.Prefix(sub))
 	}
 	return subs
-}
-
-func removeLast(a []string) []string {
-	if len(a) > 0 {
-		return a[:len(a)-1]
-	}
-	return a
 }

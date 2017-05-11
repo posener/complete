@@ -41,15 +41,17 @@ func New(name string, command Command) *Complete {
 // returns success if the completion ran or if the cli matched
 // any of the given flags, false otherwise
 func (c *Complete) Run() bool {
-	args, ok := getLine()
+	line, ok := getLine()
 	if !ok {
 		// make sure flags parsed,
 		// in case they were not added in the main program
 		return c.CLI.Run()
 	}
-	Log("Completing args: %s", args)
+	Log("Completing line: %s", line)
 
-	options := complete(c.Command, args)
+	a := newArgs(line)
+
+	options := complete(c.Command, a)
 
 	Log("Completion: %s", options)
 	output(options)
@@ -58,14 +60,12 @@ func (c *Complete) Run() bool {
 
 // complete get a command an command line arguments and returns
 // matching completion options
-func complete(c Command, args []string) (matching []string) {
-	options, _ := c.options(args)
+func complete(c Command, a args) (matching []string) {
+	options, _ := c.predict(a)
 
-	// choose only matching options
-	l := last(args)
 	for _, option := range options {
-		Log("option %T, %s -> %t", option, option, option.Match(l))
-		if option.Match(l) {
+		Log("option %T, %s -> %t", option, option, option.Match(a.beingTyped))
+		if option.Match(a.beingTyped) {
 			matching = append(matching, option.String())
 		}
 	}
@@ -78,13 +78,6 @@ func getLine() ([]string, bool) {
 		return nil, false
 	}
 	return strings.Split(line, " "), true
-}
-
-func last(args []string) (last string) {
-	if len(args) > 0 {
-		last = args[len(args)-1]
-	}
-	return
 }
 
 func output(options []string) {
