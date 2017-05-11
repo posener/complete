@@ -3,6 +3,7 @@ package complete
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/posener/complete/match"
 )
@@ -85,6 +86,9 @@ func PredictFilesOrDirs(pattern string) Predictor {
 
 func files(pattern string, allowDirs, allowFiles bool) PredictFunc {
 	return func(a Args) (prediction []string) {
+		if strings.HasSuffix(a.Last, "/..") {
+			return
+		}
 		dir := dirFromLast(a.Last)
 		Log("looking for files in %s (last=%s)", dir, a.Last)
 		files, err := filepath.Glob(filepath.Join(dir, pattern))
