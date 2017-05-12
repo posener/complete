@@ -4,19 +4,17 @@ package main
 import "github.com/posener/complete"
 
 var (
-	predictEllipsis = complete.PredictSet("./...")
-
-	goFilesOrPackages = complete.PredictOr(
-		complete.PredictFiles("*.go"),
-		complete.PredictDirs("*"),
-		predictEllipsis,
-	)
+	ellipsis     = complete.PredictSet("./...")
+	anyPackage   = predictPackages("")
+	goFiles      = complete.PredictFiles("*.go")
+	anyFile      = complete.PredictFiles("*")
+	anyGo        = complete.PredictOr(goFiles, anyPackage, ellipsis)
 )
 
 func main() {
 	build := complete.Command{
 		Flags: complete.Flags{
-			"-o": complete.PredictFiles("*"),
+			"-o": anyFile,
 			"-i": complete.PredictNothing,
 
 			"-a":             complete.PredictNothing,
@@ -35,18 +33,18 @@ func main() {
 			"-installsuffix": complete.PredictAnything,
 			"-ldflags":       complete.PredictAnything,
 			"-linkshared":    complete.PredictNothing,
-			"-pkgdir":        complete.PredictDirs("*"),
+			"-pkgdir":        anyPackage,
 			"-tags":          complete.PredictAnything,
 			"-toolexec":      complete.PredictAnything,
 		},
-		Args: goFilesOrPackages,
+		Args: anyGo,
 	}
 
 	run := complete.Command{
 		Flags: complete.Flags{
 			"-exec": complete.PredictAnything,
 		},
-		Args: complete.PredictFiles("*.go"),
+		Args: goFiles,
 	}
 
 	test := complete.Command{
@@ -78,7 +76,7 @@ func main() {
 			"-outputdir":            complete.PredictDirs("*"),
 			"-trace":                complete.PredictFiles("*.out"),
 		},
-		Args: goFilesOrPackages,
+		Args: anyGo,
 	}
 
 	fmt := complete.Command{
@@ -86,7 +84,7 @@ func main() {
 			"-n": complete.PredictNothing,
 			"-x": complete.PredictNothing,
 		},
-		Args: goFilesOrPackages,
+		Args: anyGo,
 	}
 
 	get := complete.Command{
@@ -98,7 +96,7 @@ func main() {
 			"-t":        complete.PredictNothing,
 			"-u":        complete.PredictNothing,
 		},
-		Args: goFilesOrPackages,
+		Args: anyGo,
 	}
 
 	generate := complete.Command{
@@ -108,7 +106,7 @@ func main() {
 			"-v":   complete.PredictNothing,
 			"-run": complete.PredictAnything,
 		},
-		Args: goFilesOrPackages,
+		Args: anyGo,
 	}
 
 	vet := complete.Command{
@@ -116,7 +114,7 @@ func main() {
 			"-n": complete.PredictNothing,
 			"-x": complete.PredictNothing,
 		},
-		Args: complete.PredictDirs("*"),
+		Args: anyGo,
 	}
 
 	list := complete.Command{
@@ -125,7 +123,7 @@ func main() {
 			"-f":    complete.PredictAnything,
 			"-json": complete.PredictNothing,
 		},
-		Args: complete.PredictDirs("*"),
+		Args: complete.PredictOr(anyPackage, ellipsis),
 	}
 
 	tool := complete.Command{
@@ -142,7 +140,7 @@ func main() {
 			"-n": complete.PredictNothing,
 			"-x": complete.PredictNothing,
 		},
-		Args: complete.PredictDirs("*"),
+		Args: complete.PredictOr(anyPackage, ellipsis),
 	}
 
 	env := complete.Command{
@@ -153,7 +151,7 @@ func main() {
 	version := complete.Command{}
 
 	fix := complete.Command{
-		Args: complete.PredictDirs("*"),
+		Args: anyGo,
 	}
 
 	// commands that also accepts the build flags
