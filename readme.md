@@ -15,6 +15,9 @@ the completion of the command.
 
 In [gocomplete](./gocomplete) there is an example for bash completion for the `go` command line.
 
+This is an example that uses the `complete` package on the `go` command - the `complete` package
+can also be used to implement any completions, see [Usage](#usage).
+
 ### Install
 
 1. Type in your shell:
@@ -25,11 +28,13 @@ gocomplete -install
 
 2. Restart your shell
 
-### Uninstall
+Uninstall by `gocomplete -uninstall`
 
-```
-gocomplete -uninstall
-```
+### Features
+
+- Complete `go` command, including sub commands and all flags.
+- Complete packages names or `.go` files when necessary.
+- Complete test names after `-run` flag.
 
 ## Usage
 
