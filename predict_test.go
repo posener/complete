@@ -11,10 +11,10 @@ func TestPredicate(t *testing.T) {
 	initTests()
 
 	tests := []struct {
-		name string
-		p    Predictor
-		arg  string
-		want []string
+		name    string
+		p       Predictor
+		argList []string
+		want    []string
 	}{
 		{
 			name: "set",
@@ -22,10 +22,10 @@ func TestPredicate(t *testing.T) {
 			want: []string{"a", "b", "c"},
 		},
 		{
-			name: "set with does",
-			p:    PredictSet("./..", "./x"),
-			arg:  "./.",
-			want: []string{"./.."},
+			name:    "set with does",
+			p:       PredictSet("./..", "./x"),
+			argList: []string{"./.", "./.."},
+			want:    []string{"./.."},
 		},
 		{
 			name: "set/empty",
@@ -63,67 +63,71 @@ func TestPredicate(t *testing.T) {
 			want: []string{"./", "./dir/", "./a.txt", "./b.txt", "./c.txt", "./.dot.txt"},
 		},
 		{
-			name: "files/txt",
-			p:    PredictFiles("*.txt"),
-			arg:  "./dir/",
-			want: []string{"./dir/"},
+			name:    "files/txt",
+			p:       PredictFiles("*.txt"),
+			argList: []string{"./dir/"},
+			want:    []string{"./dir/"},
 		},
 		{
-			name: "files/x",
-			p:    PredictFiles("x"),
-			arg:  "./dir/",
-			want: []string{"./dir/", "./dir/x"},
+			name:    "complete files inside dir if it is the only match",
+			p:       PredictFiles("foo"),
+			argList: []string{"./dir/", "./d"},
+			want:    []string{"./dir/", "./dir/foo"},
 		},
 		{
-			name: "files/*",
-			p:    PredictFiles("x*"),
-			arg:  "./dir/",
-			want: []string{"./dir/", "./dir/x"},
+			name:    "complete files inside dir when argList includes file name",
+			p:       PredictFiles("*"),
+			argList: []string{"./dir/f", "./dir/foo"},
+			want:    []string{"./dir/foo"},
 		},
 		{
-			name: "files/md",
-			p:    PredictFiles("*.md"),
-			want: []string{"./", "./dir/", "./readme.md"},
+			name:    "files/md",
+			p:       PredictFiles("*.md"),
+			argList: []string{"", ".", "./"},
+			want:    []string{"./", "./dir/", "./readme.md"},
 		},
 		{
-			name: "dirs",
-			p:    PredictDirs("*"),
-			arg:  "./dir/",
-			want: []string{"./dir/"},
+			name:    "dirs",
+			p:       PredictDirs("*"),
+			argList: []string{"./dir/", "./di", "di", "dir", "dir/"},
+			want:    []string{"./dir/"},
 		},
 		{
-			name: "dirs and files",
-			p:    PredictFiles("*"),
-			arg:  "./dir",
-			want: []string{"./dir/", "./dir/x"},
+			name:    "predict anything in dir",
+			p:       PredictFiles("*"),
+			argList: []string{"./dir", "dir", "./dir/", "./di"},
+			want:    []string{"./dir/", "./dir/foo", "./dir/bar"},
 		},
 		{
-			name: "dirs",
-			p:    PredictDirs("*"),
-			want: []string{"./", "./dir/"},
-		},
-		{
-			name: "subdir",
-			p:    PredictFiles("*"),
-			arg:  "./dir/",
-			want: []string{"./dir/", "./dir/x"},
+			name:    "root directories",
+			p:       PredictDirs("*"),
+			argList: []string{"", ".", "./"},
+			want:    []string{"./", "./dir/"},
 		},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name+"?arg='"+tt.arg+"'", func(t *testing.T) {
 
-			matches := tt.p.Predict(newArgs(strings.Split(tt.arg, " ")))
+		// no args in argList, means an empty argument
+		if len(tt.argList) == 0 {
+			tt.argList = append(tt.argList, "")
+		}
 
-			sort.Strings(matches)
-			sort.Strings(tt.want)
+		for _, arg := range tt.argList {
+			t.Run(tt.name+"?arg='"+arg+"'", func(t *testing.T) {
 
-			got := strings.Join(matches, ",")
-			want := strings.Join(tt.want, ",")
+				matches := tt.p.Predict(newArgs(strings.Split(arg, " ")))
 
-			if got != want {
-				t.Errorf("failed %s\ngot = %s\nwant: %s", t.Name(), got, want)
-			}
-		})
+				sort.Strings(matches)
+				sort.Strings(tt.want)
+
+				got := strings.Join(matches, ",")
+				want := strings.Join(tt.want, ",")
+
+				if got != want {
+					t.Errorf("failed %s\ngot = %s\nwant: %s", t.Name(), got, want)
+				}
+			})
+		}
 	}
 }
