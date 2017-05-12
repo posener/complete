@@ -114,7 +114,7 @@ func TestPredicate(t *testing.T) {
 		}
 
 		for _, arg := range tt.argList {
-			t.Run(tt.name+"?arg='"+arg+"'", func(t *testing.T) {
+			t.Run(tt.name+"/arg="+arg, func(t *testing.T) {
 
 				matches := tt.p.Predict(newArgs(strings.Split(arg, " ")))
 

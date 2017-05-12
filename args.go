@@ -1,5 +1,10 @@
 package complete
 
+import (
+	"os"
+	"path/filepath"
+)
+
 // Args describes command line arguments
 type Args struct {
 	// All lists of all arguments in command line (not including the command itself)
@@ -16,6 +21,21 @@ type Args struct {
 	// If the last character in the command line is space, this would be the
 	// last word, otherwise, it would be the word before that.
 	LastCompleted string
+}
+
+// Directory gives the directory of the current written
+// last argument if it represents a file name being written.
+// in case that it is not, we fall back to the current directory.
+func (a Args) Directory() string {
+	if info, err := os.Stat(a.Last); err == nil && info.IsDir() {
+		return a.Last
+	}
+	dir := filepath.Dir(a.Last)
+	_, err := os.Stat(dir)
+	if err != nil {
+		return "./"
+	}
+	return dir
 }
 
 func newArgs(line []string) Args {
