@@ -5,7 +5,6 @@ import "github.com/posener/complete"
 
 var (
 	ellipsis     = complete.PredictSet("./...")
-	mainPackages = predictPackages("main")
 	anyPackage   = predictPackages("")
 	goFiles      = complete.PredictFiles("*.go")
 	anyFile      = complete.PredictFiles("*")

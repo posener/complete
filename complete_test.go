@@ -81,11 +81,11 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		{
 			args: "sub2 ",
-			want: []string{"./", "./dir/", "./readme.md", "-flag2", "-flag3", "-h", "-global1", "-o"},
+			want: []string{"./", "./dir/", "./outer/", "./readme.md", "-flag2", "-flag3", "-h", "-global1", "-o"},
 		},
 		{
 			args: "sub2 ./",
-			want: []string{"./", "./readme.md", "./dir/"},
+			want: []string{"./", "./readme.md", "./dir/", "./outer/"},
 		},
 		{
 			args: "sub2 re",
@@ -93,7 +93,7 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		{
 			args: "sub2 -flag2 ",
-			want: []string{"./", "./dir/", "./readme.md", "-flag2", "-flag3", "-h", "-global1", "-o"},
+			want: []string{"./", "./dir/", "./outer/", "./readme.md", "-flag2", "-flag3", "-h", "-global1", "-o"},
 		},
 		{
 			args: "sub1 -fl",
@@ -129,7 +129,7 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		{
 			args: "-o ",
-			want: append(testTXTFiles, "./", "./dir/"),
+			want: append(testTXTFiles, "./", "./dir/", "./outer/"),
 		},
 		{
 			args: "-o ./no-su",
@@ -137,7 +137,7 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		{
 			args: "-o ./",
-			want: append(testTXTFiles, "./", "./dir/"),
+			want: append(testTXTFiles, "./", "./dir/", "./outer/"),
 		},
 		{
 			args: "-o ./read",

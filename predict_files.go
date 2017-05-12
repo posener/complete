@@ -107,7 +107,7 @@ func listFiles(dir, pattern string, allowFiles bool) []string {
 	if dirs, err := ioutil.ReadDir(dir); err == nil {
 		for _, d := range dirs {
 			if d.IsDir() {
-				m[d.Name()] = true
+				m[filepath.Join(dir, d.Name())] = true
 			}
 		}
 	}

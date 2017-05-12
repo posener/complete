@@ -60,7 +60,7 @@ func TestPredicate(t *testing.T) {
 		{
 			name: "files/txt",
 			p:    PredictFiles("*.txt"),
-			want: []string{"./", "./dir/", "./a.txt", "./b.txt", "./c.txt", "./.dot.txt"},
+			want: []string{"./", "./dir/", "./outer/", "./a.txt", "./b.txt", "./c.txt", "./.dot.txt"},
 		},
 		{
 			name:    "files/txt",
@@ -84,7 +84,7 @@ func TestPredicate(t *testing.T) {
 			name:    "files/md",
 			p:       PredictFiles("*.md"),
 			argList: []string{"", ".", "./"},
-			want:    []string{"./", "./dir/", "./readme.md"},
+			want:    []string{"./", "./dir/", "./outer/", "./readme.md"},
 		},
 		{
 			name:    "dirs",
@@ -102,7 +102,19 @@ func TestPredicate(t *testing.T) {
 			name:    "root directories",
 			p:       PredictDirs("*"),
 			argList: []string{"", ".", "./"},
-			want:    []string{"./", "./dir/"},
+			want:    []string{"./", "./dir/", "./outer/"},
+		},
+		{
+			name:    "nested directories",
+			p:       PredictDirs("*.md"),
+			argList: []string{"ou", "./ou", "./outer", "./outer/"},
+			want:    []string{"./outer/", "./outer/inner/"},
+		},
+		{
+			name:    "nested inner directory",
+			p:       PredictFiles("*.md"),
+			argList: []string{"outer/i"},
+			want:    []string{"./outer/inner/", "./outer/inner/readme.md"},
 		},
 	}
 
