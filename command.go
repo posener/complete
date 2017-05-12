@@ -20,18 +20,42 @@ type Command struct {
 	Args Predictor
 }
 
-// Commands is the type of Sub member, it maps a command name to a command struct
-type Commands map[string]Command
-
-// Flags is the type Flags of the Flags member, it maps a flag name to the flag predictions.
-type Flags map[string]Predictor
-
 // Predict returns all possible predictions for args according to the command struct
 func (c *Command) Predict(a Args) (predictions []string) {
 	predictions, _ = c.predict(a)
 	return
 }
 
+// Commands is the type of Sub member, it maps a command name to a command struct
+type Commands map[string]Command
+
+// Predict completion of sub command names names according to command line arguments
+func (c Commands) Predict(a Args) (prediction []string) {
+	for sub := range c {
+		if match.Prefix(sub, a.Last) {
+			prediction = append(prediction, sub)
+		}
+	}
+	return
+}
+
+// Flags is the type Flags of the Flags member, it maps a flag name to the flag predictions.
+type Flags map[string]Predictor
+
+// Predict completion of flags names according to command line arguments
+func (f Flags) Predict(a Args) (prediction []string) {
+	for flag := range f {
+		if match.Prefix(flag, a.Last) {
+			prediction = append(prediction, flag)
+		}
+	}
+	return
+}
+
+// predict options
+// only is set to true if no more options are allowed to be returned
+// those are in cases of special flag that has specific completion arguments,
+// and other flags or sub commands can't come after it.
 func (c *Command) predict(a Args) (options []string, only bool) {
 
 	// if wordCompleted has something that needs to follow it,
@@ -41,50 +65,32 @@ func (c *Command) predict(a Args) (options []string, only bool) {
 		return predictor.Predict(a), true
 	}
 
-	sub, options, only := c.searchSub(a)
-	if only {
-		return
+	// search sub commands for predictions
+	subCommandFound := false
+	for i, arg := range a.Completed {
+		if cmd, ok := c.Sub[arg]; ok {
+			subCommandFound = true
+
+			// recursive call for sub command
+			options, only = cmd.predict(a.from(i))
+			if only {
+				return
+			}
+		}
 	}
 
 	// if no sub command was found, return a list of the sub commands
-	if sub == "" {
-		options = append(options, c.subCommands(a.Last)...)
+	if !subCommandFound {
+		options = append(options, c.Sub.Predict(a)...)
 	}
 
 	// add global available complete options
-	for flag := range c.Flags {
-		if match.Prefix(flag, a.Last) {
-			options = append(options, flag)
-		}
-	}
+	options = append(options, c.Flags.Predict(a)...)
 
 	// add additional expected argument of the command
 	if c.Args != nil {
 		options = append(options, c.Args.Predict(a)...)
 	}
 
-	return
-}
-
-// searchSub searches recursively within sub commands if the sub command appear
-// in the on of the arguments.
-func (c *Command) searchSub(a Args) (sub string, all []string, only bool) {
-	for i, arg := range a.Completed {
-		if cmd, ok := c.Sub[arg]; ok {
-			sub = arg
-			all, only = cmd.predict(a.from(i))
-			return
-		}
-	}
-	return
-}
-
-// subCommands returns a list of matching sub commands
-func (c *Command) subCommands(last string) (prediction []string) {
-	for sub := range c.Sub {
-		if match.Prefix(sub, last) {
-			prediction = append(prediction, sub)
-		}
-	}
 	return
 }
