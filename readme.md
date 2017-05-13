@@ -36,6 +36,13 @@ Uninstall by `gocomplete -uninstall`
 - Complete packages names or `.go` files when necessary.
 - Complete test names after `-run` flag.
 
+## complete package
+
+Supported shells:
+
+[x] bash
+[x] zsh
+
 ## Usage
 
 Assuming you have program called `run` and you want to have bash completion

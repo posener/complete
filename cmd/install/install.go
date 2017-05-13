@@ -2,9 +2,11 @@ package install
 
 import (
 	"errors"
-	"fmt"
 	"os"
+	"os/user"
 	"path/filepath"
+
+	"github.com/hashicorp/go-multierror"
 )
 
 type installer interface {
@@ -15,46 +17,55 @@ type installer interface {
 // Install complete command given:
 // cmd: is the command name
 func Install(cmd string) error {
-	shell := shellType()
-	if shell == "" {
-		return errors.New("must install through a terminatl")
-	}
-	i := getInstaller(shell)
-	if i == nil {
-		return fmt.Errorf("shell %s not supported", shell)
+	is := installers()
+	if len(is) == 0 {
+		return errors.New("Did not found any shells to install")
 	}
 	bin, err := getBinaryPath()
 	if err != nil {
 		return err
 	}
-	return i.Install(cmd, bin)
+
+	for _, i := range is {
+		errI := i.Install(cmd, bin)
+		if errI != nil {
+			multierror.Append(err, errI)
+		}
+	}
+
+	return err
 }
 
 // Uninstall complete command given:
 // cmd: is the command name
 func Uninstall(cmd string) error {
-	shell := shellType()
-	if shell == "" {
-		return errors.New("must uninstall through a terminatl")
-	}
-	i := getInstaller(shell)
-	if i == nil {
-		return fmt.Errorf("shell %s not supported", shell)
+	is := installers()
+	if len(is) == 0 {
+		return errors.New("Did not found any shells to uninstall")
 	}
 	bin, err := getBinaryPath()
 	if err != nil {
 		return err
 	}
-	return i.Uninstall(cmd, bin)
+
+	for _, i := range is {
+		errI := i.Uninstall(cmd, bin)
+		if errI != nil {
+			multierror.Append(err, errI)
+		}
+	}
+
+	return err
 }
 
-func getInstaller(shell string) installer {
-	switch shell {
-	case "bash":
-		return bash{}
-	default:
-		return nil
+func installers() (i []installer) {
+	if f := rcFile(".bashrc"); f != "" {
+		i = append(i, bash{f})
 	}
+	if f := rcFile(".zshrc"); f != "" {
+		i = append(i, zsh{f})
+	}
+	return
 }
 
 func getBinaryPath() (string, error) {
@@ -65,7 +76,10 @@ func getBinaryPath() (string, error) {
 	return filepath.Abs(bin)
 }
 
-func shellType() string {
-	shell := os.Getenv("SHELL")
-	return filepath.Base(shell)
+func rcFile(name string) string {
+	u, err := user.Current()
+	if err != nil {
+		return ""
+	}
+	return filepath.Join(u.HomeDir, name)
 }
