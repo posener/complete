@@ -77,7 +77,7 @@ func main() {
 				Flags: complete.Flags{
 					// build sub command has a flag '-cpus', which
 					// expects number of cpus after it. in that case
-                    // anything could complete this flag.
+					// anything could complete this flag.
 					"-cpus": complete.Anything,
 				},
 			},
