@@ -4,11 +4,11 @@ package main
 import "github.com/posener/complete"
 
 var (
-	ellipsis     = complete.PredictSet("./...")
-	anyPackage   = predictPackages("")
-	goFiles      = complete.PredictFiles("*.go")
-	anyFile      = complete.PredictFiles("*")
-	anyGo        = complete.PredictOr(goFiles, anyPackage, ellipsis)
+	ellipsis   = complete.PredictSet("./...")
+	anyPackage = predictPackages("")
+	goFiles    = complete.PredictFiles("*.go")
+	anyFile    = complete.PredictFiles("*")
+	anyGo      = complete.PredictOr(goFiles, anyPackage, ellipsis)
 )
 
 func main() {

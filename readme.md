@@ -36,7 +36,14 @@ Uninstall by `gocomplete -uninstall`
 - Complete packages names or `.go` files when necessary.
 - Complete test names after `-run` flag.
 
-## Usage
+## complete package
+
+Supported shells:
+
+[x] bash
+[x] zsh
+
+### Usage
 
 Assuming you have program called `run` and you want to have bash completion
 for it, meaning, if you type `run` then space, then press the `Tab` key,
@@ -95,7 +102,7 @@ func main() {
 }
 ```
 
-## Self completing program
+### Self completing program
 
 In case that the program that we want to complete is written in go we
 can make it self completing. Here is an [example](./example/self/main.go)

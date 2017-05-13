@@ -1,153 +1,32 @@
 package install
 
-import (
-	"bufio"
-	"errors"
-	"fmt"
-	"io"
-	"io/ioutil"
-	"os"
-	"os/user"
-	"path/filepath"
-)
+import "fmt"
 
-type bash struct{}
-
-func (bash) Install(cmd, bin string) error {
-	bashRCFileName, err := bashRCFileName()
-	if err != nil {
-		return err
-	}
-	completeCmd := completeCmd(cmd, bin)
-	if isInFile(bashRCFileName, completeCmd) {
-		return errors.New("Already installed in ~/.bashrc")
-	}
-
-	bashRC, err := os.OpenFile(bashRCFileName, os.O_RDWR|os.O_APPEND, 0)
-	if err != nil {
-		return err
-	}
-	defer bashRC.Close()
-	_, err = bashRC.WriteString(fmt.Sprintf("\n%s\n", completeCmd))
-	return err
+// (un)install in bash
+// basically adds/remove from .bashrc:
+//
+// complete -C </path/to/completion/command> <command>
+type bash struct {
+	rc string
 }
 
-func (bash) Uninstall(cmd, bin string) error {
-	bashRC, err := bashRCFileName()
-	if err != nil {
-		return err
+func (b bash) Install(cmd, bin string) error {
+	completeCmd := b.cmd(cmd, bin)
+	if lineInFile(b.rc, completeCmd) {
+		return fmt.Errorf("already installed in %s", b.rc)
 	}
-	backup := bashRC + ".bck"
-	err = copyFile(bashRC, backup)
-	if err != nil {
-		return err
-	}
-	completeCmd := completeCmd(cmd, bin)
-	if !isInFile(bashRC, completeCmd) {
-		return errors.New("Does not installed in ~/.bashrc")
-	}
-	temp, err := uninstallToTemp(bashRC, completeCmd)
-	if err != nil {
-		return err
-	}
-
-	err = copyFile(temp, bashRC)
-	if err != nil {
-		return err
-	}
-
-	return os.Remove(backup)
-
+	return appendToFile(b.rc, completeCmd)
 }
 
-func completeCmd(cmd, bin string) string {
+func (b bash) Uninstall(cmd, bin string) error {
+	completeCmd := b.cmd(cmd, bin)
+	if !lineInFile(b.rc, completeCmd) {
+		return fmt.Errorf("does not installed in %s", b.rc)
+	}
+
+	return removeFromFile(b.rc, completeCmd)
+}
+
+func (bash) cmd(cmd, bin string) string {
 	return fmt.Sprintf("complete -C %s %s", bin, cmd)
-}
-
-func bashRCFileName() (string, error) {
-	u, err := user.Current()
-	if err != nil {
-		return "", err
-	}
-	return filepath.Join(u.HomeDir, ".bashrc"), nil
-}
-
-func isInFile(name string, lookFor string) bool {
-	f, err := os.Open(name)
-	if err != nil {
-		return false
-	}
-	defer f.Close()
-	r := bufio.NewReader(f)
-	prefix := []byte{}
-	for {
-		line, isPrefix, err := r.ReadLine()
-		if err == io.EOF {
-			return false
-		}
-		if err != nil {
-			return false
-		}
-		if isPrefix {
-			prefix = append(prefix, line...)
-			continue
-		}
-		line = append(prefix, line...)
-		if string(line) == lookFor {
-			return true
-		}
-		prefix = prefix[:0]
-	}
-}
-
-func uninstallToTemp(bashRCFileName, completeCmd string) (string, error) {
-	rf, err := os.Open(bashRCFileName)
-	if err != nil {
-		return "", err
-	}
-	defer rf.Close()
-	wf, err := ioutil.TempFile("/tmp", "bashrc-")
-	if err != nil {
-		return "", err
-	}
-	defer wf.Close()
-
-	r := bufio.NewReader(rf)
-	prefix := []byte{}
-	for {
-		line, isPrefix, err := r.ReadLine()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return "", err
-		}
-		if isPrefix {
-			prefix = append(prefix, line...)
-			continue
-		}
-		line = append(prefix, line...)
-		str := string(line)
-		if str == completeCmd {
-			continue
-		}
-		wf.WriteString(str + "\n")
-		prefix = prefix[:0]
-	}
-	return wf.Name(), nil
-}
-
-func copyFile(src string, dst string) error {
-	in, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer in.Close()
-	out, err := os.Create(dst)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-	_, err = io.Copy(out, in)
-	return err
 }
