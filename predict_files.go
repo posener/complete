@@ -78,7 +78,7 @@ func PredictFilesSet(files []string) PredictFunc {
 		for _, f := range files {
 			// change file name to relative if necessary
 			if rel {
-				f = toRel(f)
+				f = relativePath(f)
 			}
 
 			// test matching of file to the argument
@@ -119,27 +119,3 @@ func listFiles(dir, pattern string, allowFiles bool) []string {
 	return list
 }
 
-// toRel changes a file name to a relative name
-func toRel(file string) string {
-	// get wording directory for relative name
-	workDir, err := os.Getwd()
-	if err != nil {
-		return file
-	}
-
-	abs, err := filepath.Abs(file)
-	if err != nil {
-		return file
-	}
-	rel, err := filepath.Rel(workDir, abs)
-	if err != nil {
-		return file
-	}
-	if rel != "." {
-		rel = "./" + rel
-	}
-	if info, err := os.Stat(rel); err == nil && info.IsDir() {
-		rel += "/"
-	}
-	return rel
-}
