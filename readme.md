@@ -43,7 +43,7 @@ Supported shells:
 [x] bash
 [x] zsh
 
-## Usage
+### Usage
 
 Assuming you have program called `run` and you want to have bash completion
 for it, meaning, if you type `run` then space, then press the `Tab` key,
@@ -102,7 +102,7 @@ func main() {
 }
 ```
 
-## Self completing program
+### Self completing program
 
 In case that the program that we want to complete is written in go we
 can make it self completing. Here is an [example](./example/self/main.go)
