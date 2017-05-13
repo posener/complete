@@ -28,18 +28,23 @@ type Args struct {
 // in case that it is not, we fall back to the current directory.
 func (a Args) Directory() string {
 	if info, err := os.Stat(a.Last); err == nil && info.IsDir() {
+		if !filepath.IsAbs(a.Last) {
+			return relativePath(a.Last)
+		}
 		return a.Last
 	}
 	dir := filepath.Dir(a.Last)
-	_, err := os.Stat(dir)
-	if err != nil {
+	if info, err := os.Stat(dir); err != nil || !info.IsDir() {
 		return "./"
+	}
+	if !filepath.IsAbs(dir) {
+		dir = relativePath(dir)
 	}
 	return dir
 }
 
 func newArgs(line []string) Args {
-	completed := removeLast(line)
+	completed := removeLast(line[1:])
 	return Args{
 		All:           line[1:],
 		Completed:     completed,
@@ -49,7 +54,14 @@ func newArgs(line []string) Args {
 }
 
 func (a Args) from(i int) Args {
+	if i > len(a.All) {
+		i = len(a.All)
+	}
 	a.All = a.All[i:]
+
+	if i > len(a.Completed) {
+		i = len(a.Completed)
+	}
 	a.Completed = a.Completed[i:]
 	return a
 }
