@@ -40,8 +40,8 @@ Uninstall by `gocomplete -uninstall`
 
 Supported shells:
 
-[x] bash
-[x] zsh
+- [x] bash
+- [x] zsh
 
 ### Usage
 
@@ -75,9 +75,10 @@ func main() {
 
 				// define flags of the build sub command
 				Flags: complete.Flags{
-					// build sub command has a flag '-fast', which
-					// does not expects anything after it.
-					"-fast": complete.PredictNothing,
+					// build sub command has a flag '-cpus', which
+					// expects number of cpus after it. in that case
+                    // anything could complete this flag.
+					"-cpus": complete.Anything,
 				},
 			},
 		},
@@ -105,4 +106,6 @@ func main() {
 ### Self completing program
 
 In case that the program that we want to complete is written in go we
-can make it self completing. Here is an [example](./example/self/main.go)
+can make it self completing.
+
+Here is an [example](./example/self/main.go)
