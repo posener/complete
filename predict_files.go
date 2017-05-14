@@ -118,4 +118,3 @@ func listFiles(dir, pattern string, allowFiles bool) []string {
 	}
 	return list
 }
-
