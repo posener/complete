@@ -181,7 +181,7 @@ func main() {
 			"fix":      fix,
 			"version":  version,
 		},
-		Flags: complete.Flags{
+		GlobalFlags: complete.Flags{
 			"-h": complete.PredictNothing,
 		},
 	}
