@@ -5,7 +5,7 @@ import "github.com/posener/complete"
 
 var (
 	ellipsis   = complete.PredictSet("./...")
-	anyPackage = predictPackages("")
+	anyPackage = complete.PredictFunc(predictPackages)
 	goFiles    = complete.PredictFiles("*.go")
 	anyFile    = complete.PredictFiles("*")
 	anyGo      = complete.PredictOr(goFiles, anyPackage, ellipsis)
@@ -44,7 +44,7 @@ func main() {
 		Flags: complete.Flags{
 			"-exec": complete.PredictAnything,
 		},
-		Args: goFiles,
+		Args: complete.PredictFunc(predictRunnableFiles),
 	}
 
 	test := complete.Command{
@@ -53,14 +53,14 @@ func main() {
 			"-c":    complete.PredictNothing,
 			"-exec": complete.PredictAnything,
 
-			"-bench":     predictTest("Benchmark"),
+			"-bench":     predictBenchmark,
 			"-benchtime": complete.PredictAnything,
 			"-count":     complete.PredictAnything,
 			"-cover":     complete.PredictNothing,
 			"-covermode": complete.PredictSet("set", "count", "atomic"),
 			"-coverpkg":  complete.PredictDirs("*"),
 			"-cpu":       complete.PredictAnything,
-			"-run":       predictTest("Test", "Example"),
+			"-run":       predictTest,
 			"-short":     complete.PredictNothing,
 			"-timeout":   complete.PredictAnything,
 
