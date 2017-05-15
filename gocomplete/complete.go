@@ -160,6 +160,7 @@ func main() {
 		run.Flags[name] = options
 		list.Flags[name] = options
 		vet.Flags[name] = options
+		get.Flags[name] = options
 	}
 
 	gogo := complete.Command{
