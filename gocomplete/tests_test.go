@@ -1,10 +1,11 @@
 package main
 
 import (
+	"os"
+	"sort"
 	"testing"
 
 	"github.com/posener/complete"
-	"os"
 )
 
 func TestPredictions(t *testing.T) {
@@ -49,7 +50,7 @@ func TestPredictions(t *testing.T) {
 		{
 			name:       "predict runnable ok",
 			predictor:  complete.PredictFunc(predictRunnableFiles),
-			completion: []string{"./complete.go"},
+			completion: []string{"complete.go"},
 		},
 		{
 			name:      "predict runnable not found",
@@ -79,6 +80,8 @@ func Example() {
 }
 
 func equal(s1, s2 []string) bool {
+	sort.Strings(s1)
+	sort.Strings(s2)
 	if len(s1) != len(s2) {
 		return false
 	}

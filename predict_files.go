@@ -42,7 +42,7 @@ func files(pattern string, allowFiles bool) PredictFunc {
 
 			// if the result is only one item, we might want to recursively check
 			// for more accurate results.
-			if prediction[0] == a.Last { // avoid loop forever
+			if prediction[0] == a.Last {
 				return
 			}
 
@@ -73,13 +73,9 @@ func predictFiles(a Args, pattern string, allowFiles bool) []string {
 // PredictFilesSet predict according to file rules to a given set of file names
 func PredictFilesSet(files []string) PredictFunc {
 	return func(a Args) (prediction []string) {
-		rel := !filepath.IsAbs(a.Directory())
 		// add all matching files to prediction
 		for _, f := range files {
-			// change file name to relative if necessary
-			if rel {
-				f = relativePath(f)
-			}
+			f = fixPathForm(a.Last, f)
 
 			// test matching of file to the argument
 			if match.File(f, a.Last) {
