@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/posener/complete"
+	"os"
 )
 
 func TestPredictions(t *testing.T) {
@@ -69,7 +70,13 @@ func TestPredictions(t *testing.T) {
 }
 
 func BenchmarkFake(b *testing.B) {}
-func Example()                   {}
+
+func Example() {
+	os.Setenv("COMP_LINE", "go ru")
+	main()
+	// output: run
+
+}
 
 func equal(s1, s2 []string) bool {
 	if len(s1) != len(s2) {
