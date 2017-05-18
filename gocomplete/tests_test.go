@@ -47,16 +47,6 @@ func TestPredictions(t *testing.T) {
 			predictor: complete.PredictFunc(predictPackages),
 			last:      "X",
 		},
-		{
-			name:       "predict runnable ok",
-			predictor:  complete.PredictFunc(predictRunnableFiles),
-			completion: []string{"complete.go"},
-		},
-		{
-			name:      "predict runnable not found",
-			predictor: complete.PredictFunc(predictRunnableFiles),
-			last:      "X",
-		},
 	}
 
 	for _, tt := range tests {
