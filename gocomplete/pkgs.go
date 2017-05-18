@@ -1,50 +1,66 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
-	"os/exec"
-	"strings"
+	"go/build"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 
 	"github.com/posener/complete"
 )
 
-const goListFormat = `{"Name": "{{.Name}}", "Path": "{{.Dir}}", "FilesString": "{{.GoFiles}}"}`
-
 func predictPackages(a complete.Args) (prediction []string) {
-	dir := a.Directory()
-	pkgs := listPackages(dir)
+	for {
+		prediction = complete.PredictFilesSet(listPackages(a)).Predict(a)
 
-	files := make([]string, 0, len(pkgs))
-	for _, p := range pkgs {
-		files = append(files, p.Path)
+		// if the number of prediction is not 1, we either have many results or
+		// have no results, so we return it.
+		if len(prediction) != 1 {
+			return
+		}
+
+		// if the result is only one item, we might want to recursively check
+		// for more accurate results.
+		if prediction[0] == a.Last {
+			return
+		}
+
+		// only try deeper, if the one item is a directory
+		if stat, err := os.Stat(prediction[0]); err != nil || !stat.IsDir() {
+			return
+		}
+
+		a.Last = prediction[0]
 	}
-	return complete.PredictFilesSet(files).Predict(a)
 }
 
-type pack struct {
-	Name        string
-	Path        string
-	FilesString string
-	Files       []string
-}
-
-func listPackages(dir string) (pkgs []pack) {
-	dir = strings.TrimRight(dir, "/") + "/..."
-	out, err := exec.Command("go", "list", "-f", goListFormat, dir).Output()
+func listPackages(a complete.Args) (dirctories []string) {
+	dir := a.Directory()
+	complete.Log("listing packages in %s", dir)
+	// import current directory
+	pkg, err := build.ImportDir(dir, 0)
 	if err != nil {
+		complete.Log("failed importing directory %s: %s", dir, err)
 		return
 	}
-	lines := bytes.Split(out, []byte("\n"))
-	for _, line := range lines {
-		var p pack
-		err := json.Unmarshal(line, &p)
-		if err != nil {
+	dirctories = append(dirctories, pkg.Dir)
+
+	// import subdirectories
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		complete.Log("failed reading directory %s: %s", dir, err)
+		return
+	}
+	for _, f := range files {
+		if !f.IsDir() {
 			continue
 		}
-		// parse the FileString from a string "[file1 file2 file3]" to a list of files
-		p.Files = strings.Split(strings.Trim(p.FilesString, "[]"), " ")
-		pkgs = append(pkgs, p)
+		pkg, err := build.ImportDir(filepath.Join(dir, f.Name()), 0)
+		if err != nil {
+			complete.Log("failed importing subdirectory %s: %s", filepath.Join(dir, f.Name()), err)
+			continue
+		}
+		dirctories = append(dirctories, pkg.Dir)
 	}
 	return
 }
