@@ -31,13 +31,6 @@ const (
 // this is used when the complete is not completing words, but to
 // install it or uninstall it.
 func (f *CLI) Run() bool {
-
-	fs := flag.NewFlagSet(f.Name, 0)
-	// add flags and parse them in case they were not added and parsed
-	// by the main program
-	f.AddFlags(fs)
-	fs.Parse(os.Args[1:])
-
 	err := f.validate()
 	if err != nil {
 		os.Stderr.WriteString(err.Error() + "\n")
