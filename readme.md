@@ -91,7 +91,7 @@ func main() {
 			"-o": complete.PredictFiles("*.out"),
 		},
 
-		// define gloabl flags of the 'run' main command
+		// define global flags of the 'run' main command
 		// those will show up also when a sub command was entered in the
 		// command line
 		Flags: complete.Flags{
