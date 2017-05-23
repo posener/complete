@@ -81,5 +81,9 @@ func rcFile(name string) string {
 	if err != nil {
 		return ""
 	}
-	return filepath.Join(u.HomeDir, name)
+	path := filepath.Join(u.HomeDir, name)
+	if _, err := os.Stat(path); err != nil {
+		return ""
+	}
+	return path
 }
