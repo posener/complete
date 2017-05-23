@@ -6,6 +6,7 @@
 package complete
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"strings"
@@ -36,11 +37,21 @@ func New(name string, command Command) *Complete {
 	}
 }
 
-// Run get a command, get the typed arguments from environment
-// variable, and print out the complete options
+// Run runs the completion and add installation flags beforehand.
+// The flags are added to the main flag CommandLine variable.
+func (c *Complete) Run() bool {
+	c.AddFlags(nil)
+	flag.Parse()
+	return c.Complete()
+}
+
+// Complete a command from completion line in environment variable,
+// and print out the complete options.
 // returns success if the completion ran or if the cli matched
 // any of the given flags, false otherwise
-func (c *Complete) Run() bool {
+// For installation: it assumes that flags were added and parsed before
+// it was called.
+func (c *Complete) Complete() bool {
 	line, ok := getLine()
 	if !ok {
 		// make sure flags parsed,
