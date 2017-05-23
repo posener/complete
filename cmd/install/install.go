@@ -59,8 +59,11 @@ func Uninstall(cmd string) error {
 }
 
 func installers() (i []installer) {
-	if f := rcFile(".bashrc"); f != "" {
-		i = append(i, bash{f})
+	for _, rc := range [...]string{".bashrc", ".bash_profile"} {
+		if f := rcFile(rc); f != "" {
+			i = append(i, bash{f})
+			break
+		}
 	}
 	if f := rcFile(".zshrc"); f != "" {
 		i = append(i, zsh{f})
