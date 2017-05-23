@@ -29,7 +29,7 @@ func Install(cmd string) error {
 	for _, i := range is {
 		errI := i.Install(cmd, bin)
 		if errI != nil {
-			multierror.Append(err, errI)
+			err = multierror.Append(err, errI)
 		}
 	}
 
@@ -59,8 +59,11 @@ func Uninstall(cmd string) error {
 }
 
 func installers() (i []installer) {
-	if f := rcFile(".bashrc"); f != "" {
-		i = append(i, bash{f})
+	for _, rc := range [...]string{".bashrc", ".bash_profile"} {
+		if f := rcFile(rc); f != "" {
+			i = append(i, bash{f})
+			break
+		}
 	}
 	if f := rcFile(".zshrc"); f != "" {
 		i = append(i, zsh{f})
@@ -81,5 +84,9 @@ func rcFile(name string) string {
 	if err != nil {
 		return ""
 	}
-	return filepath.Join(u.HomeDir, name)
+	path := filepath.Join(u.HomeDir, name)
+	if _, err := os.Stat(path); err != nil {
+		return ""
+	}
+	return path
 }
