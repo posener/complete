@@ -4,6 +4,7 @@ import (
 	"go/build"
 	"io/ioutil"
 	"os"
+	"os/user"
 	"path/filepath"
 	"strings"
 
@@ -71,7 +72,7 @@ func listPackages(dir string) (directories []string) {
 
 func systemDirs(dir string) (directories []string) {
 	// get all paths from GOPATH environment variable and use their src directory
-	paths := strings.Split(os.Getenv("GOPATH"), ":")
+	paths := findGopath()
 	for i := range paths {
 		paths[i] = filepath.Join(paths[i], "src")
 	}
@@ -105,4 +106,21 @@ func systemDirs(dir string) (directories []string) {
 		}
 	}
 	return
+}
+
+func findGopath() []string {
+	gopath := os.Getenv("GOPATH")
+	if gopath == "" {
+		// By convention
+		// See rationale at https://github.com/golang/go/issues/17262
+		usr, err := user.Current()
+		if err != nil {
+			return nil
+		}
+		usrgo := filepath.Join(usr.HomeDir, "go")
+		return []string{usrgo}
+	}
+	listsep := string([]byte{os.PathListSeparator})
+	entries := strings.Split(gopath, listsep)
+	return entries
 }
