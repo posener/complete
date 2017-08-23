@@ -184,6 +184,81 @@ func TestCompleter_Complete(t *testing.T) {
 	}
 }
 
+func TestCompleter_Complete_SharedPrefix(t *testing.T) {
+	t.Parallel()
+	initTests()
+
+	c := Command{
+		Sub: Commands{
+			"status": {
+				Flags: Flags{
+					"-f3": PredictNothing,
+				},
+			},
+			"job": {
+				Sub: Commands{
+					"status": {
+						Flags: Flags{
+							"-f4": PredictNothing,
+						},
+					},
+				},
+			},
+		},
+		Flags: Flags{
+			"-o": PredictFiles("*.txt"),
+		},
+		GlobalFlags: Flags{
+			"-h":       PredictNothing,
+			"-global1": PredictAnything,
+		},
+	}
+
+	tests := []struct {
+		args string
+		want []string
+	}{
+		{
+			args: "",
+			want: []string{"status", "job", "-h", "-global1", "-o"},
+		},
+		{
+			args: "-",
+			want: []string{"-h", "-global1", "-o"},
+		},
+		{
+			args: "j",
+			want: []string{"job"},
+		},
+		{
+			args: "job ",
+			want: []string{"-h", "-global1", "status"},
+		},
+		{
+			args: "job status ",
+			want: []string{"-f4", "-h", "-global1"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.args, func(t *testing.T) {
+
+			tt.args = "cmd " + tt.args
+			os.Setenv(envComplete, tt.args)
+			line, _ := getLine()
+
+			got := c.Predict(newArgs(line))
+
+			sort.Strings(tt.want)
+			sort.Strings(got)
+
+			if !equalSlices(got, tt.want) {
+				t.Errorf("failed '%s'\ngot = %s\nwant: %s", t.Name(), got, tt.want)
+			}
+		})
+	}
+}
+
 func equalSlices(a, b []string) bool {
 	if len(a) != len(b) {
 		return false

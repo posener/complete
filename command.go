@@ -74,6 +74,12 @@ func (c *Command) predict(a Args) (options []string, only bool) {
 				return
 			}
 		}
+
+		// We matched so stop searching. Continuing to search can accidentally
+		// match a subcommand with current set of commands, see issue #46.
+		if subCommandFound {
+			break
+		}
 	}
 
 	// if last completed word is a global flag that we need to complete
