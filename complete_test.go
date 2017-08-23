@@ -25,6 +25,13 @@ func TestCompleter_Complete(t *testing.T) {
 				},
 				Args: PredictFiles("*.md"),
 			},
+			"sub3": {
+				Flags: Flags{
+					"-flag4": PredictAnything,
+					"-flag5": PredictNothing,
+				},
+				FlagsRequirePrefix: "-",
+			},
 		},
 		Flags: Flags{
 			"-o": PredictFiles("*.txt"),
@@ -41,7 +48,7 @@ func TestCompleter_Complete(t *testing.T) {
 	}{
 		{
 			args: "",
-			want: []string{"sub1", "sub2", "-h", "-global1", "-o"},
+			want: []string{"sub1", "sub2", "sub3", "-h", "-global1", "-o"},
 		},
 		{
 			args: "-",
@@ -49,7 +56,7 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		{
 			args: "-h ",
-			want: []string{"sub1", "sub2", "-h", "-global1", "-o"},
+			want: []string{"sub1", "sub2", "sub3", "-h", "-global1", "-o"},
 		},
 		{
 			args: "-global1 ", // global1 is known follow flag
@@ -57,7 +64,7 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		{
 			args: "sub",
-			want: []string{"sub1", "sub2"},
+			want: []string{"sub1", "sub2", "sub3"},
 		},
 		{
 			args: "sub1",
@@ -66,6 +73,10 @@ func TestCompleter_Complete(t *testing.T) {
 		{
 			args: "sub2",
 			want: []string{"sub2"},
+		},
+		{
+			args: "sub3",
+			want: []string{"sub3"},
 		},
 		{
 			args: "sub1 ",
@@ -108,12 +119,20 @@ func TestCompleter_Complete(t *testing.T) {
 			want: []string{"-flag1", "-flag2", "-h", "-global1"},
 		},
 		{
+			args: "sub3 ",
+			want: []string{"-h", "-global1"},
+		},
+		{
+			args: "sub3 -",
+			want: []string{"-flag4", "-flag5", "-h", "-global1"},
+		},
+		{
 			args: "-no-such-flag",
 			want: []string{},
 		},
 		{
 			args: "-no-such-flag ",
-			want: []string{"sub1", "sub2", "-h", "-global1", "-o"},
+			want: []string{"sub1", "sub2", "sub3", "-h", "-global1", "-o"},
 		},
 		{
 			args: "no-such-command",
@@ -121,7 +140,7 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		{
 			args: "no-such-command ",
-			want: []string{"sub1", "sub2", "-h", "-global1", "-o"},
+			want: []string{"sub1", "sub2", "sub3", "-h", "-global1", "-o"},
 		},
 		{
 			args: "-o ",
@@ -149,7 +168,7 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		{
 			args: "-o ./readme.md ",
-			want: []string{"sub1", "sub2", "-h", "-global1", "-o"},
+			want: []string{"sub1", "sub2", "sub3", "-h", "-global1", "-o"},
 		},
 		{
 			args: "-o sub2 -flag3 ",

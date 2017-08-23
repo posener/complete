@@ -1,6 +1,10 @@
 package complete
 
-import "github.com/posener/complete/match"
+import (
+	"strings"
+
+	"github.com/posener/complete/match"
+)
 
 // Command represents a command line
 // It holds the data that enables auto completion of command line
@@ -18,6 +22,11 @@ type Command struct {
 	// GlobalFlags is a map of flags that the command accepts.
 	// Global flags that can appear also after a sub command.
 	GlobalFlags Flags
+
+	// FlagsRequirePrefix requires that the prefix is provided before flags are
+	// autocompleted. This allows completion to only display completions for
+	// arguments if for example no hypen is provided.
+	FlagsRequirePrefix string
 
 	// Args are extra arguments that the command accepts, those who are
 	// given without any flag before.
@@ -86,7 +95,9 @@ func (c *Command) predict(a Args) (options []string, only bool) {
 		return predictor.Predict(a), true
 	}
 
-	options = append(options, c.GlobalFlags.Predict(a)...)
+	if c.FlagsRequirePrefix == "" || strings.HasPrefix(a.Last, c.FlagsRequirePrefix) {
+		options = append(options, c.GlobalFlags.Predict(a)...)
+	}
 
 	// if a sub command was entered, we won't add the parent command
 	// completions and we return here.
@@ -101,7 +112,9 @@ func (c *Command) predict(a Args) (options []string, only bool) {
 	}
 
 	options = append(options, c.Sub.Predict(a)...)
-	options = append(options, c.Flags.Predict(a)...)
+	if c.FlagsRequirePrefix == "" || strings.HasPrefix(a.Last, c.FlagsRequirePrefix) {
+		options = append(options, c.Flags.Predict(a)...)
+	}
 	if c.Args != nil {
 		options = append(options, c.Args.Predict(a)...)
 	}
