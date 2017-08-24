@@ -73,6 +73,10 @@ func (c *Command) predict(a Args) (options []string, only bool) {
 			if only {
 				return
 			}
+
+			// We matched so stop searching. Continuing to search can accidentally
+			// match a subcommand with current set of commands, see issue #46.
+			break
 		}
 	}
 
