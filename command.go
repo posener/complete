@@ -1,10 +1,6 @@
 package complete
 
-import (
-	"strings"
-
-	"github.com/posener/complete/match"
-)
+import "github.com/posener/complete/match"
 
 // Command represents a command line
 // It holds the data that enables auto completion of command line
@@ -22,11 +18,6 @@ type Command struct {
 	// GlobalFlags is a map of flags that the command accepts.
 	// Global flags that can appear also after a sub command.
 	GlobalFlags Flags
-
-	// FlagsRequirePrefix requires that the prefix is provided before flags are
-	// autocompleted. This allows completion to only display completions for
-	// arguments if for example no hypen is provided.
-	FlagsRequirePrefix string
 
 	// Args are extra arguments that the command accepts, those who are
 	// given without any flag before.
@@ -58,6 +49,14 @@ type Flags map[string]Predictor
 // Predict completion of flags names according to command line arguments
 func (f Flags) Predict(a Args) (prediction []string) {
 	for flag := range f {
+		// If the flag starts with a hyphen, we avoid emiting the prediction
+		// unless the last typed arg contains a hyphen as well.
+		flagHyphenStart := len(flag) != 0 && flag[0] == '-'
+		lastHyphenStart := len(a.Last) != 0 && a.Last[0] == '-'
+		if flagHyphenStart && !lastHyphenStart {
+			continue
+		}
+
 		if match.Prefix(flag, a.Last) {
 			prediction = append(prediction, flag)
 		}
@@ -95,9 +94,7 @@ func (c *Command) predict(a Args) (options []string, only bool) {
 		return predictor.Predict(a), true
 	}
 
-	if c.FlagsRequirePrefix == "" || strings.HasPrefix(a.Last, c.FlagsRequirePrefix) {
-		options = append(options, c.GlobalFlags.Predict(a)...)
-	}
+	options = append(options, c.GlobalFlags.Predict(a)...)
 
 	// if a sub command was entered, we won't add the parent command
 	// completions and we return here.
@@ -112,9 +109,7 @@ func (c *Command) predict(a Args) (options []string, only bool) {
 	}
 
 	options = append(options, c.Sub.Predict(a)...)
-	if c.FlagsRequirePrefix == "" || strings.HasPrefix(a.Last, c.FlagsRequirePrefix) {
-		options = append(options, c.Flags.Predict(a)...)
-	}
+	options = append(options, c.Flags.Predict(a)...)
 	if c.Args != nil {
 		options = append(options, c.Args.Predict(a)...)
 	}
