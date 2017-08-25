@@ -228,7 +228,7 @@ func TestCompleter_Complete_SharedPrefix(t *testing.T) {
 	}{
 		{
 			args: "",
-			want: []string{"status", "job", "-h", "-global1", "-o"},
+			want: []string{"status", "job"},
 		},
 		{
 			args: "-",
@@ -240,10 +240,18 @@ func TestCompleter_Complete_SharedPrefix(t *testing.T) {
 		},
 		{
 			args: "job ",
-			want: []string{"-h", "-global1", "status"},
+			want: []string{"status"},
+		},
+		{
+			args: "job -",
+			want: []string{"-h", "-global1"},
 		},
 		{
 			args: "job status ",
+			want: []string{},
+		},
+		{
+			args: "job status -",
 			want: []string{"-f4", "-h", "-global1"},
 		},
 	}
