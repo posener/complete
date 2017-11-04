@@ -22,12 +22,6 @@ func TestPredicate(t *testing.T) {
 			want: []string{"a", "b", "c"},
 		},
 		{
-			name:    "set with does",
-			p:       PredictSet("./..", "./x"),
-			argList: []string{"./.", "./.."},
-			want:    []string{"./.."},
-		},
-		{
 			name: "set/empty",
 			p:    PredictSet(),
 			want: []string{},

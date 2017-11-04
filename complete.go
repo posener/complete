@@ -8,9 +8,11 @@ package complete
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/posener/complete/cmd"
+	"github.com/posener/complete/match"
 )
 
 const (
@@ -22,6 +24,7 @@ const (
 type Complete struct {
 	Command Command
 	cmd.CLI
+	Out io.Writer
 }
 
 // New creates a new complete command.
@@ -33,6 +36,7 @@ func New(name string, command Command) *Complete {
 	return &Complete{
 		Command: command,
 		CLI:     cmd.CLI{Name: name},
+		Out:     os.Stdout,
 	}
 }
 
@@ -58,13 +62,20 @@ func (c *Complete) Complete() bool {
 		return c.CLI.Run()
 	}
 	Log("Completing line: %s", line)
-
 	a := newArgs(line)
 	Log("Completing last field: %s", a.Last)
 	options := c.Command.Predict(a)
+	Log("Options: %s", options)
 
-	Log("Completion: %s", options)
-	output(options)
+	// filter only options that match the last argument
+	matches := []string{}
+	for _, option := range options {
+		if match.Prefix(option, a.Last) {
+			matches = append(matches, option)
+		}
+	}
+	Log("Matches: %s", matches)
+	c.output(matches)
 	return true
 }
 
@@ -76,10 +87,9 @@ func getLine() (string, bool) {
 	return line, true
 }
 
-func output(options []string) {
-	Log("")
+func (c *Complete) output(options []string) {
 	// stdout of program defines the complete options
 	for _, option := range options {
-		fmt.Println(option)
+		fmt.Fprintln(c.Out, option)
 	}
 }
