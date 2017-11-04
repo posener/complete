@@ -1,8 +1,10 @@
 package complete
 
 import (
+	"bytes"
 	"os"
 	"sort"
+	"strings"
 	"testing"
 )
 
@@ -34,6 +36,7 @@ func TestCompleter_Complete(t *testing.T) {
 			"-global1": PredictAnything,
 		},
 	}
+	cmp := New("cmd", c)
 
 	tests := []struct {
 		args string
@@ -175,18 +178,13 @@ func TestCompleter_Complete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.args, func(t *testing.T) {
-
-			tt.args = "cmd " + tt.args
-			os.Setenv(envComplete, tt.args)
-			line, _ := getLine()
-
-			got := c.Predict(newArgs(line))
+			got := runComplete(cmp, tt.args)
 
 			sort.Strings(tt.want)
 			sort.Strings(got)
 
 			if !equalSlices(got, tt.want) {
-				t.Errorf("failed '%s'\ngot = %s\nwant: %s", t.Name(), got, tt.want)
+				t.Errorf("failed '%s'\ngot: %s\nwant: %s", t.Name(), got, tt.want)
 			}
 		})
 	}
@@ -221,6 +219,8 @@ func TestCompleter_Complete_SharedPrefix(t *testing.T) {
 			"-global1": PredictAnything,
 		},
 	}
+
+	cmp := New("cmd", c)
 
 	tests := []struct {
 		args string
@@ -258,12 +258,7 @@ func TestCompleter_Complete_SharedPrefix(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.args, func(t *testing.T) {
-
-			tt.args = "cmd " + tt.args
-			os.Setenv(envComplete, tt.args)
-			line, _ := getLine()
-
-			got := c.Predict(newArgs(line))
+			got := runComplete(cmp, tt.args)
 
 			sort.Strings(tt.want)
 			sort.Strings(got)
@@ -273,6 +268,29 @@ func TestCompleter_Complete_SharedPrefix(t *testing.T) {
 			}
 		})
 	}
+}
+
+// runComplete runs the complete login for test purposes
+// it gets the complete struct and command line arguments and returns
+// the complete options
+func runComplete(c *Complete, args string) (completions []string) {
+	os.Setenv(envComplete, "cmd "+args)
+	b := bytes.NewBuffer(nil)
+	c.Out = b
+	c.Complete()
+	completions = parseOutput(b.String())
+	return
+}
+
+func parseOutput(output string) []string {
+	lines := strings.Split(output, "\n")
+	options := []string{}
+	for _, l := range lines {
+		if l != "" {
+			options = append(options, l)
+		}
+	}
+	return options
 }
 
 func equalSlices(a, b []string) bool {
