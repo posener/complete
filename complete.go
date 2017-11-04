@@ -9,7 +9,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/posener/complete/cmd"
 )
@@ -61,7 +60,7 @@ func (c *Complete) Complete() bool {
 	Log("Completing line: %s", line)
 
 	a := newArgs(line)
-
+	Log("Completing last field: %s", a.Last)
 	options := c.Command.Predict(a)
 
 	Log("Completion: %s", options)
@@ -69,12 +68,12 @@ func (c *Complete) Complete() bool {
 	return true
 }
 
-func getLine() ([]string, bool) {
+func getLine() (string, bool) {
 	line := os.Getenv(envComplete)
 	if line == "" {
-		return nil, false
+		return "", false
 	}
-	return strings.Split(line, " "), true
+	return line, true
 }
 
 func output(options []string) {
