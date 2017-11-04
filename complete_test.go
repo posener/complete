@@ -147,11 +147,27 @@ func TestCompleter_Complete(t *testing.T) {
 			want: []string{"./a.txt", "./b.txt", "./c.txt", "./.dot.txt", "./", "./dir/", "./outer/"},
 		},
 		{
+			args: "-o=./",
+			want: []string{"./a.txt", "./b.txt", "./c.txt", "./.dot.txt", "./", "./dir/", "./outer/"},
+		},
+		{
 			args: "-o .",
 			want: []string{"./a.txt", "./b.txt", "./c.txt", "./.dot.txt", "./", "./dir/", "./outer/"},
 		},
 		{
+			args: "-o ./b",
+			want: []string{"./b.txt"},
+		},
+		{
+			args: "-o=./b",
+			want: []string{"./b.txt"},
+		},
+		{
 			args: "-o ./read",
+			want: []string{},
+		},
+		{
+			args: "-o=./read",
 			want: []string{},
 		},
 		{
@@ -160,6 +176,10 @@ func TestCompleter_Complete(t *testing.T) {
 		},
 		{
 			args: "-o ./readme.md ",
+			want: []string{"sub1", "sub2"},
+		},
+		{
+			args: "-o=./readme.md ",
 			want: []string{"sub1", "sub2"},
 		},
 		{
