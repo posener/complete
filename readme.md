@@ -42,6 +42,7 @@ Supported shells:
 
 - [x] bash
 - [x] zsh
+- [x] fish
 
 ### Usage
 
