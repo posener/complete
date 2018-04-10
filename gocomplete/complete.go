@@ -261,7 +261,57 @@ func main() {
 				},
 				Args: anyGo,
 			},
-			"link": {},
+			"link": {
+				Flags: complete.Flags{
+					"-B":              complete.PredictAnything,  // note
+					"-D":              complete.PredictAnything,  // address (default -1)
+					"-E":              complete.PredictAnything,  // entry symbol name
+					"-H":              complete.PredictAnything,  // header type
+					"-I":              complete.PredictAnything,  // linker binary
+					"-L":              complete.PredictDirs("*"), // directory
+					"-R":              complete.PredictAnything,  // quantum (default -1)
+					"-T":              complete.PredictAnything,  // address (default -1)
+					"-V":              complete.PredictNothing,
+					"-X":              complete.PredictAnything,
+					"-a":              complete.PredictAnything,
+					"-buildid":        complete.PredictAnything, // build id
+					"-buildmode":      complete.PredictAnything,
+					"-c":              complete.PredictNothing,
+					"-cpuprofile":     anyFile,
+					"-d":              complete.PredictNothing,
+					"-debugtramp":     complete.PredictAnything, // int
+					"-dumpdep":        complete.PredictNothing,
+					"-extar":          complete.PredictAnything,
+					"-extld":          complete.PredictAnything,
+					"-extldflags":     complete.PredictAnything, // flags
+					"-f":              complete.PredictNothing,
+					"-g":              complete.PredictNothing,
+					"-importcfg":      anyFile,
+					"-installsuffix":  complete.PredictAnything, // dir suffix
+					"-k":              complete.PredictAnything, // symbol
+					"-libgcc":         complete.PredictAnything, // maybe "none"
+					"-linkmode":       complete.PredictAnything, // mode
+					"-linkshared":     complete.PredictNothing,
+					"-memprofile":     anyFile,
+					"-memprofilerate": complete.PredictAnything, // rate
+					"-msan":           complete.PredictNothing,
+					"-n":              complete.PredictNothing,
+					"-o":              complete.PredictAnything,
+					"-pluginpath":     complete.PredictAnything,
+					"-r":              complete.PredictAnything, // "dir1:dir2:..."
+					"-race":           complete.PredictNothing,
+					"-s":              complete.PredictNothing,
+					"-tmpdir":         complete.PredictDirs("*"),
+					"-u":              complete.PredictNothing,
+					"-v":              complete.PredictNothing,
+					"-w":              complete.PredictNothing,
+					// "-h":           complete.PredictAnything, // halt on error
+				},
+				Args: complete.PredictOr(
+					complete.PredictFiles("*.a"),
+					complete.PredictFiles("*.o"),
+				),
+			},
 			"nm": {
 				Flags: complete.Flags{
 					"-n":    complete.PredictNothing,
