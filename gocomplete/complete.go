@@ -148,6 +148,7 @@ func main() {
 					"-D":        complete.PredictAnything,
 					"-I":        complete.PredictDirs("*"),
 					"-S":        complete.PredictNothing,
+					"-V":        complete.PredictNothing,
 					"-debug":    complete.PredictNothing,
 					"-dynlink":  complete.PredictNothing,
 					"-e":        complete.PredictNothing,
@@ -274,6 +275,7 @@ func main() {
 			"objdump": {
 				Flags: complete.Flags{
 					"-s": complete.PredictAnything,
+					"-S": complete.PredictNothing,
 				},
 				Args: anyFile,
 			},
