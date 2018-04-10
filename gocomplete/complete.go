@@ -277,7 +277,25 @@ func main() {
 				},
 				Args: anyFile,
 			},
-			"pack": {},
+			"pack": {
+				/* this lacks the positional aspect of all these params */
+				Flags: complete.Flags{
+					"c":  complete.PredictNothing,
+					"p":  complete.PredictNothing,
+					"r":  complete.PredictNothing,
+					"t":  complete.PredictNothing,
+					"x":  complete.PredictNothing,
+					"cv": complete.PredictNothing,
+					"pv": complete.PredictNothing,
+					"rv": complete.PredictNothing,
+					"tv": complete.PredictNothing,
+					"xv": complete.PredictNothing,
+				},
+				Args: complete.PredictOr(
+					complete.PredictFiles("*.a"),
+					complete.PredictFiles("*.o"),
+				),
+			},
 			"pprof": {
 				Flags: complete.Flags{
 					"-callgrind":     complete.PredictNothing,
