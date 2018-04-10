@@ -274,6 +274,7 @@ func main() {
 			"objdump": {
 				Flags: complete.Flags{
 					"-s": complete.PredictAnything,
+					"-S": complete.PredictNothing,
 				},
 				Args: anyFile,
 			},
