@@ -449,7 +449,7 @@ func main() {
 					"-unusedfuncs":         complete.PredictAnything,
 					"-unusedresult":        complete.PredictNothing,
 					"-unusedstringmethods": complete.PredictAnything,
-					"-v": complete.PredictNothing,
+					"-v":                   complete.PredictNothing,
 				},
 				Args: anyGo,
 			},
@@ -458,10 +458,13 @@ func main() {
 
 	clean := complete.Command{
 		Flags: complete.Flags{
-			"-i": complete.PredictNothing,
-			"-r": complete.PredictNothing,
-			"-n": complete.PredictNothing,
-			"-x": complete.PredictNothing,
+			"-i":         complete.PredictNothing,
+			"-r":         complete.PredictNothing,
+			"-n":         complete.PredictNothing,
+			"-x":         complete.PredictNothing,
+			"-cache":     complete.PredictNothing,
+			"-testcache": complete.PredictNothing,
+			"-modcache":  complete.PredictNothing,
 		},
 		Args: complete.PredictOr(anyPackage, ellipsis),
 	}
