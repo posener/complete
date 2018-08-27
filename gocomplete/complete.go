@@ -480,6 +480,121 @@ func main() {
 		Args: anyGo,
 	}
 
+	modDownload := complete.Command{
+		Flags: complete.Flags{
+			"-json": complete.PredictNothing,
+		},
+		Args: anyPackage,
+	}
+
+	modEdit := complete.Command{
+		Flags: complete.Flags{
+			"-fmt":    complete.PredictNothing,
+			"-module": complete.PredictNothing,
+			"-print":  complete.PredictNothing,
+
+			"-exclude":     anyPackage,
+			"-dropexclude": anyPackage,
+			"-replace":     anyPackage,
+			"-dropreplace": anyPackage,
+			"-require":     anyPackage,
+			"-droprequire": anyPackage,
+		},
+		Args: complete.PredictFiles("go.mod"),
+	}
+
+	modGraph := complete.Command{}
+
+	modInit := complete.Command{
+		Args: complete.PredictAnything,
+	}
+
+	modTidy := complete.Command{
+		Flags: complete.Flags{
+			"-v": complete.PredictNothing,
+		},
+	}
+
+	modVendor := complete.Command{
+		Flags: complete.Flags{
+			"-v": complete.PredictNothing,
+		},
+	}
+
+	modVerify := complete.Command{}
+
+	modWhy := complete.Command{
+		Flags: complete.Flags{
+			"-m":      complete.PredictNothing,
+			"-vendor": complete.PredictNothing,
+		},
+		Args: anyPackage,
+	}
+
+	modHelp := complete.Command{
+		Sub: complete.Commands{
+			"download": complete.Command{},
+			"edit":     complete.Command{},
+			"graph":    complete.Command{},
+			"init":     complete.Command{},
+			"tidy":     complete.Command{},
+			"vendor":   complete.Command{},
+			"verify":   complete.Command{},
+			"why":      complete.Command{},
+		},
+	}
+
+	mod := complete.Command{
+		Sub: complete.Commands{
+			"download": modDownload,
+			"edit":     modEdit,
+			"graph":    modGraph,
+			"init":     modInit,
+			"tidy":     modTidy,
+			"vendor":   modVendor,
+			"verify":   modVerify,
+			"why":      modWhy,
+			"help":     modHelp,
+		},
+	}
+
+	help := complete.Command{
+		Sub: complete.Commands{
+			"bug":         complete.Command{},
+			"build":       complete.Command{},
+			"clean":       complete.Command{},
+			"doc":         complete.Command{},
+			"env":         complete.Command{},
+			"fix":         complete.Command{},
+			"fmt":         complete.Command{},
+			"generate":    complete.Command{},
+			"get":         complete.Command{},
+			"install":     complete.Command{},
+			"list":        complete.Command{},
+			"mod":         modHelp,
+			"run":         complete.Command{},
+			"test":        complete.Command{},
+			"tool":        complete.Command{},
+			"version":     complete.Command{},
+			"vet":         complete.Command{},
+			"buildmode":   complete.Command{},
+			"c":           complete.Command{},
+			"cache":       complete.Command{},
+			"environment": complete.Command{},
+			"filetype":    complete.Command{},
+			"go.mod":      complete.Command{},
+			"gopath":      complete.Command{},
+			"gopath-get":  complete.Command{},
+			"goproxy":     complete.Command{},
+			"importpath":  complete.Command{},
+			"modules":     complete.Command{},
+			"module-get":  complete.Command{},
+			"packages":    complete.Command{},
+			"testflag":    complete.Command{},
+			"testfunc":    complete.Command{},
+		},
+	}
+
 	// commands that also accepts the build flags
 	for name, options := range build.Flags {
 		test.Flags[name] = options
@@ -507,6 +622,8 @@ func main() {
 			"bug":      bug,
 			"fix":      fix,
 			"version":  version,
+			"mod":      mod,
+			"help":     help,
 		},
 		GlobalFlags: complete.Flags{
 			"-h": complete.PredictNothing,
