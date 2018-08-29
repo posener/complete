@@ -7,12 +7,12 @@ go:
   - 1.8
 
 before_install:
-  - GO111MODULE=on go get -u -t ./...
-  - GO111MODULE=on go get -u gopkg.in/alecthomas/gometalinter.v1
-  - gometalinter.v1 --install
+  - go get -u -t ./...
+  - go get -u gopkg.in/alecthomas/gometalinter.v2
+  - gometalinter.v2 --install
 
 script:
-  - gometalinter.v1 --config metalinter.json ./...
+  - gometalinter.v2 --config metalinter.json ./...
   - GO111MODULE=on ./test.sh
 
 after_success:
