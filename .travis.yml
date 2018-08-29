@@ -8,11 +8,11 @@ go:
 
 before_install:
   - go get -u -t ./...
-  - go get -u gopkg.in/alecthomas/gometalinter.v2
-  - gometalinter.v2 --install
+  - go version | grep go1.11 &>/dev/null && go get -u gopkg.in/alecthomas/gometalinter.v2
+  - go version | grep go1.11 &>/dev/null && gometalinter.v2 --install
 
 script:
-  - gometalinter.v2 --config metalinter.json ./...
+  - go version | grep go1.11 &>/dev/null && gometalinter.v2 --config metalinter.json ./...
   - GO111MODULE=on ./test.sh
 
 after_success:
