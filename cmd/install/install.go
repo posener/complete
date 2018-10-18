@@ -65,13 +65,23 @@ func installers() (i []installer) {
 			break
 		}
 	}
-	if f := rcFile(".zshrc"); f != "" {
+	if f := zshrcPath(); f != "" {
 		i = append(i, zsh{f})
 	}
 	if d := fishConfigDir(); d != "" {
 		i = append(i, fish{d})
 	}
 	return
+}
+
+func zshrcPath() string {
+	if zDotDir := os.Getenv("ZDOTDIR"); zDotDir != "" {
+		f := filepath.Join(zDotDir, ".zshrc")
+		if info, err := os.Stat(f); err != nil || !info.IsDir() {
+			return f
+		}
+	}
+	return rcFile(".zshrc")
 }
 
 func fishConfigDir() string {
