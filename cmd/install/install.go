@@ -74,11 +74,14 @@ func installers() (i []installer) {
 	return
 }
 
+// zshrcPath returns the path to the first .zshrc found following the
+// same order of preference as zsh. (zsh will only look in HOME if ZDOTDIR is undefined)
 func zshrcPath() string {
 	if zDotDir := os.Getenv("ZDOTDIR"); zDotDir != "" {
-		f := filepath.Join(zDotDir, ".zshrc")
-		if info, err := os.Stat(f); err != nil || !info.IsDir() {
-			return f
+		fp := filepath.Join(zDotDir, ".zshrc")
+		// Return early if fp exists and is not a directory
+		if info, err := os.Stat(fp); err == nil && !info.IsDir() {
+			return fp
 		}
 	}
 	return rcFile(".zshrc")
