@@ -93,7 +93,7 @@ func unResolveHome(last string, path string) string {
 }
 
 func fixDirPath(path string) string {
-	tmpPath, err := homedir.Expand(path)
+	tmpPath, _ := homedir.Expand(path)
 	info, err := os.Stat(tmpPath)
 	if err == nil && info.IsDir() && !strings.HasSuffix(path, "/") {
 		path += "/"
