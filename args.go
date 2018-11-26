@@ -29,14 +29,15 @@ type Args struct {
 // last argument if it represents a file name being written.
 // in case that it is not, we fall back to the current directory.
 func (a Args) Directory() string {
-	if info, err := os.Stat(a.Last); err == nil && info.IsDir() {
-		return fixPathForm(a.Last, a.Last)
+	path := fixPathForm(a.Last, true, a.Last)
+	if info, err := os.Stat(path); err == nil && info.IsDir() {
+		return fixPathForm(path, true, path)
 	}
-	dir := filepath.Dir(a.Last)
+	dir := filepath.Dir(path)
 	if info, err := os.Stat(dir); err != nil || !info.IsDir() {
 		return "./"
 	}
-	return fixPathForm(a.Last, dir)
+	return fixPathForm(path, true, dir)
 }
 
 func newArgs(line string) Args {
