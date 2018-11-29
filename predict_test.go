@@ -1,6 +1,7 @@
 package complete
 
 import (
+	"os"
 	"sort"
 	"strings"
 	"testing"
@@ -11,10 +12,13 @@ func TestPredicate(t *testing.T) {
 	initTests()
 
 	tests := []struct {
-		name    string
-		p       Predictor
-		argList []string
-		want    []string
+		name       string
+		p          Predictor
+		argList    []string
+		want       []string
+		prepEnv    func() (string, map[string]string, error)
+		cleanEnv   func(dirTreeBase string)
+		checkEqual func(dirTreeMappings map[string]string, got []string) bool
 	}{
 		{
 			name: "set",
@@ -111,6 +115,44 @@ func TestPredicate(t *testing.T) {
 			want:    []string{"./dir/", "./dir/foo", "./dir/bar"},
 		},
 		{
+			name:    "predict anything in home directory with `~` prefix",
+			p:       PredictFiles("*"),
+			argList: []string{"~/foo"},
+			want:    []string{"~/foo", "~/foo/foo.md", "~/foo/foo-dir"},
+			prepEnv: func() (string, map[string]string, error) {
+				basePath, dirTreeMappings, err := CreateDirTree(
+					`~`,
+					"foo",
+					[]FileProperties{
+						FileProperties{
+							FilePath:         "foo.md",
+							FileParent:       "",
+							FileType:         RegularFile,
+							ModificationType: CREATE,
+						},
+						FileProperties{
+							FilePath:         "foo-dir",
+							FileParent:       "",
+							FileType:         Directory,
+							ModificationType: CREATE,
+						},
+					},
+				)
+				return basePath, dirTreeMappings, err
+			},
+			cleanEnv: func(dirTreeBase string) {
+				os.RemoveAll(dirTreeBase)
+			},
+			checkEqual: func(dirTreeMappings map[string]string, got []string) bool {
+				want := []string{dirTreeMappings["foo"], dirTreeMappings["foo/foo.md"], dirTreeMappings["foo/-dir"]}
+				sort.Strings(got)
+				sort.Strings(want)
+				gotStr := strings.Join(got, ",")
+				wantStr := strings.Join(want, ",")
+				return gotStr == wantStr
+			},
+		},
+		{
 			name:    "root directories",
 			p:       PredictDirs("*"),
 			argList: []string{""},
@@ -142,7 +184,20 @@ func TestPredicate(t *testing.T) {
 		},
 	}
 
+	var basePath string
+	var err error
+	var dirTreeMappings map[string]string
+
 	for _, tt := range tests {
+
+		if tt.prepEnv != nil {
+			if basePath, dirTreeMappings, err = tt.prepEnv(); err != nil {
+				t.Errorf("error setting up env. Error %v", err)
+			}
+		}
+		if tt.cleanEnv != nil {
+			defer tt.cleanEnv(basePath)
+		}
 
 		// no args in argList, means an empty argument
 		if len(tt.argList) == 0 {
@@ -157,6 +212,10 @@ func TestPredicate(t *testing.T) {
 				sort.Strings(matches)
 				sort.Strings(tt.want)
 
+				if tt.checkEqual != nil {
+					tt.checkEqual(dirTreeMappings, matches)
+					return
+				}
 				got := strings.Join(matches, ",")
 				want := strings.Join(tt.want, ",")
 
