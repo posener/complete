@@ -20,7 +20,7 @@ func TestPredictions(t *testing.T) {
 		{
 			name:      "predict tests ok",
 			predictor: predictTest,
-			want:      []string{"TestPredictions", "Example"},
+			want:      []string{"TestPredictions", "Example", "Test_parseReplace"},
 		},
 		{
 			name:      "predict benchmark ok",

@@ -1,7 +1,11 @@
 // Package main is complete tool for the go command line
 package main
 
-import "github.com/posener/complete"
+import (
+	"os"
+
+	"github.com/posener/complete"
+)
 
 var (
 	ellipsis   = complete.PredictSet("./...")
@@ -495,12 +499,13 @@ func main() {
 
 			"-exclude":     anyPackage,
 			"-dropexclude": anyPackage,
-			"-replace":     anyPackage,
+			"-replace":     complete.PredictFunc(predictModEditReplace),
+			"-replace=":    complete.PredictFunc(predictModEditReplace),
 			"-dropreplace": anyPackage,
 			"-require":     anyPackage,
 			"-droprequire": anyPackage,
 		},
-		Args: complete.PredictFiles("go.mod"),
+		Args: complete.PredictFunc(predictModEditReplace),
 	}
 
 	modGraph := complete.Command{}
@@ -630,5 +635,6 @@ func main() {
 		},
 	}
 
+	complete.Log("COMP_LINE %s\n", os.Getenv("COMP_LINE"))
 	complete.New("go", gogo).Run()
 }
