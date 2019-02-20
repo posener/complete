@@ -515,7 +515,6 @@ func main() {
 			"-exclude":     anyPackage,
 			"-dropexclude": anyPackage,
 			"-replace":     complete.PredictFunc(predictModEditReplace),
-			"-replace=":    complete.PredictFunc(predictModEditReplace),
 			"-dropreplace": anyPackage,
 			"-require":     anyPackage,
 			"-droprequire": anyPackage,
