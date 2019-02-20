@@ -3,6 +3,7 @@ package main
 import (
 	"go/build"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -45,7 +46,7 @@ func listPackages(dir string) (directories []string) {
 	// add subdirectories
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
-		complete.Log("failed reading directory %s: %s", dir, err)
+		log.Printf("failed reading directory %s: %s", dir, err)
 		return
 	}
 
@@ -62,7 +63,7 @@ func listPackages(dir string) (directories []string) {
 	for _, p := range paths {
 		pkg, err := build.ImportDir(p, 0)
 		if err != nil {
-			complete.Log("failed importing directory %s: %s", p, err)
+			log.Printf("failed importing directory %s: %s", p, err)
 			continue
 		}
 		directories = append(directories, pkg.Dir)

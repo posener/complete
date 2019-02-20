@@ -2,6 +2,7 @@
 package main
 
 import (
+	"log"
 	"os"
 
 	"github.com/posener/complete"
@@ -16,6 +17,20 @@ var (
 )
 
 func main() {
+	{
+		if os.Getenv("COMP_DEBUG") != "" {
+			f, err := os.OpenFile("gocomplete.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+			if err != nil {
+				log.Fatalf("error opening file: %v", err)
+			}
+			defer func() {
+				log.Printf("---------------")
+				f.Close()
+			}()
+			log.SetOutput(f)
+		}
+	}
+
 	build := complete.Command{
 		Flags: complete.Flags{
 			"-o": anyFile,
@@ -635,6 +650,6 @@ func main() {
 		},
 	}
 
-	complete.Log("COMP_LINE %s\n", os.Getenv("COMP_LINE"))
+	log.Printf("COMP_LINE %s\n", os.Getenv("COMP_LINE"))
 	complete.New("go", gogo).Run()
 }

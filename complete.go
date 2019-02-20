@@ -9,6 +9,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"strconv"
 
@@ -68,11 +69,11 @@ func (c *Complete) Complete() bool {
 		line = line[:point]
 	}
 
-	Log("Completing phrase: %s", line)
+	log.Printf("Completing phrase: %s", line)
 	a := newArgs(line)
-	Log("Completing last field: %s", a.Last)
+	log.Printf("Completing last field: %s", a.Last)
 	options := c.Command.Predict(a)
-	Log("Options: %s", options)
+	log.Printf("Options: %s", options)
 
 	// filter only options that match the last argument
 	matches := []string{}
@@ -81,7 +82,7 @@ func (c *Complete) Complete() bool {
 			matches = append(matches, option)
 		}
 	}
-	Log("Matches: %s", matches)
+	log.Printf("Matches: %s", matches)
 	c.output(matches)
 	return true
 }
@@ -95,7 +96,7 @@ func getEnv() (line string, point int, ok bool) {
 	if err != nil {
 		// If failed parsing point for some reason, set it to point
 		// on the end of the line.
-		Log("Failed parsing point %s: %v", os.Getenv(envPoint), err)
+		log.Printf("Failed parsing point %s: %v", os.Getenv(envPoint), err)
 		point = len(line)
 	}
 	return line, point, true

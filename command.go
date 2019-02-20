@@ -1,5 +1,7 @@
 package complete
 
+import "log"
+
 // Command represents a command line
 // It holds the data that enables auto completion of command line
 // Command can also be a sub command.
@@ -83,7 +85,7 @@ func (c *Command) predict(a Args) (options []string, only bool) {
 
 	// if last completed word is a global flag that we need to complete
 	if predictor, ok := c.GlobalFlags[a.LastCompleted]; ok && predictor != nil {
-		Log("Predicting according to global flag %s", a.LastCompleted)
+		log.Printf("Predicting according to global flag %s", a.LastCompleted)
 		return predictor.Predict(a), true
 	}
 
@@ -97,7 +99,7 @@ func (c *Command) predict(a Args) (options []string, only bool) {
 
 	// if last completed word is a command flag that we need to complete
 	if predictor, ok := c.Flags[a.LastCompleted]; ok && predictor != nil {
-		Log("Predicting according to flag %s", a.LastCompleted)
+		log.Printf("Predicting according to flag %s", a.LastCompleted)
 		return predictor.Predict(a), true
 	}
 
