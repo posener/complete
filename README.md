@@ -12,7 +12,7 @@ Writing bash completion scripts is a hard work. This package provides an easy wa
 to create bash completion scripts for any command, and also an easy way to install/uninstall
 the completion of the command.
 
-go command bash completion
+Go Command Bash Completion
 
 In ./cmd/gocomplete there is an example for bash completion for the `go` command line.
 
@@ -36,7 +36,7 @@ Features
 - Complete packages names or `.go` files when necessary.
 - Complete test names after `-run` flag.
 
-complete package
+Complete package
 
 Supported shells:
 
