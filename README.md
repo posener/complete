@@ -12,31 +12,33 @@ Writing bash completion scripts is a hard work. This package provides an easy wa
 to create bash completion scripts for any command, and also an easy way to install/uninstall
 the completion of the command.
 
-## go command bash completion
+#### Go Command Bash Completion
 
-In [gocomplete](./cmd/gocomplete) there is an example for bash completion for the `go` command line.
+In [./cmd/gocomplete](./cmd/gocomplete) there is an example for bash completion for the `go` command line.
 
 This is an example that uses the `complete` package on the `go` command - the `complete` package
-can also be used to implement any completions, see [Usage](#usage).
+can also be used to implement any completions, see #usage.
 
-### Install
+#### Install
 
 1. Type in your shell:
 
-	go get -u github.com/posener/complete/gocomplete
-	gocomplete -install
+```go
+go get -u github.com/posener/complete/gocomplete
+gocomplete -install
+```
 
 2. Restart your shell
 
 Uninstall by `gocomplete -uninstall`
 
-### Features
+#### Features
 
 - Complete `go` command, including sub commands and all flags.
 - Complete packages names or `.go` files when necessary.
 - Complete test names after `-run` flag.
 
-## complete package
+#### Complete package
 
 Supported shells:
 
@@ -44,7 +46,7 @@ Supported shells:
 - [x] zsh
 - [x] fish
 
-### Usage
+#### Usage
 
 Assuming you have program called `run` and you want to have bash completion
 for it, meaning, if you type `run` then space, then press the `Tab` key,
@@ -58,61 +60,62 @@ options for `run`.
 
 So here it is:
 
-	import "github.com/posener/complete"
+```go
+import "github.com/posener/complete"
 
-	func main() {
+func main() {
 
-		// create a Command object, that represents the command we want
-		// to complete.
-		run := complete.Command{
+	// create a Command object, that represents the command we want
+	// to complete.
+	run := complete.Command{
 
-			// Sub defines a list of sub commands of the program,
-			// this is recursive, since every command is of type command also.
-			Sub: complete.Commands{
+		// Sub defines a list of sub commands of the program,
+		// this is recursive, since every command is of type command also.
+		Sub: complete.Commands{
 
-				// add a build sub command
-				"build": complete.Command {
+			// add a build sub command
+			"build": complete.Command {
 
-					// define flags of the build sub command
-					Flags: complete.Flags{
-						// build sub command has a flag '-cpus', which
-						// expects number of cpus after it. in that case
-						// anything could complete this flag.
-						"-cpus": complete.PredictAnything,
-					},
+				// define flags of the build sub command
+				Flags: complete.Flags{
+					// build sub command has a flag '-cpus', which
+					// expects number of cpus after it. in that case
+					// anything could complete this flag.
+					"-cpus": complete.PredictAnything,
 				},
 			},
+		},
 
-			// define flags of the 'run' main command
-			Flags: complete.Flags{
-				// a flag -o, which expects a file ending with .out after
-				// it, the tab completion will auto complete for files matching
-				// the given pattern.
-				"-o": complete.PredictFiles("*.out"),
-			},
+		// define flags of the 'run' main command
+		Flags: complete.Flags{
+			// a flag -o, which expects a file ending with .out after
+			// it, the tab completion will auto complete for files matching
+			// the given pattern.
+			"-o": complete.PredictFiles("*.out"),
+		},
 
-			// define global flags of the 'run' main command
-			// those will show up also when a sub command was entered in the
-			// command line
-			GlobalFlags: complete.Flags{
+		// define global flags of the 'run' main command
+		// those will show up also when a sub command was entered in the
+		// command line
+		GlobalFlags: complete.Flags{
 
-				// a flag '-h' which does not expects anything after it
-				"-h": complete.PredictNothing,
-			},
-		}
-
-		// run the command completion, as part of the main() function.
-		// this triggers the autocompletion when needed.
-		// name must be exactly as the binary that we want to complete.
-		complete.New("run", run).Run()
+			// a flag '-h' which does not expects anything after it
+			"-h": complete.PredictNothing,
+		},
 	}
 
-### Self completing program
+	// run the command completion, as part of the main() function.
+	// this triggers the autocompletion when needed.
+	// name must be exactly as the binary that we want to complete.
+	complete.New("run", run).Run()
+}
+```
+
+#### Self completing program
 
 In case that the program that we want to complete is written in go we
 can make it self completing.
-
-Here is an [example](./example/self/main.go)
+Here is an example: [./example/self/main.go](./example/self/main.go) .
 
 ## Sub Packages
 
@@ -120,6 +123,6 @@ Here is an [example](./example/self/main.go)
 
 * [gocomplete](./gocomplete): Package main is complete tool for the go command line
 
-* [match](./match)
+* [match](./match): Package match contains matchers that decide if to apply completion.
 
 Created by [goreadme](https://github.com/apps/goreadme)
