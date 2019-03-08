@@ -5,12 +5,12 @@ Writing bash completion scripts is a hard work. This package provides an easy wa
 to create bash completion scripts for any command, and also an easy way to install/uninstall
 the completion of the command.
 
-go command bash completion
+Go Command Bash Completion
 
-In [gocomplete](./cmd/gocomplete) there is an example for bash completion for the `go` command line.
+In ./cmd/gocomplete there is an example for bash completion for the `go` command line.
 
 This is an example that uses the `complete` package on the `go` command - the `complete` package
-can also be used to implement any completions, see [Usage](#usage).
+can also be used to implement any completions, see #usage.
 
 Install
 
@@ -23,14 +23,13 @@ Install
 
 Uninstall by `gocomplete -uninstall`
 
-
 Features
 
 - Complete `go` command, including sub commands and all flags.
 - Complete packages names or `.go` files when necessary.
 - Complete test names after `-run` flag.
 
-complete package
+Complete package
 
 Supported shells:
 
@@ -105,7 +104,7 @@ Self completing program
 
 In case that the program that we want to complete is written in go we
 can make it self completing.
-Here is an [example](./example/self/main.go)
+Here is an example: ./example/self/main.go .
 
 */
 package complete
