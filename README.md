@@ -123,6 +123,6 @@ Here is an example: [./example/self/main.go](./example/self/main.go) .
 
 * [gocomplete](./gocomplete): Package main is complete tool for the go command line
 
-* [match](./match)
+* [match](./match): Package match contains matchers that decide if to apply completion.
 
 Created by [goreadme](https://github.com/apps/goreadme)
