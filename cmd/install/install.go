@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"runtime"
 
 	"github.com/hashicorp/go-multierror"
 )
@@ -59,7 +60,16 @@ func Uninstall(cmd string) error {
 }
 
 func installers() (i []installer) {
-	for _, rc := range [...]string{".bashrc", ".bash_profile", ".bash_login", ".profile"} {
+	// The list of bash config files candidates where it is
+	// possible to install the completion command.
+	var bashConfFiles []string
+	switch runtime.GOOS {
+	case "darwin":
+		bashConfFiles = []string{".bash_profile"}
+	default:
+		bashConfFiles = []string{".bashrc", ".bash_profile", ".bash_login", ".profile"}
+	}
+	for _, rc := range bashConfFiles {
 		if f := rcFile(rc); f != "" {
 			i = append(i, bash{f})
 			break
