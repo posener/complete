@@ -125,4 +125,7 @@ Here is an example: [./example/self/main.go](./example/self/main.go) .
 
 * [match](./match): Package match contains matchers that decide if to apply completion.
 
+
+---
+
 Created by [goreadme](https://github.com/apps/goreadme)
