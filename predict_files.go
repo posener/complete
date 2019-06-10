@@ -39,7 +39,7 @@ func files(pattern string, allowFiles bool) PredictFunc {
 		}
 
 		// only try deeper, if the one item is a directory
-		if stat, err := os.Stat(prediction[0]); err != nil || !stat.IsDir() {
+		if stat, err := os.Stat(fixPathForm(prediction[0], true, prediction[0])); err != nil || !stat.IsDir() {
 			return
 		}
 
@@ -67,7 +67,7 @@ func PredictFilesSet(files []string) PredictFunc {
 	return func(a Args) (prediction []string) {
 		// add all matching files to prediction
 		for _, f := range files {
-			f = fixPathForm(a.Last, f)
+			f = fixPathForm(a.Last, false, f)
 
 			// test matching of file to the argument
 			if match.File(f, a.Last) {
