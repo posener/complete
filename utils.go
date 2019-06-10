@@ -14,6 +14,10 @@ func fixPathForm(last string, file string) string {
 		return file
 	}
 
+	if strings.Contains(last, "..") {
+		return fixDirPath(file)
+	}
+
 	abs, err := filepath.Abs(file)
 	if err != nil {
 		return file
@@ -44,3 +48,4 @@ func fixDirPath(path string) string {
 	}
 	return path
 }
+
