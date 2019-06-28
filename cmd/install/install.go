@@ -11,6 +11,7 @@ import (
 )
 
 type installer interface {
+	IsInstalled(cmd, bin string) bool
 	Install(cmd, bin string) error
 	Uninstall(cmd, bin string) error
 }
