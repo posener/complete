@@ -14,26 +14,39 @@ type fish struct {
 	configDir string
 }
 
+func (f fish) IsInstalled(cmd, bin string) bool {
+	completionFile := f.getCompletionFilePath(cmd)
+	if _, err := os.Stat(completionFile); err == nil {
+		return true
+	}
+	return false
+}
+
 func (f fish) Install(cmd, bin string) error {
-	completionFile := filepath.Join(f.configDir, "completions", fmt.Sprintf("%s.fish", cmd))
+	if f.IsInstalled(cmd, bin) {
+		return fmt.Errorf("already installed at %s", f.getCompletionFilePath(cmd))
+	}
+
+	completionFile := f.getCompletionFilePath(cmd)
 	completeCmd, err := f.cmd(cmd, bin)
 	if err != nil {
 		return err
-	}
-	if _, err := os.Stat(completionFile); err == nil {
-		return fmt.Errorf("already installed at %s", completionFile)
 	}
 
 	return createFile(completionFile, completeCmd)
 }
 
 func (f fish) Uninstall(cmd, bin string) error {
-	completionFile := filepath.Join(f.configDir, "completions", fmt.Sprintf("%s.fish", cmd))
-	if _, err := os.Stat(completionFile); err != nil {
+	if !f.IsInstalled(cmd, bin) {
 		return fmt.Errorf("does not installed in %s", f.configDir)
 	}
 
+	completionFile := f.getCompletionFilePath(cmd)
 	return os.Remove(completionFile)
+}
+
+func (f fish) getCompletionFilePath(cmd string) string {
+	return filepath.Join(f.configDir, "completions", fmt.Sprintf("%s.fish", cmd))
 }
 
 func (f fish) cmd(cmd, bin string) (string, error) {
