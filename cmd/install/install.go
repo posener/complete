@@ -38,6 +38,24 @@ func Install(cmd string) error {
 	return err
 }
 
+// IsInstalled returns true if the completion
+// for the given cmd is installed.
+func IsInstalled(cmd string) bool {
+	bin, err := getBinaryPath()
+	if err != nil {
+		return false
+	}
+
+	for _, i := range installers() {
+		installed := i.IsInstalled(cmd, bin)
+		if installed {
+			return true
+		}
+	}
+
+	return false
+}
+
 // Uninstall complete command given:
 // cmd: is the command name
 func Uninstall(cmd string) error {
