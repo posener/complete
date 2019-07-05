@@ -5,8 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/posener/complete/match"
 )
 
 // PredictDirs will search for directories in the given started to be typed
@@ -70,7 +68,7 @@ func PredictFilesSet(files []string) PredictFunc {
 			f = fixPathForm(a.Last, f)
 
 			// test matching of file to the argument
-			if match.File(f, a.Last) {
+			if matchFile(f, a.Last) {
 				prediction = append(prediction, f)
 			}
 		}
@@ -105,4 +103,20 @@ func listFiles(dir, pattern string, allowFiles bool) []string {
 		list = append(list, k)
 	}
 	return list
+}
+
+// MatchFile returns true if prefix can match the file
+func matchFile(file, prefix string) bool {
+	// special case for current directory completion
+	if file == "./" && (prefix == "." || prefix == "") {
+		return true
+	}
+	if prefix == "." && strings.HasPrefix(file, ".") {
+		return true
+	}
+
+	file = strings.TrimPrefix(file, "./")
+	prefix = strings.TrimPrefix(prefix, "./")
+
+	return strings.HasPrefix(file, prefix)
 }
