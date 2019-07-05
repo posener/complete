@@ -449,7 +449,7 @@ func main() {
 					"-unusedfuncs":         complete.PredictAnything,
 					"-unusedresult":        complete.PredictNothing,
 					"-unusedstringmethods": complete.PredictAnything,
-					"-v":                   complete.PredictNothing,
+					"-v": complete.PredictNothing,
 				},
 				Args: anyGo,
 			},

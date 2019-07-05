@@ -6,9 +6,9 @@ import (
 	"io"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/posener/complete/cmd"
-	"github.com/posener/complete/match"
 )
 
 const (
@@ -72,7 +72,7 @@ func (c *Complete) Complete() bool {
 	// filter only options that match the last argument
 	matches := []string{}
 	for _, option := range options {
-		if match.Prefix(option, a.Last) {
+		if strings.HasPrefix(option, a.Last) {
 			matches = append(matches, option)
 		}
 	}
