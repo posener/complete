@@ -28,6 +28,8 @@ type Args struct {
 // Directory gives the directory of the current written
 // last argument if it represents a file name being written.
 // in case that it is not, we fall back to the current directory.
+//
+// Deprecated.
 func (a Args) Directory() string {
 	if info, err := os.Stat(a.Last); err == nil && info.IsDir() {
 		return fixPathForm(a.Last, a.Last)

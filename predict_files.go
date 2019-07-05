@@ -51,13 +51,26 @@ func predictFiles(a Args, pattern string, allowFiles bool) []string {
 		return nil
 	}
 
-	dir := a.Directory()
+	dir := directory(a.Last)
 	files := listFiles(dir, pattern, allowFiles)
 
 	// add dir if match
 	files = append(files, dir)
 
 	return PredictFilesSet(files).Predict(a)
+}
+
+// directory gives the directory of the given partial path
+// in case that it is not, we fall back to the current directory.
+func directory(path string) string {
+	if info, err := os.Stat(path); err == nil && info.IsDir() {
+		return fixPathForm(path, path)
+	}
+	dir := filepath.Dir(path)
+	if info, err := os.Stat(dir); err == nil && info.IsDir() {
+		return fixPathForm(path, dir)
+	}
+	return "./"
 }
 
 // PredictFilesSet predict according to file rules to a given set of file names
@@ -119,4 +132,43 @@ func matchFile(file, prefix string) bool {
 	prefix = strings.TrimPrefix(prefix, "./")
 
 	return strings.HasPrefix(file, prefix)
+}
+
+// fixPathForm changes a file name to a relative name
+func fixPathForm(last string, file string) string {
+	// get wording directory for relative name
+	workDir, err := os.Getwd()
+	if err != nil {
+		return file
+	}
+
+	abs, err := filepath.Abs(file)
+	if err != nil {
+		return file
+	}
+
+	// if last is absolute, return path as absolute
+	if filepath.IsAbs(last) {
+		return fixDirPath(abs)
+	}
+
+	rel, err := filepath.Rel(workDir, abs)
+	if err != nil {
+		return file
+	}
+
+	// fix ./ prefix of path
+	if rel != "." && strings.HasPrefix(last, ".") {
+		rel = "./" + rel
+	}
+
+	return fixDirPath(rel)
+}
+
+func fixDirPath(path string) string {
+	info, err := os.Stat(path)
+	if err == nil && info.IsDir() && !strings.HasSuffix(path, "/") {
+		path += "/"
+	}
+	return path
 }
