@@ -13,6 +13,14 @@ import (
 func TestCompleter_Complete(t *testing.T) {
 	initTests()
 
+	buildCompleteArgs := func(args ...CompleteArg) []CompleteArg {
+		return args
+	}
+
+	permissiveMatcher := func(str, prefix string) bool {
+		return true
+	}
+
 	c := Command{
 		Sub: Commands{
 			"sub1": {
@@ -40,14 +48,16 @@ func TestCompleter_Complete(t *testing.T) {
 	cmp := New("cmd", c)
 
 	tests := []struct {
-		line  string
-		point int // -1 indicates len(line)
-		want  []string
+		line         string
+		point        int // -1 indicates len(line)
+		want         []string
+		completeArgs []CompleteArg
 	}{
 		{
-			line:  "cmd ",
-			point: -1,
-			want:  []string{"sub1", "sub2"},
+			line:         "cmd ",
+			point:        -1,
+			want:         []string{"sub1", "sub2"},
+			completeArgs: buildCompleteArgs(WithMatcher(permissiveMatcher)),
 		},
 		{
 			line:  "cmd -",
@@ -68,6 +78,17 @@ func TestCompleter_Complete(t *testing.T) {
 			line:  "cmd sub",
 			point: -1,
 			want:  []string{"sub1", "sub2"},
+		},
+		{
+			line:  "cmd SuB",
+			point: -1,
+			want:  []string{},
+		},
+		{
+			line:         "cmd SuB",
+			point:        -1,
+			want:         []string{"sub1", "sub2"},
+			completeArgs: buildCompleteArgs(WithMatcher(permissiveMatcher)),
 		},
 		{
 			line:  "cmd sub1",
@@ -262,7 +283,14 @@ func TestCompleter_Complete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%s@%d", tt.line, tt.point), func(t *testing.T) {
-			got := runComplete(cmp, tt.line, tt.point)
+			//if len(tt.completeArgs) == 0 {
+			//	tt.completeArgs = []CompleteArg{
+			//		WithMatcher(func(str, prefix string) bool {
+			//			return true
+			//		}),
+			//	}
+			//}
+			got := runComplete(cmp, tt.line, tt.point, tt.completeArgs)
 
 			sort.Strings(tt.want)
 			sort.Strings(got)
@@ -349,7 +377,7 @@ func TestCompleter_Complete_SharedPrefix(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.line, func(t *testing.T) {
-			got := runComplete(cmp, tt.line, tt.point)
+			got := runComplete(cmp, tt.line, tt.point, nil)
 
 			sort.Strings(tt.want)
 			sort.Strings(got)
@@ -364,7 +392,7 @@ func TestCompleter_Complete_SharedPrefix(t *testing.T) {
 // runComplete runs the complete login for test purposes
 // it gets the complete struct and command line arguments and returns
 // the complete options
-func runComplete(c *Complete, line string, point int) (completions []string) {
+func runComplete(c *Complete, line string, point int, completeArgs []CompleteArg) (completions []string) {
 	if point == -1 {
 		point = len(line)
 	}
@@ -372,7 +400,7 @@ func runComplete(c *Complete, line string, point int) (completions []string) {
 	os.Setenv(envPoint, strconv.Itoa(point))
 	b := bytes.NewBuffer(nil)
 	c.Out = b
-	c.Complete()
+	c.Complete(completeArgs...)
 	completions = parseOutput(b.String())
 	return
 }

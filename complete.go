@@ -45,13 +45,35 @@ func (c *Complete) Run() bool {
 	return c.Complete()
 }
 
+type completeArgs struct {
+	prefixMatcher func(str, prefix string) bool
+}
+
+//CompleteArg is a config argument for Complete.Complete
+type CompleteArg func(*completeArgs)
+
+//WithMatcher causes Complete to use the given matcher function when filtering completion options
+func WithMatcher(matcher func(str, prefix string) bool) CompleteArg {
+	return func(configs *completeArgs) {
+		configs.prefixMatcher = matcher
+	}
+}
+
 // Complete a command from completion line in environment variable,
 // and print out the complete options.
 // returns success if the completion ran or if the cli matched
 // any of the given flags, false otherwise
 // For installation: it assumes that flags were added and parsed before
 // it was called.
-func (c *Complete) Complete() bool {
+func (c *Complete) Complete(configSetters ...CompleteArg) bool {
+	cfg := &completeArgs{
+		prefixMatcher: strings.HasPrefix,
+	}
+
+	for _, configSetter := range configSetters {
+		configSetter(cfg)
+	}
+
 	line, point, ok := getEnv()
 	if !ok {
 		// make sure flags parsed,
@@ -72,7 +94,7 @@ func (c *Complete) Complete() bool {
 	// filter only options that match the last argument
 	matches := []string{}
 	for _, option := range options {
-		if strings.HasPrefix(option, a.Last) {
+		if cfg.prefixMatcher(option, a.Last) {
 			matches = append(matches, option)
 		}
 	}
