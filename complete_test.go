@@ -283,13 +283,6 @@ func TestCompleter_Complete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%s@%d", tt.line, tt.point), func(t *testing.T) {
-			//if len(tt.completeArgs) == 0 {
-			//	tt.completeArgs = []CompleteArg{
-			//		WithMatcher(func(str, prefix string) bool {
-			//			return true
-			//		}),
-			//	}
-			//}
 			got := runComplete(cmp, tt.line, tt.point, tt.completeArgs)
 
 			sort.Strings(tt.want)
