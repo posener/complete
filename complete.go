@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/posener/complete/cmd"
 )
@@ -69,15 +68,7 @@ func (c *Complete) Complete() bool {
 	options := c.Command.Predict(a)
 	Log("Options: %s", options)
 
-	// filter only options that match the last argument
-	matches := []string{}
-	for _, option := range options {
-		if strings.HasPrefix(option, a.Last) {
-			matches = append(matches, option)
-		}
-	}
-	Log("Matches: %s", matches)
-	c.output(matches)
+	c.output(options)
 	return true
 }
 

@@ -14,7 +14,7 @@ func PredictOr(predictors ...Predictor) Predictor {
 			if p == nil {
 				continue
 			}
-			prediction = append(prediction, p.Predict(a)...)
+			prediction = append(prediction, predictAndFilterPrefix(p, a)...)
 		}
 		return
 	})
@@ -39,3 +39,19 @@ var PredictNothing Predictor
 // PredictAnything expects something, but nothing particular, such as a number
 // or arbitrary name.
 var PredictAnything = PredictFunc(func(Args) []string { return nil })
+
+func predictAndFilterPrefix(p Predictor, a Args) []string {
+	options := p.Predict(a)
+	prefixerFunc := DefaultPrefixFilter
+	prefixFilter, ok := p.(PrefixFilter)
+	if ok {
+		prefixerFunc = prefixFilter.FilterPrefix
+	}
+	matches := make([]string, 0, len(options))
+	for _, option := range options {
+		if prefixerFunc(option, a.Last) {
+			matches = append(matches, option)
+		}
+	}
+	return matches
+}
