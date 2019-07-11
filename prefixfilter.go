@@ -4,12 +4,12 @@ import (
 	"strings"
 )
 
-//PrefixFilter filters a predictor's options based on the prefix
+// PrefixFilter filters a predictor's options based on the prefix
 type PrefixFilter interface {
 	FilterPrefix(str, prefix string) bool
 }
 
-//PrefixFilteringPredictor is a Predictor that also implements PrefixFilter
+// PrefixFilteringPredictor is a Predictor that also implements PrefixFilter
 type PrefixFilteringPredictor struct {
 	Predictor        Predictor
 	PrefixFilterFunc func(s, prefix string) bool
@@ -29,17 +29,17 @@ func (p *PrefixFilteringPredictor) FilterPrefix(str, prefix string) bool {
 	return p.PrefixFilterFunc(str, prefix)
 }
 
-//DefaultPrefixFilter is the PrefixFilter used when none is set
+// DefaultPrefixFilter is the PrefixFilter used when none is set
 func DefaultPrefixFilter(s, prefix string) bool {
 	return strings.HasPrefix(s, prefix)
 }
 
-//PermissivePrefixFilter always returns true
+// PermissivePrefixFilter always returns true
 func PermissivePrefixFilter(_, _ string) bool {
 	return true
 }
 
-//CaseInsensitivePrefixFilter ignores case differences between the prefix and tested string
+// CaseInsensitivePrefixFilter ignores case differences between the prefix and tested string
 func CaseInsensitivePrefixFilter(s, prefix string) bool {
 	if len(prefix) > len(s) {
 		return false
