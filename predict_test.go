@@ -3,10 +3,45 @@ package complete
 import (
 	"fmt"
 	"os"
+	"reflect"
 	"sort"
 	"strings"
 	"testing"
 )
+
+func Test_predictAndFilterPrefix(t *testing.T) {
+	t.Parallel()
+	initTests()
+
+	t.Run("default prefix filter", func(t *testing.T) {
+		predictor := PredictSet("a", "ab", "b", "c")
+		args := Args{
+			Last: "a",
+		}
+		want := []string{"a", "ab"}
+		got := predictAndFilterPrefix(predictor, args)
+		if !reflect.DeepEqual(want, got) {
+			t.Errorf("unexpected result\nwant: %v\ngot:  %v", want, got)
+		}
+	})
+
+	t.Run("permissive filter", func(t *testing.T) {
+		predictor := PredictSet("a", "ab", "b", "c")
+		predictor = &PrefixFilteringPredictor{
+			Predictor:        predictor,
+			PrefixFilterFunc: PermissivePrefixFilter,
+		}
+
+		args := Args{
+			Last: "a",
+		}
+		want := []string{"a", "ab", "b", "c"}
+		got := predictAndFilterPrefix(predictor, args)
+		if !reflect.DeepEqual(want, got) {
+			t.Errorf("unexpected result\nwant: %v\ngot:  %v", want, got)
+		}
+	})
+}
 
 func TestPredicate(t *testing.T) {
 	t.Parallel()

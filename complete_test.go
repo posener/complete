@@ -13,7 +13,7 @@ import (
 func TestCompleter_Complete(t *testing.T) {
 	initTests()
 
-	c := Command{
+	cmd := Command{
 		Sub: Commands{
 			"sub1": {
 				Flags: Flags{
@@ -28,6 +28,18 @@ func TestCompleter_Complete(t *testing.T) {
 				},
 				Args: PredictFiles("*.md"),
 			},
+			"permissiveSub": {
+				Args: &PrefixFilteringPredictor{
+					Predictor:        PredictSet("aaa", "bbb", "Aab"),
+					PrefixFilterFunc: PermissivePrefixFilter,
+				},
+			},
+			"caseInsensitiveSub": {
+				Args: &PrefixFilteringPredictor{
+					Predictor:        PredictSet("aaa", "bbb", "Aab", "åaa"),
+					PrefixFilterFunc: CaseInsensitivePrefixFilter,
+				},
+			},
 		},
 		Flags: Flags{
 			"-o": PredictFiles("*.txt"),
@@ -37,7 +49,8 @@ func TestCompleter_Complete(t *testing.T) {
 			"-global1": PredictAnything,
 		},
 	}
-	cmp := New("cmd", c)
+
+	cmp := New("cmd", cmd)
 
 	tests := []struct {
 		line  string
@@ -47,7 +60,27 @@ func TestCompleter_Complete(t *testing.T) {
 		{
 			line:  "cmd ",
 			point: -1,
-			want:  []string{"sub1", "sub2"},
+			want:  []string{"sub1", "sub2", "permissiveSub", "caseInsensitiveSub"},
+		},
+		{
+			line:  "cmd permissiveSub ",
+			point: -1,
+			want:  []string{"aaa", "bbb", "Aab"},
+		},
+		{
+			line:  "cmd permissiveSub a",
+			point: -1,
+			want:  []string{"aaa", "bbb", "Aab"},
+		},
+		{
+			line:  "cmd caseInsensitiveSub ",
+			point: -1,
+			want:  []string{"aaa", "bbb", "Aab", "åaa"},
+		},
+		{
+			line:  "cmd caseInsensitiveSub a",
+			point: -1,
+			want:  []string{"aaa", "Aab"},
 		},
 		{
 			line:  "cmd -",
@@ -57,7 +90,7 @@ func TestCompleter_Complete(t *testing.T) {
 		{
 			line:  "cmd -h ",
 			point: -1,
-			want:  []string{"sub1", "sub2"},
+			want:  []string{"sub1", "sub2", "permissiveSub", "caseInsensitiveSub"},
 		},
 		{
 			line:  "cmd -global1 ", // global1 is known follow flag
@@ -142,7 +175,7 @@ func TestCompleter_Complete(t *testing.T) {
 		{
 			line:  "cmd -no-such-flag ",
 			point: -1,
-			want:  []string{"sub1", "sub2"},
+			want:  []string{"sub1", "sub2", "permissiveSub", "caseInsensitiveSub"},
 		},
 		{
 			line:  "cmd -no-such-flag -",
@@ -157,7 +190,7 @@ func TestCompleter_Complete(t *testing.T) {
 		{
 			line:  "cmd no-such-command ",
 			point: -1,
-			want:  []string{"sub1", "sub2"},
+			want:  []string{"sub1", "sub2", "permissiveSub", "caseInsensitiveSub"},
 		},
 		{
 			line:  "cmd -o ",
@@ -212,12 +245,12 @@ func TestCompleter_Complete(t *testing.T) {
 		{
 			line:  "cmd -o ./readme.md ",
 			point: -1,
-			want:  []string{"sub1", "sub2"},
+			want:  []string{"sub1", "sub2", "permissiveSub", "caseInsensitiveSub"},
 		},
 		{
 			line:  "cmd -o=./readme.md ",
 			point: -1,
-			want:  []string{"sub1", "sub2"},
+			want:  []string{"sub1", "sub2", "permissiveSub", "caseInsensitiveSub"},
 		},
 		{
 			line:  "cmd -o sub2 -flag3 ",
@@ -256,7 +289,7 @@ func TestCompleter_Complete(t *testing.T) {
 			line: "cmd -o ",
 			//         ^
 			point: 4,
-			want:  []string{"sub1", "sub2"},
+			want:  []string{"sub1", "sub2", "permissiveSub", "caseInsensitiveSub"},
 		},
 	}
 

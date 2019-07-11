@@ -84,10 +84,10 @@ func (c *Command) predict(a Args) (options []string, only bool) {
 	// if last completed word is a global flag that we need to complete
 	if predictor, ok := c.GlobalFlags[a.LastCompleted]; ok && predictor != nil {
 		Log("Predicting according to global flag %s", a.LastCompleted)
-		return predictor.Predict(a), true
+		return predictAndFilterPrefix(predictor, a), true
 	}
 
-	options = append(options, c.GlobalFlags.Predict(a)...)
+	options = append(options, predictAndFilterPrefix(c.GlobalFlags, a)...)
 
 	// if a sub command was entered, we won't add the parent command
 	// completions and we return here.
@@ -98,13 +98,13 @@ func (c *Command) predict(a Args) (options []string, only bool) {
 	// if last completed word is a command flag that we need to complete
 	if predictor, ok := c.Flags[a.LastCompleted]; ok && predictor != nil {
 		Log("Predicting according to flag %s", a.LastCompleted)
-		return predictor.Predict(a), true
+		return predictAndFilterPrefix(predictor, a), true
 	}
 
-	options = append(options, c.Sub.Predict(a)...)
-	options = append(options, c.Flags.Predict(a)...)
+	options = append(options, predictAndFilterPrefix(c.Sub, a)...)
+	options = append(options, predictAndFilterPrefix(c.Flags, a)...)
 	if c.Args != nil {
-		options = append(options, c.Args.Predict(a)...)
+		options = append(options, predictAndFilterPrefix(c.Args, a)...)
 	}
 
 	return
