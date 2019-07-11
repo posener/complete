@@ -42,7 +42,7 @@ var PredictAnything = PredictFunc(func(Args) []string { return nil })
 
 func predictAndFilterPrefix(p Predictor, a Args) []string {
 	options := p.Predict(a)
-	prefixerFunc := DefaultPrefixFilter
+	prefixerFunc := defaultPrefixFilter
 	if prefixFilter, ok := p.(PrefixFilter); ok {
 		prefixerFunc = prefixFilter.FilterPrefix
 	}

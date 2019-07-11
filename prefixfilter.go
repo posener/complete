@@ -24,13 +24,13 @@ func (p *PrefixFilteringPredictor) Predict(a Args) []string {
 
 func (p *PrefixFilteringPredictor) FilterPrefix(str, prefix string) bool {
 	if p.PrefixFilterFunc == nil {
-		return DefaultPrefixFilter(str, prefix)
+		return defaultPrefixFilter(str, prefix)
 	}
 	return p.PrefixFilterFunc(str, prefix)
 }
 
-// DefaultPrefixFilter is the PrefixFilter used when none is set
-func DefaultPrefixFilter(s, prefix string) bool {
+// defaultPrefixFilter is the PrefixFilter used when none is set
+func defaultPrefixFilter(s, prefix string) bool {
 	return strings.HasPrefix(s, prefix)
 }
 
