@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestArgs(t *testing.T) {
@@ -131,15 +133,11 @@ func TestArgs_From(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%s/%d", tt.line, tt.from), func(t *testing.T) {
 
-			a := newArgs(tt.line)
+			a := newArgs("cmd " + tt.line)
 			n := a.from(tt.from)
 
-			if got, want := strings.Join(n.All, " "), tt.newLine; got != want {
-				t.Errorf("%s failed: all = %q, want %q", t.Name(), got, want)
-			}
-			if got, want := strings.Join(n.Completed, " "), tt.newCompleted; got != want {
-				t.Errorf("%s failed: completed = %q, want %q", t.Name(), got, want)
-			}
+			assert.Equal(t, tt.newLine, strings.Join(n.All, " "))
+			assert.Equal(t, tt.newCompleted, strings.Join(n.Completed, " "))
 		})
 	}
 }
