@@ -20,6 +20,9 @@ func TestCompleter_Complete(t *testing.T) {
 					"-flag1": PredictAnything,
 					"-flag2": PredictNothing,
 				},
+				Sub: Commands{
+					"sub11": {},
+				},
 			},
 			"sub2": {
 				Flags: Flags{
@@ -27,6 +30,11 @@ func TestCompleter_Complete(t *testing.T) {
 					"-flag3": PredictSet("opt1", "opt2", "opt12"),
 				},
 				Args: PredictFiles("*.md"),
+			},
+			"sub3": {
+				Sub: Commands{
+					"sub3": {},
+				},
 			},
 		},
 		Flags: Flags{
@@ -47,7 +55,7 @@ func TestCompleter_Complete(t *testing.T) {
 		{
 			line:  "cmd ",
 			point: -1,
-			want:  []string{"sub1", "sub2"},
+			want:  []string{"sub1", "sub2", "sub3"},
 		},
 		{
 			line:  "cmd -",
@@ -57,7 +65,7 @@ func TestCompleter_Complete(t *testing.T) {
 		{
 			line:  "cmd -h ",
 			point: -1,
-			want:  []string{"sub1", "sub2"},
+			want:  []string{"sub1", "sub2", "sub3"},
 		},
 		{
 			line:  "cmd -global1 ", // global1 is known follow flag
@@ -67,7 +75,7 @@ func TestCompleter_Complete(t *testing.T) {
 		{
 			line:  "cmd sub",
 			point: -1,
-			want:  []string{"sub1", "sub2"},
+			want:  []string{"sub1", "sub2", "sub3"},
 		},
 		{
 			line:  "cmd sub1",
@@ -82,7 +90,12 @@ func TestCompleter_Complete(t *testing.T) {
 		{
 			line:  "cmd sub1 ",
 			point: -1,
-			want:  []string{},
+			want:  []string{"sub11"},
+		},
+		{
+			line:  "cmd sub3 ",
+			point: -1,
+			want:  []string{"sub3"},
 		},
 		{
 			line:  "cmd sub1 -",
@@ -142,7 +155,7 @@ func TestCompleter_Complete(t *testing.T) {
 		{
 			line:  "cmd -no-such-flag ",
 			point: -1,
-			want:  []string{"sub1", "sub2"},
+			want:  []string{"sub1", "sub2", "sub3"},
 		},
 		{
 			line:  "cmd -no-such-flag -",
@@ -157,7 +170,7 @@ func TestCompleter_Complete(t *testing.T) {
 		{
 			line:  "cmd no-such-command ",
 			point: -1,
-			want:  []string{"sub1", "sub2"},
+			want:  []string{"sub1", "sub2", "sub3"},
 		},
 		{
 			line:  "cmd -o ",
@@ -212,12 +225,12 @@ func TestCompleter_Complete(t *testing.T) {
 		{
 			line:  "cmd -o ./readme.md ",
 			point: -1,
-			want:  []string{"sub1", "sub2"},
+			want:  []string{"sub1", "sub2", "sub3"},
 		},
 		{
 			line:  "cmd -o=./readme.md ",
 			point: -1,
-			want:  []string{"sub1", "sub2"},
+			want:  []string{"sub1", "sub2", "sub3"},
 		},
 		{
 			line:  "cmd -o sub2 -flag3 ",
@@ -256,7 +269,7 @@ func TestCompleter_Complete(t *testing.T) {
 			line: "cmd -o ",
 			//         ^
 			point: 4,
-			want:  []string{"sub1", "sub2"},
+			want:  []string{"sub1", "sub2", "sub3"},
 		},
 	}
 
