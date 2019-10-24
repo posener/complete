@@ -94,13 +94,26 @@ func installers() (i []installer) {
 			break
 		}
 	}
-	if f := rcFile(".zshrc"); f != "" {
+	if f := zshrcPath(); f != "" {
 		i = append(i, zsh{f})
 	}
 	if d := fishConfigDir(); d != "" {
 		i = append(i, fish{d})
 	}
 	return
+}
+
+// zshrcPath returns the path to the first .zshrc found following the
+// same order of preference as zsh. (zsh will only look in HOME if ZDOTDIR is undefined)
+func zshrcPath() string {
+	if zDotDir := os.Getenv("ZDOTDIR"); zDotDir != "" {
+		fp := filepath.Join(zDotDir, ".zshrc")
+		// Return early if fp exists and is not a directory
+		if info, err := os.Stat(fp); err == nil && !info.IsDir() {
+			return fp
+		}
+	}
+	return rcFile(".zshrc")
 }
 
 func fishConfigDir() string {
