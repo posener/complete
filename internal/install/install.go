@@ -2,13 +2,41 @@ package install
 
 import (
 	"errors"
+	"fmt"
+	"io"
 	"os"
 	"os/user"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/hashicorp/go-multierror"
 )
+
+func Run(name string, uninstall, yes bool, out io.Writer, in io.Reader) {
+	action := "install"
+	if uninstall {
+		action = "uninstall"
+	}
+	if !yes {
+		fmt.Fprintf(out, "%s completion for %s? ", action, name)
+		var answer string
+		fmt.Fscanln(in, &answer)
+		switch strings.ToLower(answer) {
+		case "y", "yes":
+		default:
+			fmt.Fprintf(out, "Cancelling...")
+			return
+		}
+	}
+	fmt.Fprintf(out, action+"ing...")
+
+	if uninstall {
+		Uninstall(name)
+	} else {
+		Install(name)
+	}
+}
 
 type installer interface {
 	IsInstalled(cmd, bin string) bool

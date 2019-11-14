@@ -1,414 +1,246 @@
 package complete
 
 import (
-	"bytes"
-	"fmt"
+	"io/ioutil"
 	"os"
-	"sort"
-	"strconv"
-	"strings"
 	"testing"
+
+	"github.com/posener/complete/internal/arg"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestCompleter_Complete(t *testing.T) {
-	initTests()
+var testCmd = &Command{
+	Flags: map[string]Predictor{"cmd-flag": nil},
+	Sub: map[string]*Command{
+		"flags": &Command{
+			Flags: map[string]Predictor{
+				"values":    set{"a", "a a", "b"},
+				"something": set{""},
+				"nothing":   nil,
+			},
+		},
+		"sub1": &Command{
+			Flags: map[string]Predictor{"flag1": nil},
+			Sub: map[string]*Command{
+				"sub11": &Command{
+					Flags: map[string]Predictor{"flag11": nil},
+				},
+				"sub12": &Command{},
+			},
+			Args: set{"arg1", "arg2"},
+		},
+		"sub2": &Command{},
+		"args": &Command{
+			Args: set{"a", "a a", "b"},
+		},
+	},
+}
 
-	c := Command{
-		Sub: Commands{
-			"sub1": {
-				Flags: Flags{
-					"-flag1": PredictAnything,
-					"-flag2": PredictNothing,
-				},
-				Sub: Commands{
-					"sub11": {},
-				},
-			},
-			"sub2": {
-				Flags: Flags{
-					"-flag2": PredictNothing,
-					"-flag3": PredictSet("opt1", "opt2", "opt12"),
-				},
-				Args: PredictFiles("*.md"),
-			},
-			"sub3": {
-				Sub: Commands{
-					"sub3": {},
-				},
-			},
-		},
-		Flags: Flags{
-			"-o": PredictFiles("*.txt"),
-		},
-		GlobalFlags: Flags{
-			"-h":       PredictNothing,
-			"-global1": PredictAnything,
-		},
-	}
-	cmp := New("cmd", c)
+func TestCompleter(t *testing.T) {
+	t.Parallel()
 
 	tests := []struct {
-		line  string
-		point int // -1 indicates len(line)
-		want  []string
+		args string
+		want []string
 	}{
-		{
-			line:  "cmd ",
-			point: -1,
-			want:  []string{"sub1", "sub2", "sub3"},
-		},
-		{
-			line:  "cmd -",
-			point: -1,
-			want:  []string{"-h", "-global1", "-o"},
-		},
-		{
-			line:  "cmd -h ",
-			point: -1,
-			want:  []string{"sub1", "sub2", "sub3"},
-		},
-		{
-			line:  "cmd -global1 ", // global1 is known follow flag
-			point: -1,
-			want:  []string{},
-		},
-		{
-			line:  "cmd sub",
-			point: -1,
-			want:  []string{"sub1", "sub2", "sub3"},
-		},
-		{
-			line:  "cmd sub1",
-			point: -1,
-			want:  []string{"sub1"},
-		},
-		{
-			line:  "cmd sub2",
-			point: -1,
-			want:  []string{"sub2"},
-		},
-		{
-			line:  "cmd sub1 ",
-			point: -1,
-			want:  []string{"sub11"},
-		},
-		{
-			line:  "cmd sub3 ",
-			point: -1,
-			want:  []string{"sub3"},
-		},
-		{
-			line:  "cmd sub1 -",
-			point: -1,
-			want:  []string{"-flag1", "-flag2", "-h", "-global1"},
-		},
-		{
-			line:  "cmd sub2 ",
-			point: -1,
-			want:  []string{"./", "dir/", "outer/", "readme.md"},
-		},
-		{
-			line:  "cmd sub2 ./",
-			point: -1,
-			want:  []string{"./", "./readme.md", "./dir/", "./outer/"},
-		},
-		{
-			line:  "cmd sub2 re",
-			point: -1,
-			want:  []string{"readme.md"},
-		},
-		{
-			line:  "cmd sub2 ./re",
-			point: -1,
-			want:  []string{"./readme.md"},
-		},
-		{
-			line:  "cmd sub2 -flag2 ",
-			point: -1,
-			want:  []string{"./", "dir/", "outer/", "readme.md"},
-		},
-		{
-			line:  "cmd sub1 -fl",
-			point: -1,
-			want:  []string{"-flag1", "-flag2"},
-		},
-		{
-			line:  "cmd sub1 -flag1",
-			point: -1,
-			want:  []string{"-flag1"},
-		},
-		{
-			line:  "cmd sub1 -flag1 ",
-			point: -1,
-			want:  []string{}, // flag1 is unknown follow flag
-		},
-		{
-			line:  "cmd sub1 -flag2 -",
-			point: -1,
-			want:  []string{"-flag1", "-flag2", "-h", "-global1"},
-		},
-		{
-			line:  "cmd -no-such-flag",
-			point: -1,
-			want:  []string{},
-		},
-		{
-			line:  "cmd -no-such-flag ",
-			point: -1,
-			want:  []string{"sub1", "sub2", "sub3"},
-		},
-		{
-			line:  "cmd -no-such-flag -",
-			point: -1,
-			want:  []string{"-h", "-global1", "-o"},
-		},
-		{
-			line:  "cmd no-such-command",
-			point: -1,
-			want:  []string{},
-		},
-		{
-			line:  "cmd no-such-command ",
-			point: -1,
-			want:  []string{"sub1", "sub2", "sub3"},
-		},
-		{
-			line:  "cmd -o ",
-			point: -1,
-			want:  []string{"a.txt", "b.txt", "c.txt", ".dot.txt", "./", "dir/", "outer/"},
-		},
-		{
-			line:  "cmd -o ./no-su",
-			point: -1,
-			want:  []string{},
-		},
-		{
-			line:  "cmd -o ./",
-			point: -1,
-			want:  []string{"./a.txt", "./b.txt", "./c.txt", "./.dot.txt", "./", "./dir/", "./outer/"},
-		},
-		{
-			line:  "cmd -o=./",
-			point: -1,
-			want:  []string{"./a.txt", "./b.txt", "./c.txt", "./.dot.txt", "./", "./dir/", "./outer/"},
-		},
-		{
-			line:  "cmd -o .",
-			point: -1,
-			want:  []string{"./a.txt", "./b.txt", "./c.txt", "./.dot.txt", "./", "./dir/", "./outer/"},
-		},
-		{
-			line:  "cmd -o ./b",
-			point: -1,
-			want:  []string{"./b.txt"},
-		},
-		{
-			line:  "cmd -o=./b",
-			point: -1,
-			want:  []string{"./b.txt"},
-		},
-		{
-			line:  "cmd -o ./read",
-			point: -1,
-			want:  []string{},
-		},
-		{
-			line:  "cmd -o=./read",
-			point: -1,
-			want:  []string{},
-		},
-		{
-			line:  "cmd -o ./readme.md",
-			point: -1,
-			want:  []string{},
-		},
-		{
-			line:  "cmd -o ./readme.md ",
-			point: -1,
-			want:  []string{"sub1", "sub2", "sub3"},
-		},
-		{
-			line:  "cmd -o=./readme.md ",
-			point: -1,
-			want:  []string{"sub1", "sub2", "sub3"},
-		},
-		{
-			line:  "cmd -o sub2 -flag3 ",
-			point: -1,
-			want:  []string{"opt1", "opt2", "opt12"},
-		},
-		{
-			line:  "cmd -o sub2 -flag3 opt1",
-			point: -1,
-			want:  []string{"opt1", "opt12"},
-		},
-		{
-			line:  "cmd -o sub2 -flag3 opt",
-			point: -1,
-			want:  []string{"opt1", "opt2", "opt12"},
-		},
-		{
-			line: "cmd -o ./b foo",
-			//               ^
-			point: 10,
-			want:  []string{"./b.txt"},
-		},
-		{
-			line: "cmd -o=./b foo",
-			//               ^
-			point: 10,
-			want:  []string{"./b.txt"},
-		},
-		{
-			line: "cmd -o sub2 -flag3 optfoo",
-			//                           ^
-			point: 22,
-			want:  []string{"opt1", "opt2", "opt12"},
-		},
-		{
-			line: "cmd -o ",
-			//         ^
-			point: 4,
-			want:  []string{"sub1", "sub2", "sub3"},
-		},
+		// Check empty flag name matching.
+
+		{args: "flags ", want: []string{"-values", "-nothing", "-something", "-cmd-flag", "-h"}},
+		{args: "flags -", want: []string{"-values", "-nothing", "-something", "-cmd-flag", "-h"}},
+		{args: "flags --", want: []string{"--values", "--nothing", "--something", "--cmd-flag", "--help"}},
+		// If started a flag with no matching prefix, expect to see all possible flags.
+		{args: "flags -x", want: []string{"-values", "-nothing", "-something", "-cmd-flag", "-h"}},
+		// Check prefix matching for chain of sub commands.
+		{args: "sub1 sub11 -fl", want: []string{"-flag11", "-flag1"}},
+		{args: "sub1 sub11 --fl", want: []string{"--flag11", "--flag1"}},
+
+		// Test sub command completion.
+
+		{args: "", want: []string{"flags", "sub1", "sub2", "args", "-h"}},
+		{args: " ", want: []string{"flags", "sub1", "sub2", "args", "-h"}},
+		{args: "f", want: []string{"flags"}},
+		{args: "sub", want: []string{"sub1", "sub2"}},
+		{args: "sub1", want: []string{"sub1"}},
+		{args: "sub1 ", want: []string{"sub11", "sub12", "-h"}},
+		// Suggest all sub commands if prefix is not known.
+		{args: "x", want: []string{"flags", "sub1", "sub2", "args", "-h"}},
+
+		// Suggest flag value.
+
+		// A flag that has an empty completion should return empty completion. It "completes
+		// something"... But it doesn't know what, so we should not complete anything else.
+		{args: "flags -something ", want: []string{""}},
+		{args: "flags -something foo", want: []string{""}},
+		// A flag that have nil completion should complete all other options.
+		{args: "flags -nothing ", want: []string{"-values", "-nothing", "-something", "-cmd-flag", "-h"}},
+		// Trying to provide a value to the nothing flag should revert the phrase back to nothing.
+		{args: "flags -nothing=", want: []string{}},
+		// The flag value was not started, suggest all relevant values.
+		{args: "flags -values ", want: []string{"a", "a\\ a", "b"}},
+		{args: "flags -values a", want: []string{"a", "a\\ a"}},
+		{args: "flags -values a\\", want: []string{"a\\ a"}},
+		{args: "flags -values a\\ ", want: []string{"a\\ a"}},
+		{args: "flags -values a\\ a", want: []string{"a\\ a"}},
+		{args: "flags -values a\\ a ", want: []string{"-values", "-nothing", "-something", "-cmd-flag", "-h"}},
+		{args: "flags -values \"a", want: []string{"\"a\"", "\"a a\""}},
+		{args: "flags -values \"a ", want: []string{"\"a a\""}},
+		{args: "flags -values \"a a", want: []string{"\"a a\""}},
+		{args: "flags -values \"a a\"", want: []string{"\"a a\""}},
+		{args: "flags -values \"a a\" ", want: []string{"-values", "-nothing", "-something", "-cmd-flag", "-h"}},
+
+		{args: "flags -values=", want: []string{"a", "a\\ a", "b"}},
+		{args: "flags -values=a", want: []string{"a", "a\\ a"}},
+		{args: "flags -values=a\\", want: []string{"a\\ a"}},
+		{args: "flags -values=a\\ ", want: []string{"a\\ a"}},
+		{args: "flags -values=a\\ a", want: []string{"a\\ a"}},
+		{args: "flags -values=a\\ a ", want: []string{"-values", "-nothing", "-something", "-cmd-flag", "-h"}},
+		{args: "flags -values=\"a", want: []string{"\"a\"", "\"a a\""}},
+		{args: "flags -values=\"a ", want: []string{"\"a a\""}},
+		{args: "flags -values=\"a a", want: []string{"\"a a\""}},
+		{args: "flags -values=\"a a\"", want: []string{"\"a a\""}},
+		{args: "flags -values=\"a a\" ", want: []string{"-values", "-nothing", "-something", "-cmd-flag", "-h"}},
+
+		// Complete positional arguments
+
+		{args: "args ", want: []string{"-cmd-flag", "-h", "a", "a\\ a", "b"}},
+		{args: "args a", want: []string{"a", "a\\ a"}},
+		{args: "args a\\", want: []string{"a\\ a"}},
+		{args: "args a\\ ", want: []string{"a\\ a"}},
+		{args: "args a\\ a", want: []string{"a\\ a"}},
+		{args: "args a\\ a ", want: []string{"-cmd-flag", "-h", "a", "a\\ a", "b"}},
+		{args: "args \"a", want: []string{"\"a\"", "\"a a\""}},
+		{args: "args \"a ", want: []string{"\"a a\""}},
+		{args: "args \"a a", want: []string{"\"a a\""}},
+		{args: "args \"a a\"", want: []string{"\"a a\""}},
+		{args: "args \"a a\" ", want: []string{"-cmd-flag", "-h", "a", "a\\ a", "b"}},
+
+		// Complete positional arguments from a parent command
+		{args: "sub1 sub12 arg", want: []string{"arg1", "arg2"}},
+
+		// Test help
+
+		{args: "-", want: []string{"-h"}},
+		{args: " -", want: []string{"-h"}},
+		{args: "--", want: []string{"--help"}},
+		{args: "-he", want: []string{"-help"}},
+		{args: "-x", want: []string{"-help"}},
 	}
 
 	for _, tt := range tests {
-		t.Run(fmt.Sprintf("%s@%d", tt.line, tt.point), func(t *testing.T) {
-			got := runComplete(cmp, tt.line, tt.point)
+		t.Run(tt.args, func(t *testing.T) {
+			Test(t, testCmd, tt.args, tt.want)
+		})
+	}
+}
 
-			sort.Strings(tt.want)
-			sort.Strings(got)
+func TestCompleter_error(t *testing.T) {
+	t.Parallel()
 
-			if !equalSlices(got, tt.want) {
-				t.Errorf("failed '%s'\ngot: %s\nwant: %s", t.Name(), got, tt.want)
+	tests := []struct {
+		args string
+		err  string
+	}{
+		// Sub command already fully typed but unknown.
+		{args: "x ", err: "unknown subcommand: x"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.args, func(t *testing.T) {
+			_, err := completer{Completer: testCmd, args: arg.Parse(tt.args)}.complete()
+			require.Error(t, err)
+			assert.Equal(t, tt.err, err.Error())
+		})
+	}
+}
+
+func TestComplete(t *testing.T) {
+	defer func() {
+		getEnv = os.Getenv
+		exit = os.Exit
+		out = os.Stdout
+	}()
+
+	tests := []struct {
+		line, point string
+		shouldExit  bool
+		shouldPanic bool
+		install     string
+		uninstall   string
+	}{
+		{shouldExit: true, line: "cmd", point: "1"},
+		{shouldExit: false, line: "", point: ""},
+		{shouldPanic: true, line: "cmd", point: ""},
+		{shouldPanic: true, line: "cmd", point: "a"},
+		{shouldPanic: true, line: "cmd", point: "4"},
+
+		{shouldExit: true, install: "1"},
+		{shouldExit: false, install: "a"},
+		{shouldExit: true, uninstall: "1"},
+		{shouldExit: false, uninstall: "a"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.line+"@"+tt.point, func(t *testing.T) {
+			getEnv = func(env string) string {
+				switch env {
+				case "COMP_LINE":
+					return tt.line
+				case "COMP_POINT":
+					return tt.point
+				case "COMP_INSTALL":
+					return tt.install
+				case "COMP_UNINSTALL":
+					return tt.uninstall
+				case "COMP_YES":
+					return "0"
+				default:
+					panic(env)
+				}
+			}
+			isExit := false
+			exit = func(int) {
+				isExit = true
+			}
+			out = ioutil.Discard
+			if tt.shouldPanic {
+				assert.Panics(t, func() { testCmd.Complete("") })
+			} else {
+				testCmd.Complete("")
+				assert.Equal(t, tt.shouldExit, isExit)
 			}
 		})
 	}
 }
 
-func TestCompleter_Complete_SharedPrefix(t *testing.T) {
-	initTests()
+type set []string
 
-	c := Command{
-		Sub: Commands{
-			"status": {
-				Flags: Flags{
-					"-f3": PredictNothing,
-				},
-			},
-			"job": {
-				Sub: Commands{
-					"status": {
-						Flags: Flags{
-							"-f4": PredictNothing,
-						},
-					},
-				},
-			},
-		},
-		Flags: Flags{
-			"-o": PredictFiles("*.txt"),
-		},
-		GlobalFlags: Flags{
-			"-h":       PredictNothing,
-			"-global1": PredictAnything,
-		},
-	}
+func (s set) Predict(_ string) []string {
+	return s
+}
 
-	cmp := New("cmd", c)
+func TestHasPrefix(t *testing.T) {
+	t.Parallel()
 
 	tests := []struct {
-		line  string
-		point int // -1 indicates len(line)
-		want  []string
+		s      string
+		prefix string
+		want   string
+		wantOK bool
 	}{
-		{
-			line:  "cmd ",
-			point: -1,
-			want:  []string{"status", "job"},
-		},
-		{
-			line:  "cmd -",
-			point: -1,
-			want:  []string{"-h", "-global1", "-o"},
-		},
-		{
-			line:  "cmd j",
-			point: -1,
-			want:  []string{"job"},
-		},
-		{
-			line:  "cmd job ",
-			point: -1,
-			want:  []string{"status"},
-		},
-		{
-			line:  "cmd job -",
-			point: -1,
-			want:  []string{"-h", "-global1"},
-		},
-		{
-			line:  "cmd job status ",
-			point: -1,
-			want:  []string{},
-		},
-		{
-			line:  "cmd job status -",
-			point: -1,
-			want:  []string{"-f4", "-h", "-global1"},
-		},
+		{s: "ab", prefix: `b`, want: ``, wantOK: false},
+		{s: "", prefix: `b`, want: ``, wantOK: false},
+		{s: "ab", prefix: `a`, want: `ab`, wantOK: true},
+		{s: "ab", prefix: `"'b`, want: ``, wantOK: false},
+		{s: "ab", prefix: `"'a`, want: `"'ab'"`, wantOK: true},
+		{s: "ab", prefix: `'"a`, want: `'"ab"'`, wantOK: true},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.line, func(t *testing.T) {
-			got := runComplete(cmp, tt.line, tt.point)
-
-			sort.Strings(tt.want)
-			sort.Strings(got)
-
-			if !equalSlices(got, tt.want) {
-				t.Errorf("failed '%s'\ngot = %s\nwant: %s", t.Name(), got, tt.want)
-			}
+		t.Run(tt.s+"/"+tt.prefix, func(t *testing.T) {
+			got, gotOK := hasPrefix(tt.s, tt.prefix)
+			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.wantOK, gotOK)
 		})
 	}
-}
-
-// runComplete runs the complete login for test purposes
-// it gets the complete struct and command line arguments and returns
-// the complete options
-func runComplete(c *Complete, line string, point int) (completions []string) {
-	if point == -1 {
-		point = len(line)
-	}
-	os.Setenv(envLine, line)
-	os.Setenv(envPoint, strconv.Itoa(point))
-	b := bytes.NewBuffer(nil)
-	c.Out = b
-	c.Complete()
-	completions = parseOutput(b.String())
-	return
-}
-
-func parseOutput(output string) []string {
-	lines := strings.Split(output, "\n")
-	options := []string{}
-	for _, l := range lines {
-		if l != "" {
-			options = append(options, l)
-		}
-	}
-	return options
-}
-
-func equalSlices(a, b []string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-	return true
 }

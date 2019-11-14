@@ -1,111 +1,62 @@
 package complete
 
-// Command represents a command line
-// It holds the data that enables auto completion of command line
-// Command can also be a sub command.
+// Command is an object that can be used to create complete options for a go executable that does
+// not have a good binding to the `Completer` interface, or to use a Go program as complete binary
+// for another executable (see ./gocomplete as an example.)
 type Command struct {
-	// Sub is map of sub commands of the current command
-	// The key refer to the sub command name, and the value is it's
-	// Command descriptive struct.
-	Sub Commands
-
-	// Flags is a map of flags that the command accepts.
-	// The key is the flag name, and the value is it's predictions.
-	Flags Flags
-
-	// GlobalFlags is a map of flags that the command accepts.
-	// Global flags that can appear also after a sub command.
-	GlobalFlags Flags
-
-	// Args are extra arguments that the command accepts, those who are
-	// given without any flag before.
+	// Sub is map of sub commands of the current command. The key refer to the sub command name, and
+	// the value is it's command descriptive struct.
+	Sub map[string]*Command
+	// Flags is a map of flags that the command accepts. The key is the flag name, and the value is
+	// it's predictions. In a chain of sub commands, no duplicate flags should be defined.
+	Flags map[string]Predictor
+	// Args are extra arguments that the command accepts, those who are given without any flag
+	// before. In any chain of sub commands, only one of them should predict positional arguments.
 	Args Predictor
 }
 
-// Predict returns all possible predictions for args according to the command struct
-func (c *Command) Predict(a Args) []string {
-	options, _ := c.predict(a)
-	return options
+// Complete runs the completion of the described command.
+func (c *Command) Complete(name string) {
+	Complete(name, c)
 }
 
-// Commands is the type of Sub member, it maps a command name to a command struct
-type Commands map[string]Command
-
-// Predict completion of sub command names names according to command line arguments
-func (c Commands) Predict(a Args) (prediction []string) {
-	for sub := range c {
-		prediction = append(prediction, sub)
+func (c *Command) SubCmdList() []string {
+	subs := make([]string, 0, len(c.Sub))
+	for sub := range c.Sub {
+		subs = append(subs, sub)
 	}
-	return
+	return subs
 }
 
-// Flags is the type Flags of the Flags member, it maps a flag name to the flag predictions.
-type Flags map[string]Predictor
+func (c *Command) SubCmdGet(cmd string) Completer {
+	if c.Sub[cmd] == nil {
+		return nil
+	}
+	return c.Sub[cmd]
+}
+func (c *Command) FlagList() []string {
+	flags := make([]string, 0, len(c.Flags))
+	for flag := range c.Flags {
+		flags = append(flags, flag)
+	}
+	return flags
+}
 
-// Predict completion of flags names according to command line arguments
-func (f Flags) Predict(a Args) (prediction []string) {
-	for flag := range f {
-		// If the flag starts with a hyphen, we avoid emitting the prediction
-		// unless the last typed arg contains a hyphen as well.
-		flagHyphenStart := len(flag) != 0 && flag[0] == '-'
-		lastHyphenStart := len(a.Last) != 0 && a.Last[0] == '-'
-		if flagHyphenStart && !lastHyphenStart {
-			continue
+func (c *Command) FlagGet(flag string) Predictor {
+	return PredictFunc(func(prefix string) (options []string) {
+		f := c.Flags[flag]
+		if f == nil {
+			return nil
 		}
-		prediction = append(prediction, flag)
-	}
-	return
+		return f.Predict(prefix)
+	})
 }
 
-// predict options
-// only is set to true if no more options are allowed to be returned
-// those are in cases of special flag that has specific completion arguments,
-// and other flags or sub commands can't come after it.
-func (c *Command) predict(a Args) (options []string, only bool) {
-
-	// search sub commands for predictions first
-	subCommandFound := false
-	for i, arg := range a.Completed {
-		if cmd, ok := c.Sub[arg]; ok {
-			subCommandFound = true
-
-			// recursive call for sub command
-			options, only = cmd.predict(a.from(i))
-			if only {
-				return
-			}
-
-			// We matched so stop searching. Continuing to search can accidentally
-			// match a subcommand with current set of commands, see issue #46.
-			break
+func (c *Command) ArgsGet() Predictor {
+	return PredictFunc(func(prefix string) (options []string) {
+		if c.Args == nil {
+			return nil
 		}
-	}
-
-	// if last completed word is a global flag that we need to complete
-	if predictor, ok := c.GlobalFlags[a.LastCompleted]; ok && predictor != nil {
-		Log("Predicting according to global flag %s", a.LastCompleted)
-		return predictor.Predict(a), true
-	}
-
-	options = append(options, c.GlobalFlags.Predict(a)...)
-
-	// if a sub command was entered, we won't add the parent command
-	// completions and we return here.
-	if subCommandFound {
-		return
-	}
-
-	// if last completed word is a command flag that we need to complete
-	if predictor, ok := c.Flags[a.LastCompleted]; ok && predictor != nil {
-		Log("Predicting according to flag %s", a.LastCompleted)
-		return predictor.Predict(a), true
-	}
-
-	options = append(options, c.Sub.Predict(a)...)
-	options = append(options, c.Flags.Predict(a)...)
-	if c.Args != nil {
-		options = append(options, c.Args.Predict(a)...)
-	}
-
-	return
+		return c.Args.Predict(prefix)
+	})
 }

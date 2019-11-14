@@ -1,35 +1,46 @@
 /*
-Package complete provides a tool for bash writing bash completion in go, and bash completion for the go command line.
+Package complete is everything for bash completion and Go.
 
-Writing bash completion scripts is a hard work. This package provides an easy way
-to create bash completion scripts for any command, and also an easy way to install/uninstall
-the completion of the command.
+Writing bash completion scripts is a hard work, usually done in the bash scripting language.
+This package provides:
+
+* A library for bash completion for Go programs.
+
+* A tool for writing bash completion script in the Go language. For any Go or non Go program.
+
+* Bash completion for the `go` command line (See ./gocomplete).
+
+* Library for bash-completion enabled flags (See ./compflag).
+
+* Enables an easy way to install/uninstall the completion of the command.
+
+The library and tools are extensible such that any program can add its one logic, completion types
+or methologies.
 
 Go Command Bash Completion
 
-In ./cmd/gocomplete there is an example for bash completion for the `go` command line.
+./gocomplete is the script for bash completion for the `go` command line. This is an example
+that uses the `complete` package on the `go` command - the `complete` package can also be used to
+implement any completions, see #usage.
 
-This is an example that uses the `complete` package on the `go` command - the `complete` package
-can also be used to implement any completions, see #usage.
-
-Install
+Install:
 
 1. Type in your shell:
 
 	go get -u github.com/posener/complete/gocomplete
-	gocomplete -install
+	COMP_INSTALL=1 gocomplete
 
 2. Restart your shell
 
-Uninstall by `gocomplete -uninstall`
+Uninstall by `COMP_UNINSTALL=1 gocomplete`
 
-Features
+Features:
 
-- Complete `go` command, including sub commands and all flags.
+- Complete `go` command, including sub commands and flags.
 - Complete packages names or `.go` files when necessary.
 - Complete test names after `-run` flag.
 
-Complete package
+Complete Package
 
 Supported shells:
 
@@ -39,72 +50,83 @@ Supported shells:
 
 Usage
 
-Assuming you have program called `run` and you want to have bash completion
-for it, meaning, if you type `run` then space, then press the `Tab` key,
-the shell will suggest relevant complete options.
+Add bash completion capabilities to any Go program. See ./example/command.
 
-In that case, we will create a program called `runcomplete`, a go program,
-with a `func main()` and so, that will make the completion of the `run`
-program. Once the `runcomplete` will be in a binary form, we could
-`runcomplete -install` and that will add to our shell all the bash completion
-options for `run`.
+	import (
+		"flag"
+		"github.com/posener/complete"
+		"github.com/posener/complete/predict"
+	)
 
-So here it is:
-
-	import "github.com/posener/complete"
+	var (
+		// Add variables to the program.
+		name      = flag.String("name", "", "")
+		something = flag.String("something", "", "")
+		nothing   = flag.String("nothing", "", "")
+	)
 
 	func main() {
-
-		// create a Command object, that represents the command we want
-		// to complete.
-		run := complete.Command{
-
-			// Sub defines a list of sub commands of the program,
-			// this is recursive, since every command is of type command also.
-			Sub: complete.Commands{
-
-				// add a build sub command
-				"build": complete.Command {
-
-					// define flags of the build sub command
-					Flags: complete.Flags{
-						// build sub command has a flag '-cpus', which
-						// expects number of cpus after it. in that case
-						// anything could complete this flag.
-						"-cpus": complete.PredictAnything,
-					},
-				},
-			},
-
-			// define flags of the 'run' main command
-			Flags: complete.Flags{
-				// a flag -o, which expects a file ending with .out after
-				// it, the tab completion will auto complete for files matching
-				// the given pattern.
-				"-o": complete.PredictFiles("*.out"),
-			},
-
-			// define global flags of the 'run' main command
-			// those will show up also when a sub command was entered in the
-			// command line
-			GlobalFlags: complete.Flags{
-
-				// a flag '-h' which does not expects anything after it
-				"-h": complete.PredictNothing,
+		// Create the complete command.
+		// Here we define completion values for each flag.
+		cmd := &complete.Command{
+			Flags: map[string]complete.Predictor{
+				"name":      predict.Set{"foo", "bar", "foo bar"},
+				"something": predict.Something,
+				"nothing":   predict.Nothing,
 			},
 		}
-
-		// run the command completion, as part of the main() function.
-		// this triggers the autocompletion when needed.
-		// name must be exactly as the binary that we want to complete.
-		complete.New("run", run).Run()
+		// Run the completion - provide it with the binary name.
+		cmd.Complete("my-program")
+		// Parse the flags.
+		flag.Parse()
+		// Program logic...
 	}
 
-Self completing program
+This package also enables to complete flags defined by the standard library `flag` package.
+To use this feature, simply call `complete.CommandLine` before `flag.Parse`. (See ./example/stdlib).
 
-In case that the program that we want to complete is written in go we
-can make it self completing.
-Here is an example: ./example/self/main.go .
+  	import (
+		"flag"
+ +		"github.com/posener/complete"
+	)
+	var (
+		// Define flags here...
+		foo = flag.Bool("foo", false, "")
+	)
 
+	func main() {
+		// Call command line completion before parsing the flags - provide it with the binary name.
+ +		complete.CommandLine("my-program")
+		flag.Parse()
+	}
+
+If flag value completion is desired, it can be done by providing the standard library `flag.Var`
+function a `flag.Value` that also implements the `complete.Predictor` interface. For standard
+flag with values, it is possible to use the `github.com/posener/complete/compflag` package.
+(See ./example/compflag).
+
+  	import (
+		"flag"
+ +		"github.com/posener/complete"
+ +		"github.com/posener/complete/compflag"
+	)
+	var (
+		// Define flags here...
+ -		foo = flag.Bool("foo", false, "")
+ +		foo = compflag.Bool("foo", false, "")
+	)
+
+	func main() {
+		// Call command line completion before parsing the flags.
+ +		complete.CommandLine("my-program")
+		flag.Parse()
+	}
+
+Instead of calling both `complete.CommandLine` and `flag.Parse`, one can call just `compflag.Parse`
+which does them both.
+
+Testing
+
+For command line bash completion testing use the `complete.Test` function.
 */
 package complete
