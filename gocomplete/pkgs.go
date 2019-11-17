@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/posener/complete/predict"
+	"github.com/posener/complete/v2/predict"
 )
 
 // predictPackages completes packages in the directory pointed by a.Last

@@ -5,7 +5,7 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/posener/complete"
+	"github.com/posener/complete/v2"
 )
 
 func TestPredictions(t *testing.T) {

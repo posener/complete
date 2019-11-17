@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/posener/complete/compflag"
+	"github.com/posener/complete/v2/compflag"
 )
 
 var (

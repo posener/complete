@@ -2,7 +2,7 @@
 //
 // Usage
 //
-// 	import "github.com/posener/complete/compflag"
+// 	import "github.com/posener/complete/v2/compflag"
 //
 // 	var (
 // 		// Define flags...
@@ -18,7 +18,7 @@
 //
 // 	import (
 // 		"flag"
-// 		"github.com/posener/complete/compflag"
+// 		"github.com/posener/complete/v2/compflag"
 // 	)
 //
 // 	var (
@@ -41,7 +41,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/posener/complete"
+	"github.com/posener/complete/v2"
 )
 
 // Flag options.

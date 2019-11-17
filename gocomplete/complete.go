@@ -2,8 +2,8 @@
 package main
 
 import (
-	"github.com/posener/complete"
-	"github.com/posener/complete/predict"
+	"github.com/posener/complete/v2"
+	"github.com/posener/complete/v2/predict"
 )
 
 var (

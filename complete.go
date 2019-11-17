@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/posener/complete/internal/arg"
-	"github.com/posener/complete/internal/install"
-	"github.com/posener/complete/internal/tokener"
+	"github.com/posener/complete/v2/internal/arg"
+	"github.com/posener/complete/v2/internal/install"
+	"github.com/posener/complete/v2/internal/tokener"
 )
 
 // Completer is an interface that a command line should implement in order to get bash completion.

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/posener/complete"
+	"github.com/posener/complete/v2"
 )
 
 var (

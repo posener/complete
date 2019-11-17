@@ -64,8 +64,8 @@ Add bash completion capabilities to any Go program. See [./example/command](./ex
 ```go
 import (
 	"flag"
-	"github.com/posener/complete"
-	"github.com/posener/complete/predict"
+	"github.com/posener/complete/v2"
+	"github.com/posener/complete/v2/predict"
 )
 
 var (
@@ -99,7 +99,7 @@ To use this feature, simply call `complete.CommandLine` before `flag.Parse`. (Se
 ```diff
   	import (
 		"flag"
- +		"github.com/posener/complete"
+ +		"github.com/posener/complete/v2"
 	)
 	var (
 		// Define flags here...
@@ -121,8 +121,8 @@ flag with values, it is possible to use the `github.com/posener/complete/compfla
 ```diff
   	import (
 		"flag"
- +		"github.com/posener/complete"
- +		"github.com/posener/complete/compflag"
+ +		"github.com/posener/complete/v2"
+ +		"github.com/posener/complete/v2/compflag"
 	)
 	var (
 		// Define flags here...
