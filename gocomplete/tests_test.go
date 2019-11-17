@@ -14,7 +14,7 @@ func TestPredictions(t *testing.T) {
 	tests := []struct {
 		name      string
 		predictor complete.Predictor
-		last      string
+		prefix    string
 		want      []string
 	}{
 		{
@@ -31,8 +31,7 @@ func TestPredictions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			a := complete.Args{Last: tt.last}
-			got := tt.predictor.Predict(a)
+			got := tt.predictor.Predict(tt.prefix)
 			if !equal(got, tt.want) {
 				t.Errorf("Failed %s: got: %q, want: %q", t.Name(), got, tt.want)
 			}
@@ -44,9 +43,9 @@ func BenchmarkFake(b *testing.B) {}
 
 func Example() {
 	os.Setenv("COMP_LINE", "go ru")
+	os.Setenv("COMP_POINT", "5")
 	main()
 	// output: run
-
 }
 
 func equal(s1, s2 []string) bool {

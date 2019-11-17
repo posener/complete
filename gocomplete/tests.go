@@ -20,7 +20,7 @@ var (
 // for test names use prefix of 'Test' or 'Example', and for benchmark
 // test names use 'Benchmark'
 func funcPredict(funcRegexp *regexp.Regexp) complete.Predictor {
-	return complete.PredictFunc(func(a complete.Args) []string {
+	return complete.PredictFunc(func(prefix string) []string {
 		return funcNames(funcRegexp)
 	})
 }

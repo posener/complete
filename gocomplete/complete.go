@@ -1,551 +1,554 @@
 // Package main is complete tool for the go command line
 package main
 
-import "github.com/posener/complete"
+import (
+	"github.com/posener/complete"
+	"github.com/posener/complete/predict"
+)
 
 var (
-	ellipsis   = complete.PredictSet("./...")
+	ellipsis   = predict.Set{"./..."}
 	anyPackage = complete.PredictFunc(predictPackages)
-	goFiles    = complete.PredictFiles("*.go")
-	anyFile    = complete.PredictFiles("*")
-	anyGo      = complete.PredictOr(goFiles, anyPackage, ellipsis)
+	goFiles    = predict.Files("*.go")
+	anyFile    = predict.Files("*")
+	anyGo      = predict.Or(goFiles, anyPackage, ellipsis)
 )
 
 func main() {
-	build := complete.Command{
-		Flags: complete.Flags{
-			"-o": anyFile,
-			"-i": complete.PredictNothing,
+	build := &complete.Command{
+		Flags: map[string]complete.Predictor{
+			"o": anyFile,
+			"i": predict.Nothing,
 
-			"-a":             complete.PredictNothing,
-			"-n":             complete.PredictNothing,
-			"-p":             complete.PredictAnything,
-			"-race":          complete.PredictNothing,
-			"-msan":          complete.PredictNothing,
-			"-v":             complete.PredictNothing,
-			"-work":          complete.PredictNothing,
-			"-x":             complete.PredictNothing,
-			"-asmflags":      complete.PredictAnything,
-			"-buildmode":     complete.PredictAnything,
-			"-compiler":      complete.PredictAnything,
-			"-gccgoflags":    complete.PredictSet("gccgo", "gc"),
-			"-gcflags":       complete.PredictAnything,
-			"-installsuffix": complete.PredictAnything,
-			"-ldflags":       complete.PredictAnything,
-			"-linkshared":    complete.PredictNothing,
-			"-pkgdir":        anyPackage,
-			"-tags":          complete.PredictAnything,
-			"-toolexec":      complete.PredictAnything,
+			"a":             predict.Nothing,
+			"n":             predict.Nothing,
+			"p":             predict.Something,
+			"race":          predict.Nothing,
+			"msan":          predict.Nothing,
+			"v":             predict.Nothing,
+			"work":          predict.Nothing,
+			"x":             predict.Nothing,
+			"asmflags":      predict.Something,
+			"buildmode":     predict.Something,
+			"compiler":      predict.Something,
+			"gccgoflags":    predict.Set{"gccgo", "gc"},
+			"gcflags":       predict.Something,
+			"installsuffix": predict.Something,
+			"ldflags":       predict.Something,
+			"linkshared":    predict.Nothing,
+			"pkgdir":        anyPackage,
+			"tags":          predict.Something,
+			"toolexec":      predict.Something,
 		},
 		Args: anyGo,
 	}
 
-	run := complete.Command{
-		Flags: complete.Flags{
-			"-exec": complete.PredictAnything,
+	run := &complete.Command{
+		Flags: map[string]complete.Predictor{
+			"exec": predict.Something,
 		},
 		Args: goFiles,
 	}
 
-	test := complete.Command{
-		Flags: complete.Flags{
-			"-args": complete.PredictAnything,
-			"-c":    complete.PredictNothing,
-			"-exec": complete.PredictAnything,
+	test := &complete.Command{
+		Flags: map[string]complete.Predictor{
+			"args": predict.Something,
+			"c":    predict.Nothing,
+			"exec": predict.Something,
 
-			"-bench":     predictBenchmark,
-			"-benchtime": complete.PredictAnything,
-			"-count":     complete.PredictAnything,
-			"-cover":     complete.PredictNothing,
-			"-covermode": complete.PredictSet("set", "count", "atomic"),
-			"-coverpkg":  complete.PredictDirs("*"),
-			"-cpu":       complete.PredictAnything,
-			"-run":       predictTest,
-			"-short":     complete.PredictNothing,
-			"-timeout":   complete.PredictAnything,
+			"bench":     predictBenchmark,
+			"benchtime": predict.Something,
+			"count":     predict.Something,
+			"cover":     predict.Nothing,
+			"covermode": predict.Set{"set", "count", "atomic"},
+			"coverpkg":  predict.Dirs("*"),
+			"cpu":       predict.Something,
+			"run":       predictTest,
+			"short":     predict.Nothing,
+			"timeout":   predict.Something,
 
-			"-benchmem":             complete.PredictNothing,
-			"-blockprofile":         complete.PredictFiles("*.out"),
-			"-blockprofilerate":     complete.PredictAnything,
-			"-coverprofile":         complete.PredictFiles("*.out"),
-			"-cpuprofile":           complete.PredictFiles("*.out"),
-			"-memprofile":           complete.PredictFiles("*.out"),
-			"-memprofilerate":       complete.PredictAnything,
-			"-mutexprofile":         complete.PredictFiles("*.out"),
-			"-mutexprofilefraction": complete.PredictAnything,
-			"-outputdir":            complete.PredictDirs("*"),
-			"-trace":                complete.PredictFiles("*.out"),
+			"benchmem":             predict.Nothing,
+			"blockprofile":         predict.Files("*.out"),
+			"blockprofilerate":     predict.Something,
+			"coverprofile":         predict.Files("*.out"),
+			"cpuprofile":           predict.Files("*.out"),
+			"memprofile":           predict.Files("*.out"),
+			"memprofilerate":       predict.Something,
+			"mutexprofile":         predict.Files("*.out"),
+			"mutexprofilefraction": predict.Something,
+			"outputdir":            predict.Dirs("*"),
+			"trace":                predict.Files("*.out"),
 		},
 		Args: anyGo,
 	}
 
-	fmt := complete.Command{
-		Flags: complete.Flags{
-			"-n": complete.PredictNothing,
-			"-x": complete.PredictNothing,
+	fmt := &complete.Command{
+		Flags: map[string]complete.Predictor{
+			"n": predict.Nothing,
+			"x": predict.Nothing,
 		},
 		Args: anyGo,
 	}
 
-	get := complete.Command{
-		Flags: complete.Flags{
-			"-d":        complete.PredictNothing,
-			"-f":        complete.PredictNothing,
-			"-fix":      complete.PredictNothing,
-			"-insecure": complete.PredictNothing,
-			"-t":        complete.PredictNothing,
-			"-u":        complete.PredictNothing,
+	get := &complete.Command{
+		Flags: map[string]complete.Predictor{
+			"d":        predict.Nothing,
+			"f":        predict.Nothing,
+			"fix":      predict.Nothing,
+			"insecure": predict.Nothing,
+			"t":        predict.Nothing,
+			"u":        predict.Nothing,
 		},
 		Args: anyGo,
 	}
 
-	generate := complete.Command{
-		Flags: complete.Flags{
-			"-n":   complete.PredictNothing,
-			"-x":   complete.PredictNothing,
-			"-v":   complete.PredictNothing,
-			"-run": complete.PredictAnything,
+	generate := &complete.Command{
+		Flags: map[string]complete.Predictor{
+			"n":   predict.Nothing,
+			"x":   predict.Nothing,
+			"v":   predict.Nothing,
+			"run": predict.Something,
 		},
 		Args: anyGo,
 	}
 
-	vet := complete.Command{
-		Flags: complete.Flags{
-			"-n": complete.PredictNothing,
-			"-x": complete.PredictNothing,
+	vet := &complete.Command{
+		Flags: map[string]complete.Predictor{
+			"n": predict.Nothing,
+			"x": predict.Nothing,
 		},
 		Args: anyGo,
 	}
 
-	list := complete.Command{
-		Flags: complete.Flags{
-			"-e":    complete.PredictNothing,
-			"-f":    complete.PredictAnything,
-			"-json": complete.PredictNothing,
+	list := &complete.Command{
+		Flags: map[string]complete.Predictor{
+			"e":    predict.Nothing,
+			"f":    predict.Something,
+			"json": predict.Nothing,
 		},
-		Args: complete.PredictOr(anyPackage, ellipsis),
+		Args: predict.Or(anyPackage, ellipsis),
 	}
 
-	doc := complete.Command{
-		Flags: complete.Flags{
-			"-c":   complete.PredictNothing,
-			"-cmd": complete.PredictNothing,
-			"-u":   complete.PredictNothing,
+	doc := &complete.Command{
+		Flags: map[string]complete.Predictor{
+			"c":   predict.Nothing,
+			"cmd": predict.Nothing,
+			"u":   predict.Nothing,
 		},
 		Args: anyPackage,
 	}
 
-	tool := complete.Command{
-		Flags: complete.Flags{
-			"-n": complete.PredictNothing,
+	tool := &complete.Command{
+		Flags: map[string]complete.Predictor{
+			"n": predict.Nothing,
 		},
-		Sub: complete.Commands{
+		Sub: map[string]*complete.Command{
 			"addr2line": {
 				Args: anyFile,
 			},
 			"asm": {
-				Flags: complete.Flags{
-					"-D":        complete.PredictAnything,
-					"-I":        complete.PredictDirs("*"),
-					"-S":        complete.PredictNothing,
-					"-V":        complete.PredictNothing,
-					"-debug":    complete.PredictNothing,
-					"-dynlink":  complete.PredictNothing,
-					"-e":        complete.PredictNothing,
-					"-o":        anyFile,
-					"-shared":   complete.PredictNothing,
-					"-trimpath": complete.PredictNothing,
+				Flags: map[string]complete.Predictor{
+					"D":        predict.Something,
+					"I":        predict.Dirs("*"),
+					"S":        predict.Nothing,
+					"V":        predict.Nothing,
+					"debug":    predict.Nothing,
+					"dynlink":  predict.Nothing,
+					"e":        predict.Nothing,
+					"o":        anyFile,
+					"shared":   predict.Nothing,
+					"trimpath": predict.Nothing,
 				},
-				Args: complete.PredictFiles("*.s"),
+				Args: predict.Files("*.s"),
 			},
 			"cgo": {
-				Flags: complete.Flags{
-					"-debug-define":      complete.PredictNothing,
-					"debug-gcc":          complete.PredictNothing,
+				Flags: map[string]complete.Predictor{
+					"debug-define":       predict.Nothing,
+					"debug-gcc":          predict.Nothing,
 					"dynimport":          anyFile,
-					"dynlinker":          complete.PredictNothing,
+					"dynlinker":          predict.Nothing,
 					"dynout":             anyFile,
 					"dynpackage":         anyPackage,
-					"exportheader":       complete.PredictDirs("*"),
-					"gccgo":              complete.PredictNothing,
-					"gccgopkgpath":       complete.PredictDirs("*"),
-					"gccgoprefix":        complete.PredictAnything,
-					"godefs":             complete.PredictNothing,
-					"import_runtime_cgo": complete.PredictNothing,
-					"import_syscall":     complete.PredictNothing,
-					"importpath":         complete.PredictDirs("*"),
-					"objdir":             complete.PredictDirs("*"),
-					"srcdir":             complete.PredictDirs("*"),
+					"exportheader":       predict.Dirs("*"),
+					"gccgo":              predict.Nothing,
+					"gccgopkgpath":       predict.Dirs("*"),
+					"gccgoprefix":        predict.Something,
+					"godefs":             predict.Nothing,
+					"import_runtime_cgo": predict.Nothing,
+					"import_syscall":     predict.Nothing,
+					"importpath":         predict.Dirs("*"),
+					"objdir":             predict.Dirs("*"),
+					"srcdir":             predict.Dirs("*"),
 				},
 				Args: goFiles,
 			},
 			"compile": {
-				Flags: complete.Flags{
-					"-%":              complete.PredictNothing,
-					"-+":              complete.PredictNothing,
-					"-B":              complete.PredictNothing,
-					"-D":              complete.PredictDirs("*"),
-					"-E":              complete.PredictNothing,
-					"-I":              complete.PredictDirs("*"),
-					"-K":              complete.PredictNothing,
-					"-N":              complete.PredictNothing,
-					"-S":              complete.PredictNothing,
-					"-V":              complete.PredictNothing,
-					"-W":              complete.PredictNothing,
-					"-asmhdr":         anyFile,
-					"-bench":          anyFile,
-					"-buildid":        complete.PredictNothing,
-					"-complete":       complete.PredictNothing,
-					"-cpuprofile":     anyFile,
-					"-d":              complete.PredictNothing,
-					"-dynlink":        complete.PredictNothing,
-					"-e":              complete.PredictNothing,
-					"-f":              complete.PredictNothing,
-					"-h":              complete.PredictNothing,
-					"-i":              complete.PredictNothing,
-					"-importmap":      complete.PredictAnything,
-					"-installsuffix":  complete.PredictAnything,
-					"-j":              complete.PredictNothing,
-					"-l":              complete.PredictNothing,
-					"-largemodel":     complete.PredictNothing,
-					"-linkobj":        anyFile,
-					"-live":           complete.PredictNothing,
-					"-m":              complete.PredictNothing,
-					"-memprofile":     complete.PredictNothing,
-					"-memprofilerate": complete.PredictAnything,
-					"-msan":           complete.PredictNothing,
-					"-nolocalimports": complete.PredictNothing,
-					"-o":              anyFile,
-					"-p":              complete.PredictDirs("*"),
-					"-pack":           complete.PredictNothing,
-					"-r":              complete.PredictNothing,
-					"-race":           complete.PredictNothing,
-					"-s":              complete.PredictNothing,
-					"-shared":         complete.PredictNothing,
-					"-traceprofile":   anyFile,
-					"-trimpath":       complete.PredictAnything,
-					"-u":              complete.PredictNothing,
-					"-v":              complete.PredictNothing,
-					"-w":              complete.PredictNothing,
-					"-wb":             complete.PredictNothing,
+				Flags: map[string]complete.Predictor{
+					"%":              predict.Nothing,
+					"+":              predict.Nothing,
+					"B":              predict.Nothing,
+					"D":              predict.Dirs("*"),
+					"E":              predict.Nothing,
+					"I":              predict.Dirs("*"),
+					"K":              predict.Nothing,
+					"N":              predict.Nothing,
+					"S":              predict.Nothing,
+					"V":              predict.Nothing,
+					"W":              predict.Nothing,
+					"asmhdr":         anyFile,
+					"bench":          anyFile,
+					"buildid":        predict.Nothing,
+					"complete":       predict.Nothing,
+					"cpuprofile":     anyFile,
+					"d":              predict.Nothing,
+					"dynlink":        predict.Nothing,
+					"e":              predict.Nothing,
+					"f":              predict.Nothing,
+					"h":              predict.Nothing,
+					"i":              predict.Nothing,
+					"importmap":      predict.Something,
+					"installsuffix":  predict.Something,
+					"j":              predict.Nothing,
+					"l":              predict.Nothing,
+					"largemodel":     predict.Nothing,
+					"linkobj":        anyFile,
+					"live":           predict.Nothing,
+					"m":              predict.Nothing,
+					"memprofile":     predict.Nothing,
+					"memprofilerate": predict.Something,
+					"msan":           predict.Nothing,
+					"nolocalimports": predict.Nothing,
+					"o":              anyFile,
+					"p":              predict.Dirs("*"),
+					"pack":           predict.Nothing,
+					"r":              predict.Nothing,
+					"race":           predict.Nothing,
+					"s":              predict.Nothing,
+					"shared":         predict.Nothing,
+					"traceprofile":   anyFile,
+					"trimpath":       predict.Something,
+					"u":              predict.Nothing,
+					"v":              predict.Nothing,
+					"w":              predict.Nothing,
+					"wb":             predict.Nothing,
 				},
 				Args: goFiles,
 			},
 			"cover": {
-				Flags: complete.Flags{
-					"-func": complete.PredictAnything,
-					"-html": complete.PredictAnything,
-					"-mode": complete.PredictSet("set", "count", "atomic"),
-					"-o":    anyFile,
-					"-var":  complete.PredictAnything,
+				Flags: map[string]complete.Predictor{
+					"func": predict.Something,
+					"html": predict.Something,
+					"mode": predict.Set{"set", "count", "atomic"},
+					"o":    anyFile,
+					"var":  predict.Something,
 				},
 				Args: anyFile,
 			},
 			"dist": {
-				Sub: complete.Commands{
-					"banner":    {Flags: complete.Flags{"-v": complete.PredictNothing}},
-					"bootstrap": {Flags: complete.Flags{"-v": complete.PredictNothing}},
-					"clean":     {Flags: complete.Flags{"-v": complete.PredictNothing}},
-					"env":       {Flags: complete.Flags{"-v": complete.PredictNothing, "-p": complete.PredictNothing}},
-					"install":   {Flags: complete.Flags{"-v": complete.PredictNothing}, Args: complete.PredictDirs("*")},
-					"list":      {Flags: complete.Flags{"-v": complete.PredictNothing, "-json": complete.PredictNothing}},
-					"test":      {Flags: complete.Flags{"-v": complete.PredictNothing, "-h": complete.PredictNothing}},
-					"version":   {Flags: complete.Flags{"-v": complete.PredictNothing}},
+				Sub: map[string]*complete.Command{
+					"banner":    {Flags: map[string]complete.Predictor{"v": predict.Nothing}},
+					"bootstrap": {Flags: map[string]complete.Predictor{"v": predict.Nothing}},
+					"clean":     {Flags: map[string]complete.Predictor{"v": predict.Nothing}},
+					"env":       {Flags: map[string]complete.Predictor{"v": predict.Nothing, "p": predict.Nothing}},
+					"install":   {Flags: map[string]complete.Predictor{"v": predict.Nothing}, Args: predict.Dirs("*")},
+					"list":      {Flags: map[string]complete.Predictor{"v": predict.Nothing, "json": predict.Nothing}},
+					"test":      {Flags: map[string]complete.Predictor{"v": predict.Nothing, "h": predict.Nothing}},
+					"version":   {Flags: map[string]complete.Predictor{"v": predict.Nothing}},
 				},
 			},
 			"doc": doc,
 			"fix": {
-				Flags: complete.Flags{
-					"-diff":  complete.PredictNothing,
-					"-force": complete.PredictAnything,
-					"-r":     complete.PredictSet("context", "gotypes", "netipv6zone", "printerconfig"),
+				Flags: map[string]complete.Predictor{
+					"diff":  predict.Nothing,
+					"force": predict.Something,
+					"r":     predict.Set{"context", "gotypes", "netipv6zone", "printerconfig"},
 				},
 				Args: anyGo,
 			},
 			"link": {
-				Flags: complete.Flags{
-					"-B":              complete.PredictAnything,  // note
-					"-D":              complete.PredictAnything,  // address (default -1)
-					"-E":              complete.PredictAnything,  // entry symbol name
-					"-H":              complete.PredictAnything,  // header type
-					"-I":              complete.PredictAnything,  // linker binary
-					"-L":              complete.PredictDirs("*"), // directory
-					"-R":              complete.PredictAnything,  // quantum (default -1)
-					"-T":              complete.PredictAnything,  // address (default -1)
-					"-V":              complete.PredictNothing,
-					"-X":              complete.PredictAnything,
-					"-a":              complete.PredictAnything,
-					"-buildid":        complete.PredictAnything, // build id
-					"-buildmode":      complete.PredictAnything,
-					"-c":              complete.PredictNothing,
-					"-cpuprofile":     anyFile,
-					"-d":              complete.PredictNothing,
-					"-debugtramp":     complete.PredictAnything, // int
-					"-dumpdep":        complete.PredictNothing,
-					"-extar":          complete.PredictAnything,
-					"-extld":          complete.PredictAnything,
-					"-extldflags":     complete.PredictAnything, // flags
-					"-f":              complete.PredictNothing,
-					"-g":              complete.PredictNothing,
-					"-importcfg":      anyFile,
-					"-installsuffix":  complete.PredictAnything, // dir suffix
-					"-k":              complete.PredictAnything, // symbol
-					"-libgcc":         complete.PredictAnything, // maybe "none"
-					"-linkmode":       complete.PredictAnything, // mode
-					"-linkshared":     complete.PredictNothing,
-					"-memprofile":     anyFile,
-					"-memprofilerate": complete.PredictAnything, // rate
-					"-msan":           complete.PredictNothing,
-					"-n":              complete.PredictNothing,
-					"-o":              complete.PredictAnything,
-					"-pluginpath":     complete.PredictAnything,
-					"-r":              complete.PredictAnything, // "dir1:dir2:..."
-					"-race":           complete.PredictNothing,
-					"-s":              complete.PredictNothing,
-					"-tmpdir":         complete.PredictDirs("*"),
-					"-u":              complete.PredictNothing,
-					"-v":              complete.PredictNothing,
-					"-w":              complete.PredictNothing,
-					// "-h":           complete.PredictAnything, // halt on error
+				Flags: map[string]complete.Predictor{
+					"B":              predict.Something, // note
+					"D":              predict.Something, // address (default -1)
+					"E":              predict.Something, // entry symbol name
+					"H":              predict.Something, // header type
+					"I":              predict.Something, // linker binary
+					"L":              predict.Dirs("*"), // directory
+					"R":              predict.Something, // quantum (default -1)
+					"T":              predict.Something, // address (default -1)
+					"V":              predict.Nothing,
+					"X":              predict.Something,
+					"a":              predict.Something,
+					"buildid":        predict.Something, // build id
+					"buildmode":      predict.Something,
+					"c":              predict.Nothing,
+					"cpuprofile":     anyFile,
+					"d":              predict.Nothing,
+					"debugtramp":     predict.Something, // int
+					"dumpdep":        predict.Nothing,
+					"extar":          predict.Something,
+					"extld":          predict.Something,
+					"extldflags":     predict.Something, // flags
+					"f":              predict.Nothing,
+					"g":              predict.Nothing,
+					"importcfg":      anyFile,
+					"installsuffix":  predict.Something, // dir suffix
+					"k":              predict.Something, // symbol
+					"libgcc":         predict.Something, // maybe "none"
+					"linkmode":       predict.Something, // mode
+					"linkshared":     predict.Nothing,
+					"memprofile":     anyFile,
+					"memprofilerate": predict.Something, // rate
+					"msan":           predict.Nothing,
+					"n":              predict.Nothing,
+					"o":              predict.Something,
+					"pluginpath":     predict.Something,
+					"r":              predict.Something, // "dir1:dir2:..."
+					"race":           predict.Nothing,
+					"s":              predict.Nothing,
+					"tmpdir":         predict.Dirs("*"),
+					"u":              predict.Nothing,
+					"v":              predict.Nothing,
+					"w":              predict.Nothing,
+					// "h":           predict.Something, // halt on error
 				},
-				Args: complete.PredictOr(
-					complete.PredictFiles("*.a"),
-					complete.PredictFiles("*.o"),
+				Args: predict.Or(
+					predict.Files("*.a"),
+					predict.Files("*.o"),
 				),
 			},
 			"nm": {
-				Flags: complete.Flags{
-					"-n":    complete.PredictNothing,
-					"-size": complete.PredictNothing,
-					"-sort": complete.PredictAnything,
-					"-type": complete.PredictNothing,
+				Flags: map[string]complete.Predictor{
+					"n":    predict.Nothing,
+					"size": predict.Nothing,
+					"sort": predict.Something,
+					"type": predict.Nothing,
 				},
 				Args: anyGo,
 			},
 			"objdump": {
-				Flags: complete.Flags{
-					"-s": complete.PredictAnything,
-					"-S": complete.PredictNothing,
+				Flags: map[string]complete.Predictor{
+					"s": predict.Something,
+					"S": predict.Nothing,
 				},
 				Args: anyFile,
 			},
 			"pack": {
 				/* this lacks the positional aspect of all these params */
-				Flags: complete.Flags{
-					"c":  complete.PredictNothing,
-					"p":  complete.PredictNothing,
-					"r":  complete.PredictNothing,
-					"t":  complete.PredictNothing,
-					"x":  complete.PredictNothing,
-					"cv": complete.PredictNothing,
-					"pv": complete.PredictNothing,
-					"rv": complete.PredictNothing,
-					"tv": complete.PredictNothing,
-					"xv": complete.PredictNothing,
+				Flags: map[string]complete.Predictor{
+					"c":  predict.Nothing,
+					"p":  predict.Nothing,
+					"r":  predict.Nothing,
+					"t":  predict.Nothing,
+					"x":  predict.Nothing,
+					"cv": predict.Nothing,
+					"pv": predict.Nothing,
+					"rv": predict.Nothing,
+					"tv": predict.Nothing,
+					"xv": predict.Nothing,
 				},
-				Args: complete.PredictOr(
-					complete.PredictFiles("*.a"),
-					complete.PredictFiles("*.o"),
+				Args: predict.Or(
+					predict.Files("*.a"),
+					predict.Files("*.o"),
 				),
 			},
 			"pprof": {
-				Flags: complete.Flags{
-					"-callgrind":     complete.PredictNothing,
-					"-disasm":        complete.PredictAnything,
-					"-dot":           complete.PredictNothing,
-					"-eog":           complete.PredictNothing,
-					"-evince":        complete.PredictNothing,
-					"-gif":           complete.PredictNothing,
-					"-gv":            complete.PredictNothing,
-					"-list":          complete.PredictAnything,
-					"-pdf":           complete.PredictNothing,
-					"-peek":          complete.PredictAnything,
-					"-png":           complete.PredictNothing,
-					"-proto":         complete.PredictNothing,
-					"-ps":            complete.PredictNothing,
-					"-raw":           complete.PredictNothing,
-					"-svg":           complete.PredictNothing,
-					"-tags":          complete.PredictNothing,
-					"-text":          complete.PredictNothing,
-					"-top":           complete.PredictNothing,
-					"-tree":          complete.PredictNothing,
-					"-web":           complete.PredictNothing,
-					"-weblist":       complete.PredictAnything,
-					"-output":        anyFile,
-					"-functions":     complete.PredictNothing,
-					"-files":         complete.PredictNothing,
-					"-lines":         complete.PredictNothing,
-					"-addresses":     complete.PredictNothing,
-					"-base":          complete.PredictAnything,
-					"-drop_negative": complete.PredictNothing,
-					"-cum":           complete.PredictNothing,
-					"-seconds":       complete.PredictAnything,
-					"-nodecount":     complete.PredictAnything,
-					"-nodefraction":  complete.PredictAnything,
-					"-edgefraction":  complete.PredictAnything,
-					"-sample_index":  complete.PredictNothing,
-					"-mean":          complete.PredictNothing,
-					"-inuse_space":   complete.PredictNothing,
-					"-inuse_objects": complete.PredictNothing,
-					"-alloc_space":   complete.PredictNothing,
-					"-alloc_objects": complete.PredictNothing,
-					"-total_delay":   complete.PredictNothing,
-					"-contentions":   complete.PredictNothing,
-					"-mean_delay":    complete.PredictNothing,
-					"-runtime":       complete.PredictNothing,
-					"-focus":         complete.PredictAnything,
-					"-ignore":        complete.PredictAnything,
-					"-tagfocus":      complete.PredictAnything,
-					"-tagignore":     complete.PredictAnything,
-					"-call_tree":     complete.PredictNothing,
-					"-unit":          complete.PredictAnything,
-					"-divide_by":     complete.PredictAnything,
-					"-buildid":       complete.PredictAnything,
-					"-tools":         complete.PredictDirs("*"),
-					"-help":          complete.PredictNothing,
+				Flags: map[string]complete.Predictor{
+					"callgrind":     predict.Nothing,
+					"disasm":        predict.Something,
+					"dot":           predict.Nothing,
+					"eog":           predict.Nothing,
+					"evince":        predict.Nothing,
+					"gif":           predict.Nothing,
+					"gv":            predict.Nothing,
+					"list":          predict.Something,
+					"pdf":           predict.Nothing,
+					"peek":          predict.Something,
+					"png":           predict.Nothing,
+					"proto":         predict.Nothing,
+					"ps":            predict.Nothing,
+					"raw":           predict.Nothing,
+					"svg":           predict.Nothing,
+					"tags":          predict.Nothing,
+					"text":          predict.Nothing,
+					"top":           predict.Nothing,
+					"tree":          predict.Nothing,
+					"web":           predict.Nothing,
+					"weblist":       predict.Something,
+					"output":        anyFile,
+					"functions":     predict.Nothing,
+					"files":         predict.Nothing,
+					"lines":         predict.Nothing,
+					"addresses":     predict.Nothing,
+					"base":          predict.Something,
+					"drop_negative": predict.Nothing,
+					"cum":           predict.Nothing,
+					"seconds":       predict.Something,
+					"nodecount":     predict.Something,
+					"nodefraction":  predict.Something,
+					"edgefraction":  predict.Something,
+					"sample_index":  predict.Nothing,
+					"mean":          predict.Nothing,
+					"inuse_space":   predict.Nothing,
+					"inuse_objects": predict.Nothing,
+					"alloc_space":   predict.Nothing,
+					"alloc_objects": predict.Nothing,
+					"total_delay":   predict.Nothing,
+					"contentions":   predict.Nothing,
+					"mean_delay":    predict.Nothing,
+					"runtime":       predict.Nothing,
+					"focus":         predict.Something,
+					"ignore":        predict.Something,
+					"tagfocus":      predict.Something,
+					"tagignore":     predict.Something,
+					"call_tree":     predict.Nothing,
+					"unit":          predict.Something,
+					"divide_by":     predict.Something,
+					"buildid":       predict.Something,
+					"tools":         predict.Dirs("*"),
+					"help":          predict.Nothing,
 				},
 				Args: anyFile,
 			},
 			"tour": {
-				Flags: complete.Flags{
-					"-http":        complete.PredictAnything,
-					"-openbrowser": complete.PredictNothing,
+				Flags: map[string]complete.Predictor{
+					"http":        predict.Something,
+					"openbrowser": predict.Nothing,
 				},
 			},
 			"trace": {
-				Flags: complete.Flags{
-					"-http":  complete.PredictAnything,
-					"-pprof": complete.PredictSet("net", "sync", "syscall", "sched"),
+				Flags: map[string]complete.Predictor{
+					"http":  predict.Something,
+					"pprof": predict.Set{"net", "sync", "syscall", "sched"},
 				},
 				Args: anyFile,
 			},
 			"vet": {
-				Flags: complete.Flags{
-					"-all":                 complete.PredictNothing,
-					"-asmdecl":             complete.PredictNothing,
-					"-assign":              complete.PredictNothing,
-					"-atomic":              complete.PredictNothing,
-					"-bool":                complete.PredictNothing,
-					"-buildtags":           complete.PredictNothing,
-					"-cgocall":             complete.PredictNothing,
-					"-composites":          complete.PredictNothing,
-					"-compositewhitelist":  complete.PredictNothing,
-					"-copylocks":           complete.PredictNothing,
-					"-httpresponse":        complete.PredictNothing,
-					"-lostcancel":          complete.PredictNothing,
-					"-methods":             complete.PredictNothing,
-					"-nilfunc":             complete.PredictNothing,
-					"-printf":              complete.PredictNothing,
-					"-printfuncs":          complete.PredictAnything,
-					"-rangeloops":          complete.PredictNothing,
-					"-shadow":              complete.PredictNothing,
-					"-shadowstrict":        complete.PredictNothing,
-					"-shift":               complete.PredictNothing,
-					"-structtags":          complete.PredictNothing,
-					"-tags":                complete.PredictAnything,
-					"-tests":               complete.PredictNothing,
-					"-unreachable":         complete.PredictNothing,
-					"-unsafeptr":           complete.PredictNothing,
-					"-unusedfuncs":         complete.PredictAnything,
-					"-unusedresult":        complete.PredictNothing,
-					"-unusedstringmethods": complete.PredictAnything,
-					"-v": complete.PredictNothing,
+				Flags: map[string]complete.Predictor{
+					"all":                 predict.Nothing,
+					"asmdecl":             predict.Nothing,
+					"assign":              predict.Nothing,
+					"atomic":              predict.Nothing,
+					"bool":                predict.Nothing,
+					"buildtags":           predict.Nothing,
+					"cgocall":             predict.Nothing,
+					"composites":          predict.Nothing,
+					"compositewhitelist":  predict.Nothing,
+					"copylocks":           predict.Nothing,
+					"httpresponse":        predict.Nothing,
+					"lostcancel":          predict.Nothing,
+					"methods":             predict.Nothing,
+					"nilfunc":             predict.Nothing,
+					"printf":              predict.Nothing,
+					"printfuncs":          predict.Something,
+					"rangeloops":          predict.Nothing,
+					"shadow":              predict.Nothing,
+					"shadowstrict":        predict.Nothing,
+					"shift":               predict.Nothing,
+					"structtags":          predict.Nothing,
+					"tags":                predict.Something,
+					"tests":               predict.Nothing,
+					"unreachable":         predict.Nothing,
+					"unsafeptr":           predict.Nothing,
+					"unusedfuncs":         predict.Something,
+					"unusedresult":        predict.Nothing,
+					"unusedstringmethods": predict.Something,
+					"v":                   predict.Nothing,
 				},
 				Args: anyGo,
 			},
 		},
 	}
 
-	clean := complete.Command{
-		Flags: complete.Flags{
-			"-i":         complete.PredictNothing,
-			"-r":         complete.PredictNothing,
-			"-n":         complete.PredictNothing,
-			"-x":         complete.PredictNothing,
-			"-cache":     complete.PredictNothing,
-			"-testcache": complete.PredictNothing,
-			"-modcache":  complete.PredictNothing,
+	clean := &complete.Command{
+		Flags: map[string]complete.Predictor{
+			"i":         predict.Nothing,
+			"r":         predict.Nothing,
+			"n":         predict.Nothing,
+			"x":         predict.Nothing,
+			"cache":     predict.Nothing,
+			"testcache": predict.Nothing,
+			"modcache":  predict.Nothing,
 		},
-		Args: complete.PredictOr(anyPackage, ellipsis),
+		Args: predict.Or(anyPackage, ellipsis),
 	}
 
-	env := complete.Command{
-		Args: complete.PredictAnything,
+	env := &complete.Command{
+		Args: predict.Something,
 	}
 
-	bug := complete.Command{}
-	version := complete.Command{}
+	bug := &complete.Command{}
+	version := &complete.Command{}
 
-	fix := complete.Command{
+	fix := &complete.Command{
 		Args: anyGo,
 	}
 
-	modDownload := complete.Command{
-		Flags: complete.Flags{
-			"-json": complete.PredictNothing,
+	modDownload := &complete.Command{
+		Flags: map[string]complete.Predictor{
+			"json": predict.Nothing,
 		},
 		Args: anyPackage,
 	}
 
-	modEdit := complete.Command{
-		Flags: complete.Flags{
-			"-fmt":    complete.PredictNothing,
-			"-module": complete.PredictNothing,
-			"-print":  complete.PredictNothing,
+	modEdit := &complete.Command{
+		Flags: map[string]complete.Predictor{
+			"fmt":    predict.Nothing,
+			"module": predict.Nothing,
+			"print":  predict.Nothing,
 
-			"-exclude":     anyPackage,
-			"-dropexclude": anyPackage,
-			"-replace":     anyPackage,
-			"-dropreplace": anyPackage,
-			"-require":     anyPackage,
-			"-droprequire": anyPackage,
+			"exclude":     anyPackage,
+			"dropexclude": anyPackage,
+			"replace":     anyPackage,
+			"dropreplace": anyPackage,
+			"require":     anyPackage,
+			"droprequire": anyPackage,
 		},
-		Args: complete.PredictFiles("go.mod"),
+		Args: predict.Files("go.mod"),
 	}
 
-	modGraph := complete.Command{}
+	modGraph := &complete.Command{}
 
-	modInit := complete.Command{
-		Args: complete.PredictAnything,
+	modInit := &complete.Command{
+		Args: predict.Something,
 	}
 
-	modTidy := complete.Command{
-		Flags: complete.Flags{
-			"-v": complete.PredictNothing,
-		},
-	}
-
-	modVendor := complete.Command{
-		Flags: complete.Flags{
-			"-v": complete.PredictNothing,
+	modTidy := &complete.Command{
+		Flags: map[string]complete.Predictor{
+			"v": predict.Nothing,
 		},
 	}
 
-	modVerify := complete.Command{}
+	modVendor := &complete.Command{
+		Flags: map[string]complete.Predictor{
+			"v": predict.Nothing,
+		},
+	}
 
-	modWhy := complete.Command{
-		Flags: complete.Flags{
-			"-m":      complete.PredictNothing,
-			"-vendor": complete.PredictNothing,
+	modVerify := &complete.Command{}
+
+	modWhy := &complete.Command{
+		Flags: map[string]complete.Predictor{
+			"m":      predict.Nothing,
+			"vendor": predict.Nothing,
 		},
 		Args: anyPackage,
 	}
 
-	modHelp := complete.Command{
-		Sub: complete.Commands{
-			"download": complete.Command{},
-			"edit":     complete.Command{},
-			"graph":    complete.Command{},
-			"init":     complete.Command{},
-			"tidy":     complete.Command{},
-			"vendor":   complete.Command{},
-			"verify":   complete.Command{},
-			"why":      complete.Command{},
+	modHelp := &complete.Command{
+		Sub: map[string]*complete.Command{
+			"download": &complete.Command{},
+			"edit":     &complete.Command{},
+			"graph":    &complete.Command{},
+			"init":     &complete.Command{},
+			"tidy":     &complete.Command{},
+			"vendor":   &complete.Command{},
+			"verify":   &complete.Command{},
+			"why":      &complete.Command{},
 		},
 	}
 
-	mod := complete.Command{
-		Sub: complete.Commands{
+	mod := &complete.Command{
+		Sub: map[string]*complete.Command{
 			"download": modDownload,
 			"edit":     modEdit,
 			"graph":    modGraph,
@@ -558,40 +561,40 @@ func main() {
 		},
 	}
 
-	help := complete.Command{
-		Sub: complete.Commands{
-			"bug":         complete.Command{},
-			"build":       complete.Command{},
-			"clean":       complete.Command{},
-			"doc":         complete.Command{},
-			"env":         complete.Command{},
-			"fix":         complete.Command{},
-			"fmt":         complete.Command{},
-			"generate":    complete.Command{},
-			"get":         complete.Command{},
-			"install":     complete.Command{},
-			"list":        complete.Command{},
+	help := &complete.Command{
+		Sub: map[string]*complete.Command{
+			"bug":         &complete.Command{},
+			"build":       &complete.Command{},
+			"clean":       &complete.Command{},
+			"doc":         &complete.Command{},
+			"env":         &complete.Command{},
+			"fix":         &complete.Command{},
+			"fmt":         &complete.Command{},
+			"generate":    &complete.Command{},
+			"get":         &complete.Command{},
+			"install":     &complete.Command{},
+			"list":        &complete.Command{},
 			"mod":         modHelp,
-			"run":         complete.Command{},
-			"test":        complete.Command{},
-			"tool":        complete.Command{},
-			"version":     complete.Command{},
-			"vet":         complete.Command{},
-			"buildmode":   complete.Command{},
-			"c":           complete.Command{},
-			"cache":       complete.Command{},
-			"environment": complete.Command{},
-			"filetype":    complete.Command{},
-			"go.mod":      complete.Command{},
-			"gopath":      complete.Command{},
-			"gopath-get":  complete.Command{},
-			"goproxy":     complete.Command{},
-			"importpath":  complete.Command{},
-			"modules":     complete.Command{},
-			"module-get":  complete.Command{},
-			"packages":    complete.Command{},
-			"testflag":    complete.Command{},
-			"testfunc":    complete.Command{},
+			"run":         &complete.Command{},
+			"test":        &complete.Command{},
+			"tool":        &complete.Command{},
+			"version":     &complete.Command{},
+			"vet":         &complete.Command{},
+			"buildmode":   &complete.Command{},
+			"c":           &complete.Command{},
+			"cache":       &complete.Command{},
+			"environment": &complete.Command{},
+			"filetype":    &complete.Command{},
+			"go.mod":      &complete.Command{},
+			"gopath":      &complete.Command{},
+			"gopath-get":  &complete.Command{},
+			"goproxy":     &complete.Command{},
+			"importpath":  &complete.Command{},
+			"modules":     &complete.Command{},
+			"module-get":  &complete.Command{},
+			"packages":    &complete.Command{},
+			"testflag":    &complete.Command{},
+			"testfunc":    &complete.Command{},
 		},
 	}
 
@@ -604,8 +607,8 @@ func main() {
 		get.Flags[name] = options
 	}
 
-	gogo := complete.Command{
-		Sub: complete.Commands{
+	gogo := &complete.Command{
+		Sub: map[string]*complete.Command{
 			"build":    build,
 			"install":  build, // install and build have the same flags
 			"run":      run,
@@ -625,10 +628,10 @@ func main() {
 			"mod":      mod,
 			"help":     help,
 		},
-		GlobalFlags: complete.Flags{
-			"-h": complete.PredictNothing,
+		Flags: map[string]complete.Predictor{
+			"h": predict.Nothing,
 		},
 	}
 
-	complete.New("go", gogo).Run()
+	gogo.Complete("go")
 }

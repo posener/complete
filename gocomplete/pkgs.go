@@ -3,18 +3,19 @@ package main
 import (
 	"go/build"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/user"
 	"path/filepath"
 	"strings"
 
-	"github.com/posener/complete"
+	"github.com/posener/complete/predict"
 )
 
 // predictPackages completes packages in the directory pointed by a.Last
 // and packages that are one level below that package.
-func predictPackages(a complete.Args) (prediction []string) {
-	prediction = []string{a.Last}
+func predictPackages(prefix string) (prediction []string) {
+	prediction = []string{prefix}
 	lastPrediction := ""
 	for len(prediction) == 1 && (lastPrediction == "" || lastPrediction != prediction[0]) {
 		// if only one prediction, predict files within this prediction,
@@ -23,19 +24,19 @@ func predictPackages(a complete.Args) (prediction []string) {
 		// level deeper and give the user the 'pkg' and all the nested packages within
 		// that package.
 		lastPrediction = prediction[0]
-		a.Last = prediction[0]
-		prediction = predictLocalAndSystem(a)
+		prefix = prediction[0]
+		prediction = predictLocalAndSystem(prefix)
 	}
 	return
 }
 
-func predictLocalAndSystem(a complete.Args) []string {
-	localDirs := complete.PredictFilesSet(listPackages(a.Directory())).Predict(a)
+func predictLocalAndSystem(prefix string) []string {
+	localDirs := predict.FilesSet(listPackages(directory(prefix))).Predict(prefix)
 	// System directories are not actual file names, for example: 'github.com/posener/complete' could
 	// be the argument, but the actual filename is in $GOPATH/src/github.com/posener/complete'. this
 	// is the reason to use the PredictSet and not the PredictDirs in this case.
-	s := systemDirs(a.Last)
-	sysDirs := complete.PredictSet(s...).Predict(a)
+	s := systemDirs(prefix)
+	sysDirs := predict.Set(s).Predict(prefix)
 	return append(localDirs, sysDirs...)
 }
 
@@ -45,7 +46,7 @@ func listPackages(dir string) (directories []string) {
 	// add subdirectories
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
-		complete.Log("failed reading directory %s: %s", dir, err)
+		log.Printf("failed reading directory %s: %s", dir, err)
 		return
 	}
 
@@ -62,7 +63,7 @@ func listPackages(dir string) (directories []string) {
 	for _, p := range paths {
 		pkg, err := build.ImportDir(p, 0)
 		if err != nil {
-			complete.Log("failed importing directory %s: %s", p, err)
+			log.Printf("failed importing directory %s: %s", p, err)
 			continue
 		}
 		directories = append(directories, pkg.Dir)
@@ -123,4 +124,54 @@ func findGopath() []string {
 	listsep := string([]byte{os.PathListSeparator})
 	entries := strings.Split(gopath, listsep)
 	return entries
+}
+
+func directory(prefix string) string {
+	if info, err := os.Stat(prefix); err == nil && info.IsDir() {
+		return fixPathForm(prefix, prefix)
+	}
+	dir := filepath.Dir(prefix)
+	if info, err := os.Stat(dir); err != nil || !info.IsDir() {
+		return "./"
+	}
+	return fixPathForm(prefix, dir)
+}
+
+// fixPathForm changes a file name to a relative name
+func fixPathForm(last string, file string) string {
+	// get wording directory for relative name
+	workDir, err := os.Getwd()
+	if err != nil {
+		return file
+	}
+
+	abs, err := filepath.Abs(file)
+	if err != nil {
+		return file
+	}
+
+	// if last is absolute, return path as absolute
+	if filepath.IsAbs(last) {
+		return fixDirPath(abs)
+	}
+
+	rel, err := filepath.Rel(workDir, abs)
+	if err != nil {
+		return file
+	}
+
+	// fix ./ prefix of path
+	if rel != "." && strings.HasPrefix(last, ".") {
+		rel = "./" + rel
+	}
+
+	return fixDirPath(rel)
+}
+
+func fixDirPath(path string) string {
+	info, err := os.Stat(path)
+	if err == nil && info.IsDir() && !strings.HasSuffix(path, "/") {
+		path += "/"
+	}
+	return path
 }
