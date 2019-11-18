@@ -62,55 +62,52 @@ Supported shells:
 Add bash completion capabilities to any Go program. See [./example/command](./example/command).
 
 ```go
-import (
-	"flag"
-	"github.com/posener/complete/v2"
-	"github.com/posener/complete/v2/predict"
-)
-
-var (
-	// Add variables to the program.
-	name      = flag.String("name", "", "")
-	something = flag.String("something", "", "")
-	nothing   = flag.String("nothing", "", "")
-)
-
-func main() {
-	// Create the complete command.
-	// Here we define completion values for each flag.
-	cmd := &complete.Command{
-		Flags: map[string]complete.Predictor{
-			"name":      predict.Set{"foo", "bar", "foo bar"},
-			"something": predict.Something,
-			"nothing":   predict.Nothing,
-		},
-	}
-	// Run the completion - provide it with the binary name.
-	cmd.Complete("my-program")
-	// Parse the flags.
-	flag.Parse()
-	// Program logic...
-}
+ import (
+ 	"flag"
+ 	"github.com/posener/complete/v2"
+ 	"github.com/posener/complete/v2/predict"
+ )
+ var (
+ 	// Add variables to the program.
+ 	name      = flag.String("name", "", "")
+ 	something = flag.String("something", "", "")
+ 	nothing   = flag.String("nothing", "", "")
+ )
+ func main() {
+ 	// Create the complete command.
+ 	// Here we define completion values for each flag.
+ 	cmd := &complete.Command{
+	 	Flags: map[string]complete.Predictor{
+ 			"name":      predict.Set{"foo", "bar", "foo bar"},
+ 			"something": predict.Something,
+ 			"nothing":   predict.Nothing,
+ 		},
+ 	}
+ 	// Run the completion - provide it with the binary name.
+ 	cmd.Complete("my-program")
+ 	// Parse the flags.
+ 	flag.Parse()
+ 	// Program logic...
+ }
 ```
 
 This package also enables to complete flags defined by the standard library `flag` package.
 To use this feature, simply call `complete.CommandLine` before `flag.Parse`. (See [./example/stdlib](./example/stdlib)).
 
 ```diff
-  	import (
-		"flag"
- +		"github.com/posener/complete/v2"
-	)
-	var (
-		// Define flags here...
-		foo = flag.Bool("foo", false, "")
-	)
-
-	func main() {
-		// Call command line completion before parsing the flags - provide it with the binary name.
- +		complete.CommandLine("my-program")
-		flag.Parse()
-	}
+ import (
+ 	"flag"
++	"github.com/posener/complete/v2"
+ )
+ var (
+ 	// Define flags here...
+ 	foo = flag.Bool("foo", false, "")
+ )
+ func main() {
+ 	// Call command line completion before parsing the flags - provide it with the binary name.
++	complete.CommandLine("my-program")
+ 	flag.Parse()
+ }
 ```
 
 If flag value completion is desired, it can be done by providing the standard library `flag.Var`
@@ -119,22 +116,21 @@ flag with values, it is possible to use the `github.com/posener/complete/compfla
 (See [./example/compflag](./example/compflag)).
 
 ```diff
-  	import (
-		"flag"
- +		"github.com/posener/complete/v2"
- +		"github.com/posener/complete/v2/compflag"
-	)
-	var (
-		// Define flags here...
- -		foo = flag.Bool("foo", false, "")
- +		foo = compflag.Bool("foo", false, "")
-	)
-
-	func main() {
-		// Call command line completion before parsing the flags.
- +		complete.CommandLine("my-program")
-		flag.Parse()
-	}
+ import (
+ 	"flag"
++	"github.com/posener/complete/v2"
++	"github.com/posener/complete/v2/compflag"
+ )
+ var (
+ 	// Define flags here...
+-	foo = flag.Bool("foo", false, "")
++	foo = compflag.Bool("foo", false, "")
+ )
+ func main() {
+ 	// Call command line completion before parsing the flags.
++	complete.CommandLine("my-program")
+ 	flag.Parse()
+ }
 ```
 
 Instead of calling both `complete.CommandLine` and `flag.Parse`, one can call just `compflag.Parse`
