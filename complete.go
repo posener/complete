@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/posener/complete/v2/install"
 	"github.com/posener/complete/v2/internal/arg"
-	"github.com/posener/complete/v2/internal/install"
 	"github.com/posener/complete/v2/internal/tokener"
 )
 

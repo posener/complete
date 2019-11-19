@@ -1,8 +1,10 @@
 package arg
 
-import "strings"
+import (
+	"strings"
 
-import "github.com/posener/complete/v2/internal/tokener"
+	"github.com/posener/complete/v2/internal/tokener"
+)
 
 // Arg is typed a command line argument.
 type Arg struct {
