@@ -146,6 +146,8 @@ For command line bash completion testing use the `complete.Test` function.
 
 * [gocomplete](./gocomplete): Package main is complete tool for the go command line
 
+* [install](./install): Package install provide installation functions of command completion.
+
 * [predict](./predict): Package predict provides helper functions for completion predictors.
 
 
