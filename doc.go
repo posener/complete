@@ -27,7 +27,7 @@ Install:
 
 1. Type in your shell:
 
- go get -u github.com/posener/complete/gocomplete
+ go get -u github.com/posener/complete/v2/gocomplete
  COMP_INSTALL=1 gocomplete
 
 2. Restart your shell
@@ -99,7 +99,7 @@ To use this feature, simply call `complete.CommandLine` before `flag.Parse`. (Se
 
 If flag value completion is desired, it can be done by providing the standard library `flag.Var`
 function a `flag.Value` that also implements the `complete.Predictor` interface. For standard
-flag with values, it is possible to use the `github.com/posener/complete/compflag` package.
+flag with values, it is possible to use the `github.com/posener/complete/v2/compflag` package.
 (See ./example/compflag).
 
   import (

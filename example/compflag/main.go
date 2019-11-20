@@ -1,4 +1,4 @@
-// compflag shows how to use the github.com/posener/complete/compflag package to have auto bash
+// compflag shows how to use the github.com/posener/complete/v2/compflag package to have auto bash
 // completion for a defined set of flags.
 package main
 
