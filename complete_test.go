@@ -125,6 +125,7 @@ func TestCompleter(t *testing.T) {
 		{args: "--", want: []string{"--help"}},
 		{args: "-he", want: []string{"-help"}},
 		{args: "-x", want: []string{"-help"}},
+		{args: "flags -h", want: []string{"-h"}},
 	}
 
 	for _, tt := range tests {
