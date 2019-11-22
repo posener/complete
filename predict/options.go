@@ -23,12 +23,22 @@ func OptValues(values ...string) Option {
 
 // OptPredictor allows to set a custom predictor.
 func OptPredictor(p complete.Predictor) Option {
-	return func(o *Config) { o.Predictor = p }
+	return func(o *Config) {
+		if o.Predictor != nil {
+			panic("predictor set more than once.")
+		}
+		o.Predictor = p
+	}
 }
 
 // OptCheck enforces the valid values on the predicted flag.
 func OptCheck() Option {
-	return func(o *Config) { o.check = true }
+	return func(o *Config) {
+		if o.check {
+			panic("check set more than once")
+		}
+		o.check = true
+	}
 }
 
 type Config struct {
