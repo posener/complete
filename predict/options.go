@@ -41,11 +41,13 @@ func OptCheck() Option {
 	}
 }
 
+// Config stores prediction options.
 type Config struct {
 	complete.Predictor
 	check bool
 }
 
+// Options return a config from a list of options.
 func Options(os ...Option) Config {
 	var op Config
 	for _, f := range os {
@@ -61,6 +63,8 @@ func (c Config) Predict(prefix string) []string {
 	return nil
 }
 
+// Check checks that value is one of the predicted values, in case
+// that the check field was set.
 func (c Config) Check(value string) error {
 	if !c.check || c.Predictor == nil {
 		return nil
