@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/posener/complete/v2"
+	"github.com/posener/complete/v2/predict"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -30,7 +31,7 @@ func TestString(t *testing.T) {
 
 	t.Run("options invalid not checked", func(t *testing.T) {
 		var cmd FlagSet
-		value := cmd.String("a", "", "", OptValues("1", "2"))
+		value := cmd.String("a", "", "", predict.OptValues("1", "2"))
 		err := cmd.Parse([]string{"-a", "3"})
 		assert.NoError(t, err)
 		assert.Equal(t, "3", *value)
@@ -38,7 +39,7 @@ func TestString(t *testing.T) {
 
 	t.Run("options valid checked", func(t *testing.T) {
 		var cmd FlagSet
-		value := cmd.String("a", "", "", OptValues("1", "2"), OptCheck())
+		value := cmd.String("a", "", "", predict.OptValues("1", "2"), predict.OptCheck())
 		err := cmd.Parse([]string{"-a", "2"})
 		assert.NoError(t, err)
 		assert.Equal(t, "2", *value)
@@ -46,14 +47,14 @@ func TestString(t *testing.T) {
 
 	t.Run("options invalid checked", func(t *testing.T) {
 		var cmd FlagSet
-		_ = cmd.String("a", "", "", OptValues("1", "2"), OptCheck())
+		_ = cmd.String("a", "", "", predict.OptValues("1", "2"), predict.OptCheck())
 		err := cmd.Parse([]string{"-a", "3"})
 		assert.Error(t, err)
 	})
 
 	t.Run("complete", func(t *testing.T) {
 		var cmd FlagSet
-		_ = cmd.String("a", "", "", OptValues("1", "2"))
+		_ = cmd.String("a", "", "", predict.OptValues("1", "2"))
 		complete.Test(t, complete.FlagSet((*flag.FlagSet)(&cmd)), "-a ", []string{"1", "2"})
 		complete.Test(t, complete.FlagSet((*flag.FlagSet)(&cmd)), "-a=", []string{"1", "2"})
 		complete.Test(t, complete.FlagSet((*flag.FlagSet)(&cmd)), "-a 1", []string{"1"})
@@ -66,7 +67,7 @@ func TestInt(t *testing.T) {
 
 	t.Run("options invalid not checked", func(t *testing.T) {
 		var cmd FlagSet
-		value := cmd.Int("a", 0, "", OptValues("1", "2"))
+		value := cmd.Int("a", 0, "", predict.OptValues("1", "2"))
 		err := cmd.Parse([]string{"-a", "3"})
 		assert.NoError(t, err)
 		assert.Equal(t, 3, *value)
@@ -74,7 +75,7 @@ func TestInt(t *testing.T) {
 
 	t.Run("options valid checked", func(t *testing.T) {
 		var cmd FlagSet
-		value := cmd.Int("a", 0, "", OptValues("1", "2"), OptCheck())
+		value := cmd.Int("a", 0, "", predict.OptValues("1", "2"), predict.OptCheck())
 		err := cmd.Parse([]string{"-a", "2"})
 		assert.NoError(t, err)
 		assert.Equal(t, 2, *value)
@@ -82,21 +83,21 @@ func TestInt(t *testing.T) {
 
 	t.Run("options invalid checked", func(t *testing.T) {
 		var cmd FlagSet
-		_ = cmd.Int("a", 0, "", OptValues("1", "2"), OptCheck())
+		_ = cmd.Int("a", 0, "", predict.OptValues("1", "2"), predict.OptCheck())
 		err := cmd.Parse([]string{"-a", "3"})
 		assert.Error(t, err)
 	})
 
 	t.Run("options invalid int value", func(t *testing.T) {
 		var cmd FlagSet
-		_ = cmd.Int("a", 0, "", OptValues("1", "2", "x"), OptCheck())
+		_ = cmd.Int("a", 0, "", predict.OptValues("1", "2", "x"), predict.OptCheck())
 		err := cmd.Parse([]string{"-a", "x"})
 		assert.Error(t, err)
 	})
 
 	t.Run("complete", func(t *testing.T) {
 		var cmd FlagSet
-		_ = cmd.Int("a", 0, "", OptValues("1", "2"))
+		_ = cmd.Int("a", 0, "", predict.OptValues("1", "2"))
 		complete.Test(t, complete.FlagSet((*flag.FlagSet)(&cmd)), "-a ", []string{"1", "2"})
 		complete.Test(t, complete.FlagSet((*flag.FlagSet)(&cmd)), "-a=", []string{"1", "2"})
 		complete.Test(t, complete.FlagSet((*flag.FlagSet)(&cmd)), "-a 1", []string{"1"})

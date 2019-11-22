@@ -7,13 +7,14 @@ import (
 	"os"
 
 	"github.com/posener/complete/v2/compflag"
+	"github.com/posener/complete/v2/predict"
 )
 
 var (
 	// Add variables to the program. Since we are using the compflag library, we can pass options to
 	// enable bash completion to the flag values.
-	name      = compflag.String("name", "", "Give your name", compflag.OptValues("foo", "bar", "foo bar"))
-	something = compflag.String("something", "", "Expect somthing, but we don't know what, so no other completion options will be provided.", compflag.OptValues(""))
+	name      = compflag.String("name", "", "Give your name", predict.OptValues("foo", "bar", "foo bar"))
+	something = compflag.String("something", "", "Expect somthing, but we don't know what, so no other completion options will be provided.", predict.OptValues(""))
 	nothing   = compflag.String("nothing", "", "Expect nothing after flag, so other completion can be provided.")
 )
 

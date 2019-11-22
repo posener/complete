@@ -39,36 +39,10 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/posener/complete/v2"
+	"github.com/posener/complete/v2/predict"
 )
-
-// Flag options.
-type Option func(*options)
-
-// OptValues allows to set a desired set of valid values for the flag.
-func OptValues(values ...string) Option {
-	return func(o *options) { o.values = values }
-}
-
-// OptCheck enforces the valid values on the predicted flag.
-func OptCheck() Option {
-	return func(o *options) { o.check = true }
-}
-
-type options struct {
-	values []string
-	check  bool
-}
-
-func config(fs ...Option) options {
-	var op options
-	for _, f := range fs {
-		f(&op)
-	}
-	return op
-}
 
 // FlagSet is bash completion enabled flag.FlagSet.
 type FlagSet flag.FlagSet
@@ -83,34 +57,22 @@ func (fs *FlagSet) Complete(name string) {
 	complete.Complete(name, complete.FlagSet((*flag.FlagSet)(CommandLine)))
 }
 
-func (fs *FlagSet) String(name string, value string, usage string, options ...Option) *string {
+func (fs *FlagSet) String(name string, value string, usage string, options ...predict.Option) *string {
 	p := new(string)
-	(*flag.FlagSet)(fs).Var(newStringValue(value, p, config(options...)), name, usage)
+	(*flag.FlagSet)(fs).Var(newStringValue(value, p, predict.Options(options...)), name, usage)
 	return p
 }
 
-func (fs *FlagSet) Bool(name string, value bool, usage string, options ...Option) *bool {
+func (fs *FlagSet) Bool(name string, value bool, usage string, options ...predict.Option) *bool {
 	p := new(bool)
-	(*flag.FlagSet)(fs).Var(newBoolValue(value, p, config(options...)), name, usage)
+	(*flag.FlagSet)(fs).Var(newBoolValue(value, p, predict.Options(options...)), name, usage)
 	return p
 }
 
-func (fs *FlagSet) Int(name string, value int, usage string, options ...Option) *int {
+func (fs *FlagSet) Int(name string, value int, usage string, options ...predict.Option) *int {
 	p := new(int)
-	(*flag.FlagSet)(fs).Var(newIntValue(value, p, config(options...)), name, usage)
+	(*flag.FlagSet)(fs).Var(newIntValue(value, p, predict.Options(options...)), name, usage)
 	return p
-}
-
-func (o options) checkValue(v string) error {
-	if !o.check || len(o.values) == 0 {
-		return nil
-	}
-	for _, vv := range o.values {
-		if v == vv {
-			return nil
-		}
-	}
-	return fmt.Errorf("not in allowed values: %s", strings.Join(o.values, ","))
 }
 
 var CommandLine = (*FlagSet)(flag.CommandLine)
@@ -121,26 +83,26 @@ func Parse(name string) {
 	CommandLine.Parse(os.Args[1:])
 }
 
-func String(name string, value string, usage string, options ...Option) *string {
+func String(name string, value string, usage string, options ...predict.Option) *string {
 	return CommandLine.String(name, value, usage, options...)
 }
 
-func Bool(name string, value bool, usage string, options ...Option) *bool {
+func Bool(name string, value bool, usage string, options ...predict.Option) *bool {
 	return CommandLine.Bool(name, value, usage, options...)
 }
 
-func Int(name string, value int, usage string, options ...Option) *int {
+func Int(name string, value int, usage string, options ...predict.Option) *int {
 	return CommandLine.Int(name, value, usage, options...)
 }
 
 type boolValue struct {
 	v *bool
-	options
+	predict.Config
 }
 
-func newBoolValue(val bool, p *bool, o options) *boolValue {
+func newBoolValue(val bool, p *bool, c predict.Config) *boolValue {
 	*p = val
-	return &boolValue{v: p, options: o}
+	return &boolValue{v: p, Config: c}
 }
 
 func (b *boolValue) Set(val string) error {
@@ -149,7 +111,7 @@ func (b *boolValue) Set(val string) error {
 	if err != nil {
 		return fmt.Errorf("bad value for bool flag")
 	}
-	return b.checkValue(val)
+	return b.Check(val)
 }
 
 func (b *boolValue) Get() interface{} { return bool(*b.v) }
@@ -163,9 +125,9 @@ func (b *boolValue) String() string {
 
 func (b *boolValue) IsBoolFlag() bool { return true }
 
-func (b *boolValue) Predict(_ string) []string {
-	if b.values != nil {
-		return b.values
+func (b *boolValue) Predict(prefix string) []string {
+	if b.Predictor != nil {
+		return b.Predictor.Predict(prefix)
 	}
 	// If false, typing the bool flag is expected to turn it on, so there is nothing to complete
 	// after the flag.
@@ -178,17 +140,17 @@ func (b *boolValue) Predict(_ string) []string {
 
 type stringValue struct {
 	v *string
-	options
+	predict.Config
 }
 
-func newStringValue(val string, p *string, o options) *stringValue {
+func newStringValue(val string, p *string, c predict.Config) *stringValue {
 	*p = val
-	return &stringValue{v: p, options: o}
+	return &stringValue{v: p, Config: c}
 }
 
 func (s *stringValue) Set(val string) error {
 	*s.v = val
-	return s.options.checkValue(val)
+	return s.Check(val)
 }
 
 func (s *stringValue) Get() interface{} {
@@ -202,21 +164,21 @@ func (s *stringValue) String() string {
 	return string(*s.v)
 }
 
-func (s *stringValue) Predict(_ string) []string {
-	if s.values != nil {
-		return s.values
+func (s *stringValue) Predict(prefix string) []string {
+	if s.Predictor != nil {
+		return s.Predictor.Predict(prefix)
 	}
 	return []string{""}
 }
 
 type intValue struct {
 	v *int
-	options
+	predict.Config
 }
 
-func newIntValue(val int, p *int, o options) *intValue {
+func newIntValue(val int, p *int, c predict.Config) *intValue {
 	*p = val
-	return &intValue{v: p, options: o}
+	return &intValue{v: p, Config: c}
 }
 
 func (i *intValue) Set(val string) error {
@@ -225,7 +187,7 @@ func (i *intValue) Set(val string) error {
 	if err != nil {
 		return fmt.Errorf("bad value for int flag")
 	}
-	return i.checkValue(val)
+	return i.Check(val)
 }
 
 func (i *intValue) Get() interface{} { return int(*i.v) }
@@ -237,9 +199,9 @@ func (i *intValue) String() string {
 	return strconv.Itoa(int(*i.v))
 }
 
-func (s *intValue) Predict(_ string) []string {
-	if s.values != nil {
-		return s.values
+func (s *intValue) Predict(prefix string) []string {
+	if s.Predictor != nil {
+		return s.Predictor.Predict(prefix)
 	}
 	return []string{""}
 }
