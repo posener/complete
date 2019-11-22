@@ -52,8 +52,11 @@ func (c Config) Predict(prefix string) []string {
 }
 
 func (c Config) Check(value string) error {
+	if !c.check || c.Predictor == nil {
+		return nil
+	}
 	predictions := c.Predictor.Predict(value)
-	if !c.check || len(predictions) == 0 {
+	if len(predictions) == 0 {
 		return nil
 	}
 	for _, vv := range predictions {
