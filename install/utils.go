@@ -27,7 +27,7 @@ func removeFromFile(path string, line string) error {
 		return fmt.Errorf("creating backup file: %s", err)
 	}
 
-	tmp, err := script.Cat(path).Modify(script.Grep{Re: regexp.MustCompile("^" + line + "$"), Invert: true}).ToTempFile()
+	tmp, err := script.Cat(path).Modify(script.Grep{Re: regexp.MustCompile("^" + line + "$"), Inverse: true}).ToTempFile()
 	if err != nil {
 		return fmt.Errorf("failed remove: %s", err)
 	}
