@@ -27,7 +27,7 @@ func (z zsh) Install(cmd, bin string) error {
 		completeCmd = bashCompInit + "\n" + completeCmd
 	}
 
-	return appendToFile(z.rc, completeCmd)
+	return appendFile(z.rc, completeCmd)
 }
 
 func (z zsh) Uninstall(cmd, bin string) error {

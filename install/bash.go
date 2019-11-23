@@ -20,7 +20,7 @@ func (b bash) Install(cmd, bin string) error {
 		return fmt.Errorf("already installed in %s", b.rc)
 	}
 	completeCmd := b.cmd(cmd, bin)
-	return appendToFile(b.rc, completeCmd)
+	return appendFile(b.rc, completeCmd)
 }
 
 func (b bash) Uninstall(cmd, bin string) error {
