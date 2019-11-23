@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/posener/complete.svg?branch=master)](https://travis-ci.org/posener/complete)
 [![codecov](https://codecov.io/gh/posener/complete/branch/master/graph/badge.svg)](https://codecov.io/gh/posener/complete)
 [![golangci](https://golangci.com/badges/github.com/posener/complete.svg)](https://golangci.com/r/github.com/posener/complete)
-[![GoDoc](https://godoc.org/github.com/posener/complete?status.svg)](http://godoc.org/github.com/posener/complete)
+[![GoDoc](https://godoc.org/github.com/posener/complete?status.svg)](https://pkg.go.dev/github.com/posener/complete/v2?tab=doc)
 [![goreadme](https://goreadme.herokuapp.com/badge/posener/complete.svg)](https://goreadme.herokuapp.com)
 
 Package complete is everything for bash completion and Go.
@@ -35,7 +35,7 @@ Install:
 1. Type in your shell:
 
 ```go
-go get -u github.com/posener/complete/gocomplete
+go get -u github.com/posener/complete/v2/gocomplete
 COMP_INSTALL=1 gocomplete
 ```
 
@@ -112,7 +112,7 @@ To use this feature, simply call `complete.CommandLine` before `flag.Parse`. (Se
 
 If flag value completion is desired, it can be done by providing the standard library `flag.Var`
 function a `flag.Value` that also implements the `complete.Predictor` interface. For standard
-flag with values, it is possible to use the `github.com/posener/complete/compflag` package.
+flag with values, it is possible to use the `github.com/posener/complete/v2/compflag` package.
 (See [./example/compflag](./example/compflag)).
 
 ```diff
