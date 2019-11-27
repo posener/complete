@@ -29,7 +29,7 @@
 //
 // 	func main() {
 // 		complete.CommandLine("my-program")
-// 		flag.ParseArgs()
+// 		flag.Parse()
 // 		// Main function.
 // 	}
 package compflag
