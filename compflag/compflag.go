@@ -53,13 +53,16 @@ func (fs *FlagSet) Parse(args []string) error {
 	return (*flag.FlagSet)(fs).Parse(args)
 }
 
-func (fs *FlagSet) Visit(fn func(*flag.Flag))    { (*flag.FlagSet)(fs).Visit(fn) }
-func (fs *FlagSet) VisitAll(fn func(*flag.Flag)) { (*flag.FlagSet)(fs).VisitAll(fn) }
-func (fs *FlagSet) Arg(i int) string             { return (*flag.FlagSet)(fs).Arg(i) }
-func (fs *FlagSet) Args() []string               { return (*flag.FlagSet)(fs).Args() }
-func (fs *FlagSet) NArg() int                    { return (*flag.FlagSet)(fs).NArg() }
-func (fs *FlagSet) NFlag() int                   { return (*flag.FlagSet)(fs).NFlag() }
-func (fs *FlagSet) Name() string                 { return (*flag.FlagSet)(fs).Name() }
+func (fs *FlagSet) Visit(fn func(*flag.Flag))     { (*flag.FlagSet)(fs).Visit(fn) }
+func (fs *FlagSet) VisitAll(fn func(*flag.Flag))  { (*flag.FlagSet)(fs).VisitAll(fn) }
+func (fs *FlagSet) Arg(i int) string              { return (*flag.FlagSet)(fs).Arg(i) }
+func (fs *FlagSet) Args() []string                { return (*flag.FlagSet)(fs).Args() }
+func (fs *FlagSet) NArg() int                     { return (*flag.FlagSet)(fs).NArg() }
+func (fs *FlagSet) NFlag() int                    { return (*flag.FlagSet)(fs).NFlag() }
+func (fs *FlagSet) Name() string                  { return (*flag.FlagSet)(fs).Name() }
+func (fs *FlagSet) PrintDefaults()                { (*flag.FlagSet)(fs).PrintDefaults() }
+func (fs *FlagSet) Lookup(name string) *flag.Flag { return (*flag.FlagSet)(fs).Lookup(name) }
+func (fs *FlagSet) Parsed() bool                  { return (*flag.FlagSet)(fs).Parsed() }
 
 // Complete performs bash completion if needed.
 func (fs *FlagSet) Complete() {
