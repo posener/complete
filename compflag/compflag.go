@@ -10,7 +10,7 @@
 // 	)
 //
 // 	func main() {
-// 		compflag.Parse("my-program")
+// 		compflag.Parse()
 // 		// Main function.
 // 	}
 //
@@ -28,7 +28,7 @@
 // 	)
 //
 // 	func main() {
-// 		complete.CommandLine("my-program")
+// 		complete.CommandLine()
 // 		flag.Parse()
 // 		// Main function.
 // 	}
@@ -53,9 +53,17 @@ func (fs *FlagSet) Parse(args []string) error {
 	return (*flag.FlagSet)(fs).Parse(args)
 }
 
+func (fs *FlagSet) Visit(fn func(*flag.Flag))    { (*flag.FlagSet)(fs).Visit(fn) }
+func (fs *FlagSet) VisitAll(fn func(*flag.Flag)) { (*flag.FlagSet)(fs).VisitAll(fn) }
+func (fs *FlagSet) Arg(i int) string             { return (*flag.FlagSet)(fs).Arg(i) }
+func (fs *FlagSet) Args() []string               { return (*flag.FlagSet)(fs).Args() }
+func (fs *FlagSet) NArg() int                    { return (*flag.FlagSet)(fs).NArg() }
+func (fs *FlagSet) NFlag() int                   { return (*flag.FlagSet)(fs).NFlag() }
+func (fs *FlagSet) Name() string                 { return (*flag.FlagSet)(fs).Name() }
+
 // Complete performs bash completion if needed.
-func (fs *FlagSet) Complete(name string) {
-	complete.Complete(name, complete.FlagSet((*flag.FlagSet)(CommandLine)))
+func (fs *FlagSet) Complete() {
+	complete.Complete(fs.Name(), complete.FlagSet((*flag.FlagSet)(CommandLine)))
 }
 
 func (fs *FlagSet) String(name string, value string, usage string, options ...predict.Option) *string {
@@ -85,8 +93,8 @@ func (fs *FlagSet) Duration(name string, value time.Duration, usage string, opti
 var CommandLine = (*FlagSet)(flag.CommandLine)
 
 // Parse parses command line arguments. It also performs bash completion when needed.
-func Parse(name string) {
-	CommandLine.Complete(name)
+func Parse() {
+	CommandLine.Complete()
 	CommandLine.Parse(os.Args[1:])
 }
 

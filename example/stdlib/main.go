@@ -20,7 +20,7 @@ var (
 func main() {
 	// Run the completion. Notice that since we are using standard library flags, only the flag
 	// names will be completed and not their values.
-	complete.CommandLine("stdlib")
+	complete.CommandLine()
 
 	// Parse the flags.
 	flag.Parse()

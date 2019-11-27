@@ -20,7 +20,7 @@ var (
 
 func main() {
 	// Parse flags and perform bash completion if needed.
-	compflag.Parse("stdlib")
+	compflag.Parse()
 
 	// Program logic.
 	if *name == "" {
