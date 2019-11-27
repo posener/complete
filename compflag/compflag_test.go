@@ -3,6 +3,7 @@ package compflag
 import (
 	"flag"
 	"testing"
+	"time"
 
 	"github.com/posener/complete/v2"
 	"github.com/posener/complete/v2/predict"
@@ -102,5 +103,49 @@ func TestInt(t *testing.T) {
 		complete.Test(t, complete.FlagSet((*flag.FlagSet)(&cmd)), "-a=", []string{"1", "2"})
 		complete.Test(t, complete.FlagSet((*flag.FlagSet)(&cmd)), "-a 1", []string{"1"})
 		complete.Test(t, complete.FlagSet((*flag.FlagSet)(&cmd)), "-a=1", []string{"1"})
+	})
+}
+
+func TestDuration(t *testing.T) {
+	t.Parallel()
+
+	t.Run("options invalid not checked", func(t *testing.T) {
+		var cmd FlagSet
+		value := cmd.Duration("a", 0, "", predict.OptValues("1s", "1m"))
+		err := cmd.Parse([]string{"-a", "1h"})
+		assert.NoError(t, err)
+		assert.Equal(t, time.Hour, *value)
+	})
+
+	t.Run("options valid checked", func(t *testing.T) {
+		var cmd FlagSet
+		value := cmd.Duration("a", 0, "", predict.OptValues("1s", "1m"), predict.OptCheck())
+		err := cmd.Parse([]string{"-a", "1m"})
+		assert.NoError(t, err)
+		assert.Equal(t, time.Minute, *value)
+	})
+
+	t.Run("options invalid checked", func(t *testing.T) {
+		var cmd FlagSet
+		_ = cmd.Duration("a", 0, "", predict.OptValues("1s", "1m"), predict.OptCheck())
+		err := cmd.Parse([]string{"-a", "1h"})
+		assert.Error(t, err)
+	})
+
+	t.Run("options invalid duration value", func(t *testing.T) {
+		var cmd FlagSet
+		_ = cmd.Duration("a", 0, "", predict.OptValues("1h", "1m", "1"), predict.OptCheck())
+		err := cmd.Parse([]string{"-a", "1"})
+		assert.Error(t, err)
+	})
+
+	t.Run("complete", func(t *testing.T) {
+		var cmd FlagSet
+		_ = cmd.Duration("a", 0, "", predict.OptValues("1s", "1m"))
+		complete.Test(t, complete.FlagSet((*flag.FlagSet)(&cmd)), "-a ", []string{"1s", "1m"})
+		complete.Test(t, complete.FlagSet((*flag.FlagSet)(&cmd)), "-a=", []string{"1s", "1m"})
+		complete.Test(t, complete.FlagSet((*flag.FlagSet)(&cmd)), "-a 1", []string{"1s", "1m"})
+		complete.Test(t, complete.FlagSet((*flag.FlagSet)(&cmd)), "-a=1", []string{"1s", "1m"})
+		complete.Test(t, complete.FlagSet((*flag.FlagSet)(&cmd)), "-a=1m", []string{"1m"})
 	})
 }
