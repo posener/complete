@@ -26,16 +26,21 @@ func Run(name string, uninstall, yes bool, out io.Writer, in io.Reader) {
 		switch strings.ToLower(answer) {
 		case "y", "yes":
 		default:
-			fmt.Fprintf(out, "Cancelling...")
+			fmt.Fprintf(out, "Cancelling...\n")
 			return
 		}
 	}
-	fmt.Fprintf(out, action+"ing...")
+	fmt.Fprintf(out, action+"ing...\n")
 
+	var err error
 	if uninstall {
-		Uninstall(name)
+		err = Uninstall(name)
 	} else {
-		Install(name)
+		err = Install(name)
+	}
+	if err != nil {
+		fmt.Fprintf(out, "%s failed: %s\n", action, err)
+		os.Exit(1)
 	}
 }
 
