@@ -22,7 +22,8 @@ type Parsed struct {
 	HasValue bool
 }
 
-// Parse parses a typed command line argument list, and returns a list of arguments.
+// Parse parses a typed command line argument list, and returns a list of
+// arguments.
 func Parse(line string) []Arg {
 	var args []Arg
 	for {
@@ -82,8 +83,8 @@ func next(line string) (arg Arg, after string) {
 	return
 }
 
-// parse a flag from an argument. The flag can have value attached when it is given in the
-// `-key=value` format.
+// parse a flag from an argument. The flag can have value attached when it is
+// given in the `-key=value` format.
 func (a *Arg) parse() {
 	if len(a.Text) == 0 {
 		return

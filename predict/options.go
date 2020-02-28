@@ -63,8 +63,8 @@ func (c Config) Predict(prefix string) []string {
 	return nil
 }
 
-// Check checks that value is one of the predicted values, in case
-// that the check field was set.
+// Check checks that value is one of the predicted values, in case that the
+// check field was set.
 func (c Config) Check(value string) error {
 	if !c.check || c.Predictor == nil {
 		return nil

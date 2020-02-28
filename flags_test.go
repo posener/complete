@@ -47,8 +47,8 @@ func (b *boolValue) String() string { return strconv.FormatBool(bool(*b)) }
 func (b *boolValue) IsBoolFlag() bool { return true }
 
 func (b *boolValue) Predict(_ string) []string {
-	// If false, typing the bool flag is expected to turn it on, so there is nothing to complete
-	// after the flag.
+	// If false, typing the bool flag is expected to turn it on, so there
+	// is nothing to complete after the flag.
 	if *b == false {
 		return nil
 	}

@@ -82,7 +82,8 @@ func TestParse(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.line, func(t *testing.T) {
 			args := Parse(tt.line)
-			// Clear parsed part of the arguments. It is tested in the TestArgsParsed test.
+			// Clear parsed part of the arguments. It is tested in
+			// the TestArgsParsed test.
 			for i := range args {
 				arg := args[i]
 				arg.Parsed = Parsed{}

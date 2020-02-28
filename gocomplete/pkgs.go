@@ -12,17 +12,18 @@ import (
 	"github.com/posener/complete/v2/predict"
 )
 
-// predictPackages completes packages in the directory pointed by a.Last
-// and packages that are one level below that package.
+// predictPackages completes packages in the directory pointed by a.Last and
+// packages that are one level below that package.
 func predictPackages(prefix string) (prediction []string) {
 	prediction = []string{prefix}
 	lastPrediction := ""
 	for len(prediction) == 1 && (lastPrediction == "" || lastPrediction != prediction[0]) {
-		// if only one prediction, predict files within this prediction,
-		// for example, if the user entered 'pk' and we have a package named 'pkg',
-		// which is the only package prefixed with 'pk', we will automatically go one
-		// level deeper and give the user the 'pkg' and all the nested packages within
-		// that package.
+		// if only one prediction, predict files within this
+		// prediction, for example, if the user entered 'pk' and we
+		// have a package named 'pkg', which is the only package
+		// prefixed with 'pk', we will automatically go one level
+		// deeper and give the user the 'pkg' and all the nested
+		// packages within that package.
 		lastPrediction = prediction[0]
 		prefix = prediction[0]
 		prediction = predictLocalAndSystem(prefix)
@@ -32,16 +33,17 @@ func predictPackages(prefix string) (prediction []string) {
 
 func predictLocalAndSystem(prefix string) []string {
 	localDirs := predict.FilesSet(listPackages(directory(prefix))).Predict(prefix)
-	// System directories are not actual file names, for example: 'github.com/posener/complete' could
-	// be the argument, but the actual filename is in $GOPATH/src/github.com/posener/complete'. this
-	// is the reason to use the PredictSet and not the PredictDirs in this case.
+	// System directories are not actual file names, for example:
+	// 'github.com/posener/complete' could be the argument, but the actual
+	// filename is in $GOPATH/src/github.com/posener/complete'. this is the
+	// reason to use the PredictSet and not the PredictDirs in this case.
 	s := systemDirs(prefix)
 	sysDirs := predict.Set(s).Predict(prefix)
 	return append(localDirs, sysDirs...)
 }
 
-// listPackages looks in current pointed dir and in all it's direct sub-packages
-// and return a list of paths to go packages.
+// listPackages looks in current pointed dir and in all it's direct
+// sub-packages and return a list of paths to go packages.
 func listPackages(dir string) (directories []string) {
 	// add subdirectories
 	files, err := ioutil.ReadDir(dir)
@@ -72,14 +74,15 @@ func listPackages(dir string) (directories []string) {
 }
 
 func systemDirs(dir string) (directories []string) {
-	// get all paths from GOPATH environment variable and use their src directory
+	// get all paths from GOPATH environment variable and use their src
+	// directory
 	paths := findGopath()
 	for i := range paths {
 		paths[i] = filepath.Join(paths[i], "src")
 	}
 
-	// normalize the directory to be an actual directory since it could be with an additional
-	// characters after the last '/'.
+	// normalize the directory to be an actual directory since it could be
+	// with an additional characters after the last '/'.
 	if !strings.HasSuffix(dir, "/") {
 		dir = filepath.Dir(dir)
 	}

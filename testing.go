@@ -7,7 +7,8 @@ import (
 	"github.com/posener/complete/v2/internal/arg"
 )
 
-// Test is a testing helper function for testing bash completion of a given completer.
+// Test is a testing helper function for testing bash completion of a given
+// completer.
 func Test(t *testing.T, cmp Completer, args string, want []string) {
 	t.Helper()
 	got, err := completer{Completer: cmp, args: arg.Parse(args)}.complete()

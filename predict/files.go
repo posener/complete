@@ -7,14 +7,14 @@ import (
 	"strings"
 )
 
-// Dirs returns a predictor that predict directory paths. If a non-empty pattern is given, the
-// predicted paths will match that pattern.
+// Dirs returns a predictor that predict directory paths. If a non-empty
+// pattern is given, the predicted paths will match that pattern.
 func Dirs(pattern string) FilesPredictor {
 	return FilesPredictor{pattern: pattern, includeFiles: false}
 }
 
-// Dirs returns a predictor that predict file or directory paths. If a non-empty pattern is given,
-// the predicted paths will match that pattern.
+// Dirs returns a predictor that predict file or directory paths. If a
+// non-empty pattern is given, the predicted paths will match that pattern.
 func Files(pattern string) FilesPredictor {
 	return FilesPredictor{pattern: pattern, includeFiles: true}
 }
@@ -24,14 +24,14 @@ type FilesPredictor struct {
 	includeFiles bool
 }
 
-// Predict searches for files according to the given prefix.
-// If the only predicted path is a single directory, the search will continue another recursive
-// layer into that directory.
+// Predict searches for files according to the given prefix.  If the only
+// predicted path is a single directory, the search will continue another
+// recursive layer into that directory.
 func (f FilesPredictor) Predict(prefix string) (options []string) {
 	options = f.predictFiles(prefix)
 
-	// If the number of prediction is not 1, we either have many results or have no results, so we
-	// return it.
+	// If the number of prediction is not 1, we either have many results or
+	// have no results, so we return it.
 	if len(options) != 1 {
 		return
 	}
@@ -87,8 +87,8 @@ func (f FilesPredictor) listFiles(dir string) []string {
 	return list
 }
 
-// directory gives the directory of the given partial path in case that it is not, we fall back to
-// the current directory.
+// directory gives the directory of the given partial path in case that it is
+// not, we fall back to the current directory.
 func directory(path string) string {
 	if info, err := os.Stat(path); err == nil && info.IsDir() {
 		return fixPathForm(path, path)

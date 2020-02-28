@@ -51,6 +51,7 @@ type installer interface {
 }
 
 // Install complete command given:
+//
 // cmd: is the command name
 func Install(cmd string) error {
 	is := installers()
@@ -72,8 +73,7 @@ func Install(cmd string) error {
 	return err
 }
 
-// IsInstalled returns true if the completion
-// for the given cmd is installed.
+// IsInstalled returns true if the completion for the given cmd is installed.
 func IsInstalled(cmd string) bool {
 	bin, err := getBinaryPath()
 	if err != nil {
@@ -91,6 +91,7 @@ func IsInstalled(cmd string) bool {
 }
 
 // Uninstall complete command given:
+//
 // cmd: is the command name
 func Uninstall(cmd string) error {
 	is := installers()
@@ -113,8 +114,8 @@ func Uninstall(cmd string) error {
 }
 
 func installers() (i []installer) {
-	// The list of bash config files candidates where it is
-	// possible to install the completion command.
+	// The list of bash config files candidates where it is possible to
+	// install the completion command.
 	var bashConfFiles []string
 	switch runtime.GOOS {
 	case "darwin":

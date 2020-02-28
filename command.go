@@ -1,17 +1,23 @@
 package complete
 
-// Command is an object that can be used to create complete options for a go executable that does
-// not have a good binding to the `Completer` interface, or to use a Go program as complete binary
-// for another executable (see ./gocomplete as an example.)
+// Command is an object that can be used to create complete options for a go
+// executable that does not have a good binding to the `Completer` interface,
+// or to use a Go program as complete binary for another executable (see
+// ./gocomplete as an example.)
 type Command struct {
-	// Sub is map of sub commands of the current command. The key refer to the sub command name, and
-	// the value is it's command descriptive struct.
+	// Sub is map of sub commands of the current command. The key refer to
+	// the sub command name, and the value is it's command descriptive
+	// struct.
 	Sub map[string]*Command
-	// Flags is a map of flags that the command accepts. The key is the flag name, and the value is
-	// it's predictions. In a chain of sub commands, no duplicate flags should be defined.
+
+	// Flags is a map of flags that the command accepts. The key is the
+	// flag name, and the value is it's predictions. In a chain of sub
+	// commands, no duplicate flags should be defined.
 	Flags map[string]Predictor
-	// Args are extra arguments that the command accepts, those who are given without any flag
-	// before. In any chain of sub commands, only one of them should predict positional arguments.
+
+	// Args are extra arguments that the command accepts, those who are
+	// given without any flag before. In any chain of sub commands, only
+	// one of them should predict positional arguments.
 	Args Predictor
 }
 

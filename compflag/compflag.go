@@ -1,4 +1,5 @@
-// Package compflag provides a handful of standard library-compatible flags with bash complition capabilities.
+// Package compflag provides a handful of standard library-compatible flags
+// with bash complition capabilities.
 //
 // Usage
 //
@@ -14,7 +15,8 @@
 // 		// Main function.
 // 	}
 //
-// Alternatively, the library can just be used with the standard library flag package:
+// Alternatively, the library can just be used with the standard library flag
+// package:
 //
 // 	import (
 // 		"flag"
@@ -95,7 +97,8 @@ func (fs *FlagSet) Duration(name string, value time.Duration, usage string, opti
 
 var CommandLine = (*FlagSet)(flag.CommandLine)
 
-// Parse parses command line arguments. It also performs bash completion when needed.
+// Parse parses command line arguments. It also performs bash completion when
+// needed.
 func Parse() {
 	CommandLine.Complete()
 	CommandLine.Parse(os.Args[1:])
@@ -151,8 +154,8 @@ func (b *boolValue) Predict(prefix string) []string {
 	if b.Predictor != nil {
 		return b.Predictor.Predict(prefix)
 	}
-	// If false, typing the bool flag is expected to turn it on, so there is nothing to complete
-	// after the flag.
+	// If false, typing the bool flag is expected to turn it on, so there
+	// is nothing to complete after the flag.
 	if !*b.v {
 		return nil
 	}

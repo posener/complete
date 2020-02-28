@@ -12,29 +12,39 @@ import (
 	"github.com/posener/complete/v2/internal/tokener"
 )
 
-// Completer is an interface that a command line should implement in order to get bash completion.
+// Completer is an interface that a command line should implement in order to
+// get bash completion.
 type Completer interface {
-	// SubCmdList should return the list of all sub commands of the current command.
+	// SubCmdList should return the list of all sub commands of the current
+	// command.
 	SubCmdList() []string
-	// SubCmdGet should return a sub command of the current command for the given sub command name.
+
+	// SubCmdGet should return a sub command of the current command for the
+	// given sub command name.
 	SubCmdGet(cmd string) Completer
-	// FlagList should return a list of all the flag names of the current command. The flag names
-	// should not have the dash prefix.
+
+	// FlagList should return a list of all the flag names of the current
+	// command. The flag names should not have the dash prefix.
 	FlagList() []string
-	// FlagGet should return completion options for a given flag. It is invoked with the flag name
-	// without the dash prefix. The flag is not promised to be in the command flags. In that case,
-	// this method should return a nil predictor.
+
+	// FlagGet should return completion options for a given flag. It is
+	// invoked with the flag name without the dash prefix. The flag is not
+	// promised to be in the command flags. In that case, this method
+	// should return a nil predictor.
 	FlagGet(flag string) Predictor
-	// ArgsGet should return predictor for positional arguments of the command line.
+
+	// ArgsGet should return predictor for positional arguments of the
+	// command line.
 	ArgsGet() Predictor
 }
 
 // Predictor can predict completion options.
 type Predictor interface {
-	// Predict returns prediction options for a given prefix. The prefix is what currently is typed
-	// as a hint for what to return, but the returned values can have any prefix. The returned
-	// values will be filtered by the prefix when needed regardless. The prefix may be empty which
-	// means that no value was typed.
+	// Predict returns prediction options for a given prefix. The prefix is
+	// what currently is typed as a hint for what to return, but the
+	// returned values can have any prefix. The returned values will be
+	// filtered by the prefix when needed regardless. The prefix may be
+	// empty which means that no value was typed.
 	Predict(prefix string) []string
 }
 
@@ -55,9 +65,10 @@ var (
 	in     io.Reader = os.Stdin
 )
 
-// Complete the command line arguments for the given command in the case that the program
-// was invoked with COMP_LINE and COMP_POINT environment variables. In that case it will also
-// `os.Exit()`. The program name should be provided for installation purposes.
+// Complete the command line arguments for the given command in the case that
+// the program was invoked with COMP_LINE and COMP_POINT environment variables.
+// In that case it will also `os.Exit()`. The program name should be provided
+// for installation purposes.
 func Complete(name string, cmd Completer) {
 	var (
 		line        = getEnv("COMP_LINE")
@@ -103,8 +114,8 @@ type completer struct {
 	stack []Completer
 }
 
-// compete command with given before and after text.
-// if the command has sub commands: try to complete only sub commands or help flags. Otherwise
+// compete command with given before and after text.  if the command has sub
+// commands: try to complete only sub commands or help flags. Otherwise
 // complete flags and positional arguments.
 func (c completer) complete() ([]string, error) {
 reset:
@@ -117,25 +128,26 @@ reset:
 		// No sub commands, parse flags and positional arguments.
 		return c.suggestLeafCommandOptions(), nil
 
-	// case !arg.Completed && arg.IsFlag():
-	// Suggest help flags for command
-	// return []string{helpFlag(arg.Text)}, nil
+	//case !arg.Completed && arg.IsFlag():
+	//	// Suggest help flags for command
+	//	return []string{helpFlag(arg.Text)}, nil
 
 	case !arg.Completed:
 		// Currently typing a sub command.
 		return c.suggestSubCommands(arg.Text), nil
 
 	case c.SubCmdGet(arg.Text) != nil:
-		// Sub command completed, look into that sub command completion.
-		// Set the complete command to the requested sub command, and the before text to all the text
-		// after the command name and rerun the complete algorithm with the new sub command.
+		// Sub command completed, look into that sub command
+		// completion.
+		// Set the complete command to the requested sub command, and
+		// the before text to all the text after the command name and
+		// rerun the complete algorithm with the new sub command.
 		c.stack = append([]Completer{c.Completer}, c.stack...)
 		c.Completer = c.SubCmdGet(arg.Text)
 		c.args = c.args[1:]
 		goto reset
 
 	default:
-
 		// Sub command is unknown...
 		return nil, fmt.Errorf("unknown subcommand: %s", arg.Text)
 	}
@@ -191,7 +203,8 @@ func (c completer) suggestLeafCommandOptions() (options []string) {
 		return options
 	}
 
-	// Has a value that was already completed. Suggest all flags and positional arguments.
+	// Has a value that was already completed. Suggest all flags and
+	// positional arguments.
 	if arg.HasValue {
 		options = c.suggestFlag(arg.Dashes, "")
 		if !arg.HasFlag {
@@ -289,8 +302,8 @@ func filterByPrefix(prefix string, options ...string) []string {
 	return options
 }
 
-// hasPrefix checks if s has the give prefix. It disregards quotes and escaped spaces, and return
-// s in the form of the given prefix.
+// hasPrefix checks if s has the give prefix. It disregards quotes and escaped
+// spaces, and return s in the form of the given prefix.
 func hasPrefix(s, prefix string) (string, bool) {
 	var (
 		token  tokener.Tokener

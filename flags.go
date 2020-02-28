@@ -9,8 +9,9 @@ func CommandLine() {
 	Complete(flag.CommandLine.Name(), FlagSet(flag.CommandLine))
 }
 
-// FlagSet returns a completer for a given standard library `flag.FlagSet`. It completes flag names,
-// and additionally completes value if the `flag.Value` implements the `Predicate` interface.
+// FlagSet returns a completer for a given standard library `flag.FlagSet`. It
+// completes flag names, and additionally completes value if the `flag.Value`
+// implements the `Predicate` interface.
 func FlagSet(flags *flag.FlagSet) Completer {
 	return (*flagSet)(flags)
 }

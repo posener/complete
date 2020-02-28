@@ -11,16 +11,16 @@ func (p Set) Predict(_ string) (options []string) {
 }
 
 var (
-	// Something is used to indicate that does not completes somthing. Such that other prediction
-	// wont be applied.
+	// Something is used to indicate that does not completes somthing. Such
+	// that other prediction wont be applied.
 	Something = Set{""}
 
 	// Nothing is used to indicate that does not completes anything.
 	Nothing = Set{}
 )
 
-// Or unions prediction functions, so that the result predication is the union of their
-// predications.
+// Or unions prediction functions, so that the result predication is the union
+// of their predications.
 func Or(ps ...complete.Predictor) complete.Predictor {
 	return complete.PredictFunc(func(prefix string) (options []string) {
 		for _, p := range ps {

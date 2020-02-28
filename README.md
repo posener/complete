@@ -8,27 +8,25 @@
 
 Package complete is everything for bash completion and Go.
 
-Writing bash completion scripts is a hard work, usually done in the bash scripting language.
-This package provides:
+Writing bash completion scripts is a hard work, usually done in the bash
+scripting language. This package provides:
 
-* A library for bash completion for Go programs.
+- A library for bash completion for Go programs.
+- A tool for writing bash completion script in the Go language. For any Go or
+  non Go program.
+- Bash completion for the `go` command line (See [./gocomplete](./gocomplete)).
+- Library for bash-completion enabled flags (See [./compflag](./compflag)).
+- Enables an easy way to install/uninstall the completion of the command.
 
-* A tool for writing bash completion script in the Go language. For any Go or non Go program.
-
-* Bash completion for the `go` command line (See [./gocomplete](./gocomplete)).
-
-* Library for bash-completion enabled flags (See [./compflag](./compflag)).
-
-* Enables an easy way to install/uninstall the completion of the command.
-
-The library and tools are extensible such that any program can add its one logic, completion types
-or methologies.
+The library and tools are extensible such that any program can add its one
+logic, completion types or methologies.
 
 #### Go Command Bash Completion
 
-[./gocomplete](./gocomplete) is the script for bash completion for the `go` command line. This is an example
-that uses the `complete` package on the `go` command - the `complete` package can also be used to
-implement any completions, see #usage.
+[./gocomplete](./gocomplete) is the script for bash completion for the `go`
+command line. This is an example that uses the `complete` package on the `go`
+command - the `complete` package can also be used to implement any completions,
+see #usage.
 
 Install:
 
@@ -46,7 +44,9 @@ Uninstall by `COMP_UNINSTALL=1 gocomplete`
 Features:
 
 - Complete `go` command, including sub commands and flags.
+
 - Complete packages names or `.go` files when necessary.
+
 - Complete test names after `-run` flag.
 
 #### Complete Package
@@ -59,7 +59,8 @@ Supported shells:
 
 #### Usage
 
-Add bash completion capabilities to any Go program. See [./example/command](./example/command).
+Add bash completion capabilities to any Go program. See
+[./example/command](./example/command).
 
 ```go
  import (
@@ -91,50 +92,52 @@ Add bash completion capabilities to any Go program. See [./example/command](./ex
  }
 ```
 
-This package also enables to complete flags defined by the standard library `flag` package.
-To use this feature, simply call `complete.CommandLine` before `flag.Parse`. (See [./example/stdlib](./example/stdlib)).
+This package also enables to complete flags defined by the standard library
+`flag` package.  To use this feature, simply call `complete.CommandLine` before
+`flag.Parse`. (See [./example/stdlib](./example/stdlib)).
 
-```diff
- import (
- 	"flag"
-+	"github.com/posener/complete/v2"
- )
- var (
- 	// Define flags here...
- 	foo = flag.Bool("foo", false, "")
- )
- func main() {
- 	// Call command line completion before parsing the flags - provide it with the binary name.
-+	complete.CommandLine("my-program")
- 	flag.Parse()
- }
+```go
+import (
+        "flag"
+        "github.com/posener/complete/v2"
+)
+var (
+        // Define flags here...
+        foo = flag.Bool("foo", false, "")
+)
+func main() {
+        // Call command line completion before parsing the flags - provide it
+        // with the binary name.
+        complete.CommandLine("my-program")
+        flag.Parse()
+}
 ```
 
-If flag value completion is desired, it can be done by providing the standard library `flag.Var`
-function a `flag.Value` that also implements the `complete.Predictor` interface. For standard
-flag with values, it is possible to use the `github.com/posener/complete/v2/compflag` package.
-(See [./example/compflag](./example/compflag)).
+If flag value completion is desired, it can be done by providing the standard
+library `flag.Var` function a `flag.Value` that also implements the
+`complete.Predictor` interface. For standard flag with values, it is possible
+to use the `github.com/posener/complete/v2/compflag` package.  (See
+[./example/compflag](./example/compflag)).
 
-```diff
- import (
- 	"flag"
-+	"github.com/posener/complete/v2"
-+	"github.com/posener/complete/v2/compflag"
- )
- var (
- 	// Define flags here...
--	foo = flag.Bool("foo", false, "")
-+	foo = compflag.Bool("foo", false, "")
- )
- func main() {
- 	// Call command line completion before parsing the flags.
-+	complete.CommandLine("my-program")
- 	flag.Parse()
- }
+```go
+import (
+  	"flag"
+ 	"github.com/posener/complete/v2"
+ 	"github.com/posener/complete/v2/compflag"
+)
+var (
+	// Define flags here...
+      foo = compflag.Bool("foo", false, "")
+)
+func main() {
+	// Call command line completion before parsing the flags.
+      complete.CommandLine("my-program")
+	flag.Parse()
+}
 ```
 
-Instead of calling both `complete.CommandLine` and `flag.Parse`, one can call just `compflag.Parse`
-which does them both.
+Instead of calling both `complete.CommandLine` and `flag.Parse`, one can call
+just `compflag.Parse` which does them both.
 
 #### Testing
 
@@ -142,13 +145,17 @@ For command line bash completion testing use the `complete.Test` function.
 
 ## Sub Packages
 
-* [compflag](./compflag): Package compflag provides a handful of standard library-compatible flags with bash complition capabilities.
+- [compflag](./compflag): Package compflag provides a handful of standard
+  library-compatible flags with bash complition capabilities.
 
-* [gocomplete](./gocomplete): Package main is complete tool for the go command line
+- [gocomplete](./gocomplete): Package main is complete tool for the go command
+  line
 
-* [install](./install): Package install provide installation functions of command completion.
+- [install](./install): Package install provide installation functions of
+  command completion.
 
-* [predict](./predict): Package predict provides helper functions for completion predictors.
+- [predict](./predict): Package predict provides helper functions for
+  completion predictors.
 
 
 ---

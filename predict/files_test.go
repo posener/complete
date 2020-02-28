@@ -134,8 +134,8 @@ func TestFiles(t *testing.T) {
 }
 
 func TestMatchFile(t *testing.T) {
-	// Change to tests directory for testing completion of
-	// files and directories
+	// Change to tests directory for testing completion of files and
+	// directories
 	err := os.Chdir("testdata")
 	if err != nil {
 		panic(err)

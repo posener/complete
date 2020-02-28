@@ -49,7 +49,8 @@ func TestCompleter(t *testing.T) {
 		{args: "flags ", want: []string{"-values", "-nothing", "-something", "-cmd-flag", "-h"}},
 		{args: "flags -", want: []string{"-values", "-nothing", "-something", "-cmd-flag", "-h"}},
 		{args: "flags --", want: []string{"--values", "--nothing", "--something", "--cmd-flag", "--help"}},
-		// If started a flag with no matching prefix, expect to see all possible flags.
+		// If started a flag with no matching prefix, expect to see all
+		// possible flags.
 		{args: "flags -x", want: []string{"-values", "-nothing", "-something", "-cmd-flag", "-h"}},
 		// Check prefix matching for chain of sub commands.
 		{args: "sub1 sub11 -fl", want: []string{"-flag11", "-flag1"}},
