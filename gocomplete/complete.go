@@ -36,22 +36,28 @@ func main() {
 			"installsuffix": predict.Something,
 			"ldflags":       predict.Something,
 			"linkshared":    predict.Nothing,
-			"pkgdir":        anyPackage,
-			"tags":          predict.Something,
-			"toolexec":      predict.Something,
+
+			"mod":        predict.Set{"readonly", "vendor", "mod"},
+			"modcacherw": predict.Nothing,
+			"modfile":    predict.Files("*/go.mod"),
+
+			"pkgdir":   anyPackage,
+			"tags":     predict.Something,
+			"trimpath": predict.Nothing,
+			"toolexec": predict.Something,
 		},
 		Args: anyGo,
 	}
 
 	run := &complete.Command{
-		Flags: map[string]complete.Predictor{
+		Flags: mergeFlags(build.Flags, map[string]complete.Predictor{
 			"exec": predict.Something,
-		},
+		}),
 		Args: goFiles,
 	}
 
 	test := &complete.Command{
-		Flags: map[string]complete.Predictor{
+		Flags: mergeFlags(build.Flags, map[string]complete.Predictor{
 			"args": predict.Something,
 			"c":    predict.Nothing,
 			"exec": predict.Something,
@@ -78,7 +84,7 @@ func main() {
 			"mutexprofilefraction": predict.Something,
 			"outputdir":            predict.Dirs("*"),
 			"trace":                predict.Files("*.out"),
-		},
+		}),
 		Args: anyGo,
 	}
 
@@ -98,42 +104,55 @@ func main() {
 			"insecure": predict.Nothing,
 			"t":        predict.Nothing,
 			"u":        predict.Nothing,
+			"-v":       predict.Nothing,
 		},
 		Args: anyGo,
 	}
 
 	generate := &complete.Command{
-		Flags: map[string]complete.Predictor{
+		Flags: mergeFlags(build.Flags, map[string]complete.Predictor{
 			"n":   predict.Nothing,
 			"x":   predict.Nothing,
 			"v":   predict.Nothing,
 			"run": predict.Something,
-		},
+		}),
 		Args: anyGo,
 	}
 
 	vet := &complete.Command{
 		Flags: map[string]complete.Predictor{
-			"n": predict.Nothing,
-			"x": predict.Nothing,
+			"n":        predict.Nothing,
+			"x":        predict.Nothing,
+			"vettool":  predict.Something,
+			"tags":     predict.Something,
+			"toolexec": predict.Something,
 		},
 		Args: anyGo,
 	}
 
 	list := &complete.Command{
 		Flags: map[string]complete.Predictor{
-			"e":    predict.Nothing,
-			"f":    predict.Something,
-			"json": predict.Nothing,
+			"e":        predict.Nothing,
+			"f":        predict.Something,
+			"m":        predict.Something,
+			"u":        predict.Nothing,
+			"json":     predict.Nothing,
+			"compiled": predict.Nothing,
+			"deps":     predict.Nothing,
+			"export":   predict.Nothing,
+			"test":     predict.Nothing,
 		},
 		Args: predict.Or(anyPackage, ellipsis),
 	}
 
 	doc := &complete.Command{
 		Flags: map[string]complete.Predictor{
-			"c":   predict.Nothing,
-			"cmd": predict.Nothing,
-			"u":   predict.Nothing,
+			"all":   predict.Nothing,
+			"c":     predict.Nothing,
+			"cmd":   predict.Nothing,
+			"short": predict.Nothing,
+			"src":   predict.Nothing,
+			"u":     predict.Nothing,
 		},
 		Args: anyPackage,
 	}
@@ -148,21 +167,24 @@ func main() {
 			},
 			"asm": {
 				Flags: map[string]complete.Predictor{
-					"D":        predict.Something,
-					"I":        predict.Dirs("*"),
-					"S":        predict.Nothing,
-					"V":        predict.Nothing,
-					"debug":    predict.Nothing,
-					"dynlink":  predict.Nothing,
-					"e":        predict.Nothing,
-					"o":        anyFile,
-					"shared":   predict.Nothing,
-					"trimpath": predict.Nothing,
+					"D":          predict.Something,
+					"I":          predict.Dirs("*"),
+					"S":          predict.Nothing,
+					"V":          predict.Nothing,
+					"debug":      predict.Nothing,
+					"dynlink":    predict.Nothing,
+					"e":          predict.Nothing,
+					"gensymabis": predict.Nothing,
+					"newobj":     predict.Nothing,
+					"o":          anyFile,
+					"shared":     predict.Nothing,
+					"trimpath":   predict.Nothing,
 				},
 				Args: predict.Files("*.s"),
 			},
 			"cgo": {
 				Flags: map[string]complete.Predictor{
+					"V":                  predict.Nothing,
 					"debug-define":       predict.Nothing,
 					"debug-gcc":          predict.Nothing,
 					"dynimport":          anyFile,
@@ -184,58 +206,72 @@ func main() {
 			},
 			"compile": {
 				Flags: map[string]complete.Predictor{
-					"%":              predict.Nothing,
-					"+":              predict.Nothing,
-					"B":              predict.Nothing,
-					"D":              predict.Dirs("*"),
-					"E":              predict.Nothing,
-					"I":              predict.Dirs("*"),
-					"K":              predict.Nothing,
-					"N":              predict.Nothing,
-					"S":              predict.Nothing,
-					"V":              predict.Nothing,
-					"W":              predict.Nothing,
-					"asmhdr":         anyFile,
-					"bench":          anyFile,
-					"buildid":        predict.Nothing,
-					"complete":       predict.Nothing,
-					"cpuprofile":     anyFile,
-					"d":              predict.Nothing,
-					"dynlink":        predict.Nothing,
-					"e":              predict.Nothing,
-					"f":              predict.Nothing,
-					"h":              predict.Nothing,
-					"i":              predict.Nothing,
-					"importmap":      predict.Something,
-					"installsuffix":  predict.Something,
-					"j":              predict.Nothing,
-					"l":              predict.Nothing,
-					"largemodel":     predict.Nothing,
-					"linkobj":        anyFile,
-					"live":           predict.Nothing,
-					"m":              predict.Nothing,
-					"memprofile":     predict.Nothing,
-					"memprofilerate": predict.Something,
-					"msan":           predict.Nothing,
-					"nolocalimports": predict.Nothing,
-					"o":              anyFile,
-					"p":              predict.Dirs("*"),
-					"pack":           predict.Nothing,
-					"r":              predict.Nothing,
-					"race":           predict.Nothing,
-					"s":              predict.Nothing,
-					"shared":         predict.Nothing,
-					"traceprofile":   anyFile,
-					"trimpath":       predict.Something,
-					"u":              predict.Nothing,
-					"v":              predict.Nothing,
-					"w":              predict.Nothing,
-					"wb":             predict.Nothing,
+					"%":                  predict.Nothing,
+					"+":                  predict.Nothing,
+					"B":                  predict.Nothing,
+					"C":                  predict.Nothing,
+					"D":                  predict.Dirs("*"),
+					"E":                  predict.Nothing,
+					"I":                  predict.Dirs("*"),
+					"K":                  predict.Nothing,
+					"L":                  predict.Nothing,
+					"N":                  predict.Nothing,
+					"S":                  predict.Nothing,
+					"V":                  predict.Nothing,
+					"W":                  predict.Nothing,
+					"asmhdr":             anyFile,
+					"bench":              anyFile,
+					"blockprofile":       anyFile,
+					"buildid":            predict.Something,
+					"c":                  predict.Something,
+					"complete":           predict.Nothing,
+					"cpuprofile":         anyFile,
+					"d":                  predict.Nothing,
+					"dwarf":              predict.Nothing,
+					"dwarfbaseentries":   predict.Nothing,
+					"dwarflocationlists": predict.Nothing,
+					"dynlink":            predict.Nothing,
+					"e":                  predict.Nothing,
+					"gendwarfinl":        predict.Something,
+					"goversion":          predict.Something,
+					"h":                  predict.Nothing,
+					"importcfg":          anyFile,
+					"importmap":          predict.Something,
+					"installsuffix":      predict.Something,
+					"j":                  predict.Nothing,
+					"json":               predict.Something,
+					"l":                  predict.Nothing,
+					"lang":               predict.Something,
+					"linkobj":            anyFile,
+					"linkshared":         predict.Nothing,
+					"live":               predict.Nothing,
+					"m":                  predict.Nothing,
+					"memprofile":         anyFile,
+					"memprofilerate":     predict.Something,
+					"msan":               predict.Nothing,
+					"mutexprofile":       predict.Nothing,
+					"newobj":             predict.Nothing,
+					"nolocalimports":     predict.Nothing,
+					"o":                  anyFile,
+					"p":                  predict.Dirs("*"),
+					"pack":               predict.Nothing,
+					"r":                  predict.Nothing,
+					"race":               predict.Nothing,
+					"shared":             predict.Nothing,
+					"smallframes":        predict.Nothing,
+					"std":                predict.Nothing,
+					"symabis":            anyFile,
+					"traceprofile":       anyFile,
+					"trimpath":           predict.Something,
+					"v":                  predict.Nothing,
+					"w":                  predict.Nothing,
+					"wb":                 predict.Nothing,
 				},
 				Args: goFiles,
 			},
 			"cover": {
 				Flags: map[string]complete.Predictor{
+					"-V":   predict.Nothing,
 					"func": predict.Something,
 					"html": predict.Something,
 					"mode": predict.Set{"set", "count", "atomic"},
@@ -261,14 +297,13 @@ func main() {
 				Flags: map[string]complete.Predictor{
 					"diff":  predict.Nothing,
 					"force": predict.Something,
-					"r":     predict.Set{"context", "gotypes", "netipv6zone", "printerconfig"},
+					"r":     predict.Set{"cftype", "context", "egl", "gotypes", "jni", "netipv6zone", "printerconfig"},
 				},
 				Args: anyGo,
 			},
 			"link": {
 				Flags: map[string]complete.Predictor{
 					"B":              predict.Something, // note
-					"D":              predict.Something, // address (default -1)
 					"E":              predict.Something, // entry symbol name
 					"H":              predict.Something, // header type
 					"I":              predict.Something, // linker binary
@@ -281,6 +316,7 @@ func main() {
 					"buildid":        predict.Something, // build id
 					"buildmode":      predict.Something,
 					"c":              predict.Nothing,
+					"compressdwarf":  predict.Nothing,
 					"cpuprofile":     anyFile,
 					"d":              predict.Nothing,
 					"debugtramp":     predict.Something, // int
@@ -290,6 +326,7 @@ func main() {
 					"extldflags":     predict.Something, // flags
 					"f":              predict.Nothing,
 					"g":              predict.Nothing,
+					"h":              predict.Nothing,
 					"importcfg":      anyFile,
 					"installsuffix":  predict.Something, // dir suffix
 					"k":              predict.Something, // symbol
@@ -305,11 +342,11 @@ func main() {
 					"r":              predict.Something, // "dir1:dir2:..."
 					"race":           predict.Nothing,
 					"s":              predict.Nothing,
+					"strictdups":     predict.Something,
 					"tmpdir":         predict.Dirs("*"),
 					"u":              predict.Nothing,
 					"v":              predict.Nothing,
 					"w":              predict.Nothing,
-					// "h":           predict.Something, // halt on error
 				},
 				Args: predict.Or(
 					predict.Files("*.a"),
