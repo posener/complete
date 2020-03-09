@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/user"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -149,14 +148,13 @@ func fishConfigDir() string {
 }
 
 func getConfigHomePath() string {
-	u, err := user.Current()
+	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return ""
 	}
-
 	configHome := os.Getenv("XDG_CONFIG_HOME")
 	if configHome == "" {
-		return filepath.Join(u.HomeDir, ".config")
+		return filepath.Join(homeDir, ".config")
 	}
 	return configHome
 }
@@ -170,11 +168,11 @@ func getBinaryPath() (string, error) {
 }
 
 func rcFile(name string) string {
-	u, err := user.Current()
+	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return ""
 	}
-	path := filepath.Join(u.HomeDir, name)
+	path := filepath.Join(homeDir, name)
 	if _, err := os.Stat(path); err != nil {
 		return ""
 	}
