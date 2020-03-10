@@ -148,10 +148,14 @@ func fishConfigDir() string {
 }
 
 func getConfigHomePath() string {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return ""
+	homeEnv := "HOME"
+	switch runtime.GOOS {
+	case "windows":
+		homeEnv = "USERPROFILE"
+	case "plan9":
+		homeEnv = "home"
 	}
+	homeDir := os.Getenv(homeEnv)
 	configHome := os.Getenv("XDG_CONFIG_HOME")
 	if configHome == "" {
 		return filepath.Join(homeDir, ".config")
@@ -168,10 +172,14 @@ func getBinaryPath() (string, error) {
 }
 
 func rcFile(name string) string {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return ""
+	homeEnv := "HOME"
+	switch runtime.GOOS {
+	case "windows":
+		homeEnv = "USERPROFILE"
+	case "plan9":
+		homeEnv = "home"
 	}
+	homeDir := os.Getenv(homeEnv)
 	path := filepath.Join(homeDir, name)
 	if _, err := os.Stat(path); err != nil {
 		return ""
