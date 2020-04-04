@@ -48,6 +48,12 @@ Supported shells:
 - [x] zsh
 - [x] fish
 
+The installation of completion for a command line tool is done automatically by this library by
+running the command line tool with the `COMP_INSTALL` environment variable set. Uninstalling the
+completion is similarly done by the `COMP_UNINSTALL` environment variable.
+For example, if a tool called `my-cli` uses this library, the completion can install by running
+`COMP_INSTALL=1 my-cli`.
+
 Usage
 
 Add bash completion capabilities to any Go program. See ./example/command.
