@@ -2,8 +2,6 @@
 
 [![Build Status](https://travis-ci.org/posener/complete.svg?branch=master)](https://travis-ci.org/posener/complete)
 [![codecov](https://codecov.io/gh/posener/complete/branch/master/graph/badge.svg)](https://codecov.io/gh/posener/complete)
-[![golangci](https://golangci.com/badges/github.com/posener/complete.svg)](https://golangci.com/r/github.com/posener/complete)
-[![GoDoc](https://godoc.org/github.com/posener/complete?status.svg)](https://pkg.go.dev/github.com/posener/complete/v2?tab=doc)
 [![goreadme](https://goreadme.herokuapp.com/badge/posener/complete.svg)](https://goreadme.herokuapp.com)
 
 Package complete is everything for bash completion and Go.
@@ -22,7 +20,7 @@ This package provides:
 * Enables an easy way to install/uninstall the completion of the command.
 
 The library and tools are extensible such that any program can add its one logic, completion types
-or methologies.
+or methologies. See the [documentation](https://pkg.go.dev/github.com/posener/complete/v2?tab=doc).
 
 #### Go Command Bash Completion
 
@@ -150,13 +148,17 @@ For command line bash completion testing use the `complete.Test` function.
 
 * [compflag](./compflag): Package compflag provides a handful of standard library-compatible flags with bash complition capabilities.
 
+* [example/command](./example/command): command shows how to have bash completion to an arbitrary Go program using the `complete.Command` struct.
+
+* [example/compflag](./example/compflag): compflag shows how to use the github.com/posener/complete/v2/compflag package to have auto bash completion for a defined set of flags.
+
+* [example/stdlib](./example/stdlib): stdlib shows how to have flags bash completion to an arbitrary Go program that uses the standard library flag package.
+
 * [gocomplete](./gocomplete): Package main is complete tool for the go command line
 
 * [install](./install): Package install provide installation functions of command completion.
 
 * [predict](./predict): Package predict provides helper functions for completion predictors.
 
-
 ---
-
-Created by [goreadme](https://github.com/apps/goreadme)
+Readme created from Go doc with [goreadme](https://github.com/posener/goreadme)
