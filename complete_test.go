@@ -13,25 +13,25 @@ import (
 var testCmd = &Command{
 	Flags: map[string]Predictor{"cmd-flag": nil},
 	Sub: map[string]*Command{
-		"flags": &Command{
+		"flags": {
 			Flags: map[string]Predictor{
 				"values":    set{"a", "a a", "b"},
 				"something": set{""},
 				"nothing":   nil,
 			},
 		},
-		"sub1": &Command{
+		"sub1": {
 			Flags: map[string]Predictor{"flag1": nil},
 			Sub: map[string]*Command{
-				"sub11": &Command{
+				"sub11": {
 					Flags: map[string]Predictor{"flag11": nil},
 				},
-				"sub12": &Command{},
+				"sub12": {},
 			},
 			Args: set{"arg1", "arg2"},
 		},
-		"sub2": &Command{},
-		"args": &Command{
+		"sub2": {},
+		"args": {
 			Args: set{"a", "a a", "b"},
 		},
 	},

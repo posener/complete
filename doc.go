@@ -15,7 +15,7 @@ This package provides:
 * Enables an easy way to install/uninstall the completion of the command.
 
 The library and tools are extensible such that any program can add its one logic, completion types
-or methologies.
+or methologies. See the (documentation) https://pkg.go.dev/github.com/posener/complete/v2?tab=doc.
 
 Go Command Bash Completion
 
@@ -27,8 +27,8 @@ Install:
 
 1. Type in your shell:
 
- go get -u github.com/posener/complete/v2/gocomplete
- COMP_INSTALL=1 gocomplete
+	go get -u github.com/posener/complete/v2/gocomplete
+	COMP_INSTALL=1 gocomplete
 
 2. Restart your shell
 
