@@ -2,7 +2,6 @@
 
 [![Build Status](https://travis-ci.org/posener/complete.svg?branch=master)](https://travis-ci.org/posener/complete)
 [![codecov](https://codecov.io/gh/posener/complete/branch/master/graph/badge.svg)](https://codecov.io/gh/posener/complete)
-[![goreadme](https://goreadme.herokuapp.com/badge/posener/complete.svg)](https://goreadme.herokuapp.com)
 
 Package complete is everything for bash completion and Go.
 
@@ -22,7 +21,7 @@ This package provides:
 The library and tools are extensible such that any program can add its one logic, completion types
 or methologies. See the [documentation](https://pkg.go.dev/github.com/posener/complete/v2?tab=doc).
 
-#### Go Command Bash Completion
+## Go Command Bash Completion
 
 [./gocomplete](./gocomplete) is the script for bash completion for the `go` command line. This is an example
 that uses the `complete` package on the `go` command - the `complete` package can also be used to
@@ -47,7 +46,7 @@ Features:
 - Complete packages names or `.go` files when necessary.
 - Complete test names after `-run` flag.
 
-#### Complete Package
+## Complete Package
 
 Supported shells:
 
@@ -61,7 +60,7 @@ completion is similarly done by the `COMP_UNINSTALL` environment variable.
 For example, if a tool called `my-cli` uses this library, the completion can install by running
 `COMP_INSTALL=1 my-cli`.
 
-#### Usage
+## Usage
 
 Add bash completion capabilities to any Go program. See [./example/command](./example/command).
 
@@ -140,7 +139,7 @@ flag with values, it is possible to use the `github.com/posener/complete/v2/comp
 Instead of calling both `complete.CommandLine` and `flag.Parse`, one can call just `compflag.Parse`
 which does them both.
 
-#### Testing
+## Testing
 
 For command line bash completion testing use the `complete.Test` function.
 
