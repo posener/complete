@@ -10,9 +10,11 @@ jobs:
         - name: Check out repository
           uses: actions/checkout@v2
         - name: Update readme according to Go doc
-          uses: posener/goreadme@v1.2.6
+          uses: posener/goreadme@v1.2.7
           with:
+            import-path: 'github.com/posener/complete/v2' # Fix import path to point on v2.
             recursive: 'true'
+            badge-godoc: 'true'
             badge-travisci: 'true'
             badge-codecov: 'true'
             github-token: '${{ secrets.GITHUB_TOKEN }}'
