@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/posener/complete.svg?branch=master)](https://travis-ci.org/posener/complete)
 [![codecov](https://codecov.io/gh/posener/complete/branch/master/graph/badge.svg)](https://codecov.io/gh/posener/complete)
+[![GoDoc](https://img.shields.io/badge/pkg.go.dev-doc-blue)](http://pkg.go.dev/github.com/posener/complete)
 
 Package complete is everything for bash completion and Go.
 
@@ -19,7 +20,7 @@ This package provides:
 * Enables an easy way to install/uninstall the completion of the command.
 
 The library and tools are extensible such that any program can add its one logic, completion types
-or methologies. See the [documentation](https://pkg.go.dev/github.com/posener/complete/v2?tab=doc).
+or methologies.
 
 ## Go Command Bash Completion
 
