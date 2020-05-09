@@ -148,6 +148,8 @@ For command line bash completion testing use the `complete.Test` function.
 
 * [compflag](./compflag): Package compflag provides a handful of standard library-compatible flags with bash complition capabilities.
 
+* [compflag/gen](./compflag/gen): Generates flags.go.
+
 * [example/command](./example/command): command shows how to have bash completion to an arbitrary Go program using the `complete.Command` struct.
 
 * [example/compflag](./example/compflag): compflag shows how to use the github.com/posener/complete/v2/compflag package to have auto bash completion for a defined set of flags.
