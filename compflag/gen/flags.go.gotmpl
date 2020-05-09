@@ -1,0 +1,83 @@
+package compflag
+
+// Code auto generated with `go run ./gen`. DO NOT EDIT
+
+//go:generate go run ./gen
+
+
+{{ range . }}
+
+// {{ .Name }} if a flag function for a flag of type {{ .Type }}.
+func {{ .Name }}(name string, value {{ .Type }}, usage string, options ...predict.Option) *{{ .Type }} {
+	return CommandLine.{{ .Name }}(name, value, usage, options...)
+}
+
+// {{ .Name }}Var if a flag function for a flag of already exiting variable of type {{ .Type }}.
+func {{ .Name }}Var(v *{{ .Type }}, name string, value {{ .Type }}, usage string, options ...predict.Option) {
+	CommandLine.{{ .Name }}Var(v, name, value, usage, options...)
+}
+
+{{ end }}
+
+{{ range . }}
+
+// {{ .Name }} if a flag function for a flag of type {{ .Type }}.
+func (fs *FlagSet) {{ .Name }}(name string, value {{ .Type }}, usage string, options ...predict.Option) *{{ .Type }} {
+	p := new({{ .Type }})
+	fs.{{.Name}}Var(p, name, value, usage, options...)
+	return p
+}
+
+// {{ .Name }}Var if a flag function for a flag of already exiting variable of type {{ .Type }}.
+func (fs *FlagSet) {{ .Name }}Var(p *{{ .Type }}, name string, value {{ .Type }}, usage string, options ...predict.Option) {
+	(*flag.FlagSet)(fs).Var({{ .NewInternalTypeFuncName }}(value, p, predict.Options(options...)), name, usage)
+}
+
+{{ end }}
+
+{{ range . }}
+
+// ============================================================================================== //
+
+type {{ .InternalTypeName }} struct {
+	v *{{ .Type }}
+	predict.Config
+}
+
+func {{ .NewInternalTypeFuncName }}(val {{ .Type }}, p *{{ .Type }}, c predict.Config) *{{ .InternalTypeName }} {
+	*p = val
+	return &{{ .InternalTypeName}} {v: p, Config: c}
+}
+
+func (v *{{ .InternalTypeName }}) Set(val string) error {
+	var err error
+	*v.v, err = parse{{ .Name }}(val)
+	if err != nil {
+		return fmt.Errorf("bad value for {{ .Name }} flag")
+	}
+	return v.Check(val)
+}
+
+func (v *{{ .InternalTypeName }}) Get() interface{} {
+	return *v.v
+}
+
+func (v *{{ .InternalTypeName }}) String() string {
+	if v == nil || v.v == nil {
+		return ""
+	}
+	return format{{ .Name }}(*v.v)
+}
+
+{{ if .IsBool }}
+func (v *{{ .InternalTypeName }}) IsBoolFlag() bool { return true }
+{{ end}}
+
+func (v *{{ .InternalTypeName }}) Predict(prefix string) []string {
+	if v.Predictor != nil {
+		return v.Predictor.Predict(prefix)
+	}
+	return {{ if .CustomPredict }}predict{{ .Name }}(*v.v, prefix){{ else }}[]string{""}{{ end }}
+}
+
+{{ end }}
