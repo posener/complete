@@ -3,15 +3,12 @@ package main
 
 import (
 	"log"
-	"os"
-	"path/filepath"
 	"strings"
-	"text/template"
 
-	"github.com/posener/script"
+	"github.com/posener/autogen"
 )
 
-const tmplGlob = "gen/*.go.gotmpl"
+//go:generate go run .
 
 type flag struct {
 	Name          string
@@ -35,33 +32,9 @@ var flags = []flag{
 	{Name: "Duration", Type: "time.Duration"},
 }
 
-var tmpl = template.Must(template.ParseGlob(tmplGlob))
-
 func main() {
-	for _, t := range tmpl.Templates() {
-		fileName := outFileName(t.Name())
-		f, err := os.Create(fileName)
-		if err != nil {
-			panic(err)
-		}
-		defer f.Close()
-
-		log.Printf("Writing %s", fileName)
-		err = t.Execute(f, flags)
-		if err != nil {
-			panic(err)
-		}
-
-		// Format the file.
-		err = script.ExecHandleStderr(os.Stderr, "goimports", "-w", fileName).ToStdout()
-		if err != nil {
-			panic(err)
-		}
+	err := autogen.Execute(flags)
+	if err != nil {
+		log.Fatal(err)
 	}
-}
-
-func outFileName(templateName string) string {
-	name := filepath.Base(templateName)
-	// Remove .gotmpl suffix.
-	return name[:strings.LastIndex(name, ".")]
 }
