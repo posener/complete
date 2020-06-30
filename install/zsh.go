@@ -29,7 +29,7 @@ func (z zsh) Install(cmd, bin string) error {
 		completeCmd = bashCompInit + "\n" + completeCmd
 	}
 	if !lineInFile(z.rc, compInit) {
-		completeCmd = bashCompInit + "\n" + compInit + "\n" + completeCmd
+		completeCmd = compInit + "\n" + completeCmd
 	}
 
 	return appendFile(z.rc, completeCmd)
