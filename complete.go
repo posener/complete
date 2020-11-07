@@ -78,6 +78,9 @@ func Complete(name string, cmd Completer) {
 	if err != nil {
 		panic("COMP_POINT env should be integer, got: " + point)
 	}
+	if i > len(line) {
+		i = len(line)
+	}
 
 	// Parse the command line up to the completion point.
 	args := arg.Parse(line[:i])
