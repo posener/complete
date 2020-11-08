@@ -168,6 +168,7 @@ func TestComplete(t *testing.T) {
 		shouldPanic bool
 		install     string
 		uninstall   string
+		traditionalUnixStyle   string
 	}{
 		{shouldExit: true, line: "cmd", point: "1"},
 		{shouldExit: false, line: "", point: ""},
@@ -195,6 +196,8 @@ func TestComplete(t *testing.T) {
 					return tt.uninstall
 				case "COMP_YES":
 					return "0"
+				case "COMP_TRADITIONAL_UNIX_STYLE":
+					return tt.traditionalUnixStyle
 				default:
 					panic(env)
 				}
