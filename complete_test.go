@@ -173,7 +173,7 @@ func TestComplete(t *testing.T) {
 		{shouldExit: false, line: "", point: ""},
 		{shouldPanic: true, line: "cmd", point: ""},
 		{shouldPanic: true, line: "cmd", point: "a"},
-		{shouldPanic: true, line: "cmd", point: "4"},
+		{shouldExit: true, line: "cmd", point: "4"},
 
 		{shouldExit: true, install: "1"},
 		{shouldExit: false, install: "a"},
