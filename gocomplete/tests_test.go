@@ -5,6 +5,7 @@ import (
 	"sort"
 	"testing"
 
+	"bou.ke/monkey"
 	"github.com/posener/complete/v2"
 )
 
@@ -42,6 +43,7 @@ func TestPredictions(t *testing.T) {
 func BenchmarkFake(b *testing.B) {}
 
 func Example() {
+	monkey.Patch(os.Exit, func(int) {})
 	os.Setenv("COMP_LINE", "go ru")
 	os.Setenv("COMP_POINT", "5")
 	main()
