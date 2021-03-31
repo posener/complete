@@ -1,7 +1,6 @@
 package complete
 
 import (
-	"io/ioutil"
 	"os"
 	"strconv"
 	"testing"
@@ -160,7 +159,6 @@ func TestComplete(t *testing.T) {
 	defer func() {
 		getEnv = os.Getenv
 		exit = os.Exit
-		out = os.Stdout
 	}()
 
 	tests := []struct {
@@ -204,7 +202,6 @@ func TestComplete(t *testing.T) {
 			exit = func(int) {
 				isExit = true
 			}
-			out = ioutil.Discard
 			if tt.shouldPanic {
 				assert.Panics(t, func() { testCmd.Complete("") })
 			} else {
