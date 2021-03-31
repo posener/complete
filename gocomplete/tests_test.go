@@ -43,7 +43,8 @@ func TestPredictions(t *testing.T) {
 func BenchmarkFake(b *testing.B) {}
 
 func Example() {
-	monkey.Patch(os.Exit, func(int) {})
+	p := monkey.Patch(os.Exit, func(int) {})
+	defer p.Unpatch()
 	os.Setenv("COMP_LINE", "go ru")
 	os.Setenv("COMP_POINT", "5")
 	main()
