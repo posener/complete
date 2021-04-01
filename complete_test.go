@@ -3,6 +3,7 @@ package complete
 import (
 	"io/ioutil"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/posener/complete/v2/internal/arg"
@@ -212,6 +213,42 @@ func TestComplete(t *testing.T) {
 			}
 		})
 	}
+}
+
+// ExampleComplete_outputCapturing demonstrates the ability to capture
+// the output of Complete() invocations, crucial for integration tests.
+func ExampleComplete_outputCapturing() {
+	// a stringLookup function maps one string to another.
+	// os.GetEnv is an instance of such a function.
+	type stringLookup = func(string) string
+
+	// promptEnv returns stringLookup func that emulates the environment
+	// variables a shell would set when its prompt has the given contents.
+	var promptEnv = func(contents string) stringLookup {
+		return func(key string) string {
+			switch key {
+			case "COMP_LINE":
+				return contents
+			case "COMP_POINT":
+				return strconv.Itoa(len(contents))
+			}
+			return ""
+		}
+	}
+
+	defer func(f func(int)) { exit = f }(exit)
+	defer func(f stringLookup) { getEnv = f }(getEnv)
+	exit = func(int) {}
+
+	// This is where the actual example starts:
+
+	cmd := &Command{Sub: map[string]*Command{"bar": {}}}
+	getEnv = promptEnv("foo b")
+
+	Complete("foo", cmd)
+
+	// Output:
+	// bar
 }
 
 type set []string
