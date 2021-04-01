@@ -1,6 +1,8 @@
 package complete
 
 import (
+	"io"
+	"io/ioutil"
 	"os"
 	"strconv"
 	"testing"
@@ -160,6 +162,15 @@ func TestComplete(t *testing.T) {
 		getEnv = os.Getenv
 		exit = os.Exit
 	}()
+
+	in, out, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func(o *os.File) { os.Stdout = o }(os.Stdout)
+	defer out.Close()
+	os.Stdout = out
+	go io.Copy(ioutil.Discard, in)
 
 	tests := []struct {
 		line, point string
