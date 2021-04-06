@@ -1,8 +1,10 @@
 package complete
 
 import (
+	"io"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/posener/complete/v2/internal/arg"
@@ -159,8 +161,16 @@ func TestComplete(t *testing.T) {
 	defer func() {
 		getEnv = os.Getenv
 		exit = os.Exit
-		out = os.Stdout
 	}()
+
+	in, out, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func(o *os.File) { os.Stdout = o }(os.Stdout)
+	defer out.Close()
+	os.Stdout = out
+	go io.Copy(ioutil.Discard, in)
 
 	tests := []struct {
 		line, point string
@@ -203,7 +213,6 @@ func TestComplete(t *testing.T) {
 			exit = func(int) {
 				isExit = true
 			}
-			out = ioutil.Discard
 			if tt.shouldPanic {
 				assert.Panics(t, func() { testCmd.Complete("") })
 			} else {
@@ -212,6 +221,24 @@ func TestComplete(t *testing.T) {
 			}
 		})
 	}
+}
+
+// ExampleComplete_outputCapturing demonstrates the ability to capture
+// the output of Complete() invocations, crucial for integration tests.
+func ExampleComplete_outputCapturing() {
+	defer func(f func(int)) { exit = f }(exit)
+	defer func(f getEnvFn) { getEnv = f }(getEnv)
+	exit = func(int) {}
+
+	// This is where the actual example starts:
+
+	cmd := &Command{Sub: map[string]*Command{"bar": {}}}
+	getEnv = promptEnv("foo b")
+
+	Complete("foo", cmd)
+
+	// Output:
+	// bar
 }
 
 type set []string
@@ -243,5 +270,22 @@ func TestHasPrefix(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 			assert.Equal(t, tt.wantOK, gotOK)
 		})
+	}
+}
+
+// getEnvFn emulates os.GetEnv by mapping one string to another.
+type getEnvFn = func(string) string
+
+// promptEnv returns getEnvFn that emulates the environment variables
+// a shell would set when its prompt has the given contents.
+var promptEnv = func(contents string) getEnvFn {
+	return func(key string) string {
+		switch key {
+		case "COMP_LINE":
+			return contents
+		case "COMP_POINT":
+			return strconv.Itoa(len(contents))
+		}
+		return ""
 	}
 }

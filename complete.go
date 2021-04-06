@@ -49,10 +49,8 @@ func (p PredictFunc) Predict(prefix string) []string {
 }
 
 var (
-	getEnv           = os.Getenv
-	exit             = os.Exit
-	out    io.Writer = os.Stdout
-	in     io.Reader = os.Stdin
+	getEnv = os.Getenv
+	exit   = os.Exit
 )
 
 // Complete the command line arguments for the given command in the case that the program
@@ -65,6 +63,10 @@ func Complete(name string, cmd Completer) {
 		doInstall   = getEnv("COMP_INSTALL") == "1"
 		doUninstall = getEnv("COMP_UNINSTALL") == "1"
 		yes         = getEnv("COMP_YES") == "1"
+	)
+	var (
+		out io.Writer = os.Stdout
+		in  io.Reader = os.Stdin
 	)
 	if doInstall || doUninstall {
 		install.Run(name, doUninstall, yes, out, in)
