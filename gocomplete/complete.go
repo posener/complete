@@ -2,9 +2,16 @@
 package main
 
 import (
+	"io/ioutil"
+	"log"
+	"os"
+
 	"github.com/posener/complete/v2"
 	"github.com/posener/complete/v2/predict"
 )
+
+// envVerbose is the sys env var that controls error output verbosity.
+const envVerbose = "GOCOMP_VERBOSE"
 
 var (
 	ellipsis   = predict.Set{"./..."}
@@ -15,6 +22,10 @@ var (
 )
 
 func main() {
+	if os.Getenv(envVerbose) != "1" {
+		log.SetOutput(ioutil.Discard)
+	}
+
 	build := &complete.Command{
 		Flags: map[string]complete.Predictor{
 			"o": anyFile,
