@@ -53,6 +53,14 @@ var (
 	exit   = os.Exit
 )
 
+// SetExitFunc sets the function used to exit the program (by default os.Exit)
+// and returns the previous value.
+func SetExitFunc(fn func(code int)) (previous func(int)) {
+	previous = exit
+	exit = fn
+	return previous
+}
+
 // Complete the command line arguments for the given command in the case that the program
 // was invoked with COMP_LINE and COMP_POINT environment variables. In that case it will also
 // `os.Exit()`. The program name should be provided for installation purposes.
