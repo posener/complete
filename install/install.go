@@ -10,8 +10,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-
-	"github.com/hashicorp/go-multierror"
 )
 
 func Run(name string, uninstall, yes bool, out io.Writer, in io.Reader) {
@@ -65,7 +63,7 @@ func Install(cmd string) error {
 	for _, i := range is {
 		errI := i.Install(cmd, bin)
 		if errI != nil {
-			err = multierror.Append(err, errI)
+			err = errors.Join(err, errI)
 		}
 	}
 
@@ -105,7 +103,7 @@ func Uninstall(cmd string) error {
 	for _, i := range is {
 		errI := i.Uninstall(cmd, bin)
 		if errI != nil {
-			err = multierror.Append(err, errI)
+			err = errors.Join(err, errI)
 		}
 	}
 
