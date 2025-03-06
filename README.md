@@ -33,7 +33,7 @@ Install:
 1. Type in your shell:
 
 ```go
-go get -u github.com/posener/complete/v2/gocomplete
+go install github.com/posener/complete/v2/gocomplete@latest
 COMP_INSTALL=1 gocomplete
 ```
 
