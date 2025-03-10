@@ -58,11 +58,12 @@ var (
 // `os.Exit()`. The program name should be provided for installation purposes.
 func Complete(name string, cmd Completer) {
 	var (
-		line        = getEnv("COMP_LINE")
-		point       = getEnv("COMP_POINT")
-		doInstall   = getEnv("COMP_INSTALL") == "1"
-		doUninstall = getEnv("COMP_UNINSTALL") == "1"
-		yes         = getEnv("COMP_YES") == "1"
+		line                 = getEnv("COMP_LINE")
+		point                = getEnv("COMP_POINT")
+		doInstall            = getEnv("COMP_INSTALL") == "1"
+		doUninstall          = getEnv("COMP_UNINSTALL") == "1"
+		yes                  = getEnv("COMP_YES") == "1"
+		traditionalUnixStyle = getEnv("COMP_TRADITIONAL_UNIX_STYLE") == "1"
 	)
 	var (
 		out io.Writer = os.Stdout
@@ -91,7 +92,7 @@ func Complete(name string, cmd Completer) {
 	args = args[1:]
 
 	// Run the completion algorithm.
-	options, err := completer{Completer: cmd, args: args}.complete()
+	options, err := completer{Completer: cmd, args: args, traditionalUnixStyle: traditionalUnixStyle}.complete()
 	if err != nil {
 		fmt.Fprintln(out, "\n"+err.Error())
 	} else {
@@ -104,8 +105,9 @@ func Complete(name string, cmd Completer) {
 
 type completer struct {
 	Completer
-	args  []arg.Arg
-	stack []Completer
+	args                 []arg.Arg
+	stack                []Completer
+	traditionalUnixStyle bool
 }
 
 // compete command with given before and after text.
@@ -219,10 +221,25 @@ func (c completer) suggestFlag(dashes, prefix string) []string {
 	return suggest(dashes, prefix, func(prefix string) []string {
 		var options []string
 		c.iterateStack(func(cmd Completer) {
-			// Suggest all flags with the given prefix.
 			for _, name := range cmd.FlagList() {
-				if strings.HasPrefix(name, prefix) {
-					options = append(options, dashes+name)
+				if c.traditionalUnixStyle {
+					// Suggest single dash or double dash flags only with the given prefix.
+					if len(prefix) == 0 {
+						if len(name) >= 2 {
+							options = append(options, "--"+name)
+						} else {
+							options = append(options, "-"+name)
+						}
+					} else if dashes == "-" && len(name) == 1 && strings.HasPrefix(name, prefix) {
+						options = append(options, dashes+name)
+					} else if dashes == "--" && len(name) >= 2 && strings.HasPrefix(name, prefix) {
+						options = append(options, dashes+name)
+					}
+				} else {
+					// Suggest all flags with the given prefix.
+					if strings.HasPrefix(name, prefix) {
+						options = append(options, dashes+name)
+					}
 				}
 			}
 		})
