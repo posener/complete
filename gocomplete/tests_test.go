@@ -11,7 +11,6 @@ import (
 	"strings"
 	"testing"
 
-	"bou.ke/monkey"
 	"github.com/posener/complete/v2"
 )
 
@@ -53,8 +52,8 @@ func TestPredictions(t *testing.T) {
 func BenchmarkFake(b *testing.B) {}
 
 func Example() {
-	p := monkey.Patch(os.Exit, func(int) {})
-	defer p.Unpatch()
+	p := complete.SetExitFunc(func(int) {})
+	defer complete.SetExitFunc(p)
 	os.Setenv("COMP_LINE", "go ru")
 	os.Setenv("COMP_POINT", "5")
 	main()
@@ -76,7 +75,8 @@ func equal(s1, s2 []string) bool {
 }
 
 func TestErrorSupression(t *testing.T) {
-	defer monkey.Patch(os.Exit, func(int) {}).Unpatch()
+	p := complete.SetExitFunc(func(int) {})
+	defer complete.SetExitFunc(p)
 
 	// Completion API environment variable names.
 	const envLine, envPoint = "COMP_LINE", "COMP_POINT"
