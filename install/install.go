@@ -172,6 +172,14 @@ func rcFile(name string) string {
 	if err != nil {
 		return ""
 	}
+
+	if zdotdir := os.Getenv("ZDOTDIR"); zdotdir != "" {
+		path := filepath.Join(zdotdir, name)
+		if _, err := os.Stat(path); err == nil {
+			return path
+		}
+	}
+
 	path := filepath.Join(u.HomeDir, name)
 	if _, err := os.Stat(path); err != nil {
 		return ""
