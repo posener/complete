@@ -24,6 +24,9 @@ type Command struct {
 
 // Predict returns all possible predictions for args according to the command struct
 func (c *Command) Predict(a Args) []string {
+	if c == nil {
+		return nil
+	}
 	options, _ := c.predict(a)
 	return options
 }
@@ -62,6 +65,9 @@ func (f Flags) Predict(a Args) (prediction []string) {
 // those are in cases of special flag that has specific completion arguments,
 // and other flags or sub commands can't come after it.
 func (c *Command) predict(a Args) (options []string, only bool) {
+	if c == nil {
+		return nil, false
+	}
 
 	// search sub commands for predictions first
 	subCommandFound := false
