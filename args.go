@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 )
 
 // Args describes command line arguments
@@ -68,8 +69,12 @@ func splitFields(line string) []string {
 	parts := strings.Fields(line)
 
 	// Add empty field if the last field was completed.
-	if len(line) > 0 && unicode.IsSpace(rune(line[len(line)-1])) {
-		parts = append(parts, "")
+	// Decode the last rune so multi-byte Unicode spaces are recognized.
+	if len(line) > 0 {
+		r, _ := utf8.DecodeLastRuneInString(line)
+		if unicode.IsSpace(r) {
+			parts = append(parts, "")
+		}
 	}
 
 	// Treat the last field if it is of the form "a=b"

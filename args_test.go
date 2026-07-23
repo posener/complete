@@ -211,3 +211,15 @@ func TestArgs_Directory(t *testing.T) {
 		})
 	}
 }
+
+func TestSplitFieldsUnicodeSpace(t *testing.T) {
+	// NBSP at end should still mark the previous field completed
+	line := "cmd arg\u00a0"
+	a := newArgs(line)
+	if a.Last != "" {
+		t.Fatalf("Last = %q, want empty (field completed by trailing unicode space)", a.Last)
+	}
+	if len(a.Completed) == 0 || a.Completed[len(a.Completed)-1] != "arg" {
+		t.Fatalf("Completed = %#v, want last completed \"arg\"", a.Completed)
+	}
+}
