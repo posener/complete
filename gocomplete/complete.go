@@ -488,7 +488,15 @@ func main() {
 	}
 
 	bug := &complete.Command{}
-	version := &complete.Command{}
+
+	version := &complete.Command{
+		Flags: map[string]complete.Predictor{
+			"m":    predict.Nothing,
+			"v":    predict.Nothing,
+			"json": predict.Nothing,
+		},
+		Args: predict.Files(""),
+	}
 
 	fix := &complete.Command{
 		Args: anyGo,
