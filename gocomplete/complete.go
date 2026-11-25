@@ -1,7 +1,14 @@
 // Package main is complete tool for the go command line
 package main
 
-import "github.com/posener/complete"
+import (
+	"os"
+	"strconv"
+	"strings"
+	"unicode"
+
+	"github.com/posener/complete"
+)
 
 var (
 	ellipsis   = complete.PredictSet("./...")
@@ -449,7 +456,7 @@ func main() {
 					"-unusedfuncs":         complete.PredictAnything,
 					"-unusedresult":        complete.PredictNothing,
 					"-unusedstringmethods": complete.PredictAnything,
-					"-v": complete.PredictNothing,
+					"-v":                   complete.PredictNothing,
 				},
 				Args: anyGo,
 			},
@@ -630,5 +637,60 @@ func main() {
 		},
 	}
 
+	if line, ok := currentCompletionLine(); ok && goRunPackageCompleted(line, run.Flags) {
+		complete.New("go", complete.Command{Args: anyFile}).Run()
+		return
+	}
+
 	complete.New("go", gogo).Run()
+}
+
+func currentCompletionLine() (string, bool) {
+	line := os.Getenv("COMP_LINE")
+	if line == "" {
+		return "", false
+	}
+
+	point, err := strconv.Atoi(os.Getenv("COMP_POINT"))
+	if err != nil || point < 0 || point > len(line) {
+		point = len(line)
+	}
+	return line[:point], true
+}
+
+func goRunPackageCompleted(line string, flags complete.Flags) bool {
+	fields := strings.Fields(line)
+	if len(fields) < 2 || fields[0] != "go" || fields[1] != "run" {
+		return false
+	}
+
+	args := fields[2:]
+	if len(args) == 0 {
+		return false
+	}
+	if last := line[len(line)-1]; !unicode.IsSpace(rune(last)) {
+		args = args[:len(args)-1]
+	}
+
+	expectsValue := false
+	for _, arg := range args {
+		if expectsValue {
+			expectsValue = false
+			continue
+		}
+		if strings.HasPrefix(arg, "-") {
+			name := strings.SplitN(arg, "=", 2)[0]
+			if !strings.Contains(arg, "=") && flagExpectsValue(name, flags) {
+				expectsValue = true
+			}
+			continue
+		}
+		return true
+	}
+	return false
+}
+
+func flagExpectsValue(name string, flags complete.Flags) bool {
+	predictor, ok := flags[name]
+	return ok && predictor != complete.PredictNothing
 }
